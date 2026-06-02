@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import axios from 'axios';
 import { Wheel } from 'react-custom-roulette';
 import './index.css';
@@ -24,6 +24,20 @@ function App() {
   const [spinCount, setSpinCount] = useState(1);
   const [winners, setWinners] = useState<{ name: string; index: number; color: string }[]>([]);
   const [showModal, setShowModal] = useState(false);
+
+  // Load saved input from localStorage on mount
+  useEffect(() => {
+    const savedInput = localStorage.getItem('dmuyot_party_input');
+    if (savedInput) {
+      setInput(savedInput);
+    }
+  }, []);
+
+  // Save input to localStorage whenever it changes
+  const handleInputChange = (value: string) => {
+    setInput(value);
+    localStorage.setItem('dmuyot_party_input', value);
+  };
 
   const handleExtract = async () => {
     setLoading(true);
@@ -98,7 +112,7 @@ function App() {
         <textarea
           placeholder="Paste Google Doc Link or raw text (e.g. 1. Orion \n 2. Lyra)"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => handleInputChange(e.target.value)}
         />
         <button onClick={handleExtract} disabled={loading || !input.trim()}>
           {loading ? 'Processing...' : 'Load Characters'}
