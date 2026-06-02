@@ -163,8 +163,11 @@ function App() {
                     className="spin-input" 
                     value={spinCount} 
                     min={1} 
-                    max={100}
-                    onChange={(e) => setSpinCount(Math.max(1, parseInt(e.target.value) || 1))}
+                    max={1000}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value) || 1;
+                      setSpinCount(Math.min(1000, Math.max(1, val)));
+                    }}
                   />
                 </div>
                 <button 
