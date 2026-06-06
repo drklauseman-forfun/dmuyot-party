@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import axios from 'axios';
-import { Wheel } from 'react-custom-roulette';
+import CustomWheel from './CustomWheel';
 import './index.css';
 
 interface CharacterData {
@@ -224,11 +224,10 @@ function App() {
   };
 
   const wheelData = useMemo(() => {
-    const isTooLarge = filteredCharacters.length > 25;
     return filteredCharacters.map((char) => ({ 
-      option: isTooLarge ? (char.originalIndex + 1).toString() : char.name,
-      style: { backgroundColor: '#1e1e1e', textColor: char.color !== '#ffffff' ? char.color : '#ffffff' },
-      optionSize: Number(weights[char.originalIndex]) || 1
+      label: char.name,
+      color: char.color,
+      weight: Number(weights[char.originalIndex]) || 1
     }));
   }, [filteredCharacters, weights]);
 
@@ -286,21 +285,11 @@ function App() {
                   📜 View Last Results
                 </button>
               )}
-              <Wheel
+              <CustomWheel
                 key={`wheel-${filteredCharacters.length}-${rangeInput}`} 
-                mustStartSpinning={mustSpin}
-                prizeNumber={prizeNumber}
+                mustSpin={mustSpin}
+                prizeIndex={prizeNumber}
                 data={wheelData}
-                backgroundColors={['#1e1e1e', '#2c2c2c']}
-                outerBorderColor="#333"
-                outerBorderWidth={10}
-                innerBorderColor="#333"
-                innerBorderWidth={20}
-                innerRadius={0}
-                radiusLineColor="#444"
-                radiusLineWidth={1}
-                fontSize={filteredCharacters.length > 100 ? 10 : 16}
-                perpendicularText={true}
                 spinDuration={spinDuration}
                 onStopSpinning={() => {
                   setMustSpin(false);
