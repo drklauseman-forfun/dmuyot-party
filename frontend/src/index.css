@@ -19,12 +19,10 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-}
-
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
   width: 100%;
 }
@@ -32,21 +30,104 @@ body {
 .app-container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
   align-items: center;
+}
+
+header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.settings-btn {
+  position: absolute;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: #646cff;
+  transition: transform 0.3s ease;
+}
+
+.settings-btn:hover {
+  transform: rotate(45deg);
+  background: none;
 }
 
 .main-content {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 4rem;
+  gap: 2rem;
   width: 100%;
-  margin-top: 2rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .wheel-section {
+    min-width: unset;
+    width: 100%;
+    transform: scale(0.8);
+    margin: -3rem 0;
+  }
+
+  .list-section {
+    width: 100%;
+    max-width: unset;
+    height: 300px;
+  }
 }
 
 .input-section {
-  width: 100%;
+...
+  border: 1px solid #333;
+}
+
+.settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+
+.settings-modal {
+  background: #1e1e1e;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid #333;
+  width: 90%;
+  max-width: 400px;
+  text-align: left;
+}
+
+.settings-row {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-row label {
+  font-weight: bold;
+  color: #888;
+}
+
   max-width: 600px;
   display: flex;
   flex-direction: column;

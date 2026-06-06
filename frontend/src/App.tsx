@@ -24,6 +24,7 @@ function App() {
   const [spinCount, setSpinCount] = useState<number | string>(1);
   const [winners, setWinners] = useState<{ name: string; index: number; color: string }[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Load saved input from localStorage on mount
   useEffect(() => {
@@ -113,6 +114,7 @@ function App() {
       <header>
         <h1>Dmuyot Party</h1>
         <p className="subtitle">Random character selector for your next big adventure</p>
+        <button className="settings-btn" onClick={() => setShowSettings(true)} title="Settings">⚙️</button>
       </header>
 
       <section className="input-section">
@@ -205,6 +207,23 @@ function App() {
             ))}
           </div>
         </main>
+      )}
+
+      {showSettings && (
+        <div className="settings-overlay" onClick={() => setShowSettings(false)}>
+          <div className="settings-modal" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <h2 style={{ margin: 0 }}>Settings</h2>
+              <button onClick={() => setShowSettings(false)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '1.5rem', cursor: 'pointer', padding: 0 }}>✕</button>
+            </div>
+            
+            <div className="settings-row">
+              <p style={{ color: '#666', fontSize: '0.9rem' }}>More settings coming in Phase 2!</p>
+            </div>
+
+            <button onClick={() => setShowSettings(false)} style={{ width: '100%', marginTop: '1rem' }}>Close</button>
+          </div>
+        </div>
       )}
 
       {showModal && (
