@@ -26,6 +26,7 @@ function App() {
   const [winners, setWinners] = useState<{ name: string; index: number; color: string }[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [spinDuration, setSpinDuration] = useState(0.4);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
@@ -82,15 +83,15 @@ function App() {
   const addToHistory = (newWinners: { name: string; index: number }[]) => {
     const timestamp = new Date().toLocaleTimeString();
     const historyEntries = newWinners.map(w => ({ ...w, timestamp }));
-    // Only keep the results of the last spin
     setHistory(historyEntries);
     localStorage.setItem('dmuyot_party_history', JSON.stringify(historyEntries));
   };
 
   const clearHistory = () => {
-    if (window.confirm('Clear all spin history?')) {
+    if (window.confirm('Clear last result?')) {
       setHistory([]);
       localStorage.removeItem('dmuyot_party_history');
+      setShowHistoryModal(false);
     }
   };
 
@@ -233,7 +234,12 @@ function App() {
       <header>
         <h1>Dmuyot Party</h1>
         <p className="subtitle">Random character selector for your next big adventure</p>
-        <button className="settings-btn" onClick={() => setShowSettings(true)} disabled={mustSpin} title="Settings">⚙️</button>
+        <div style={{ position: 'absolute', right: 0, top: 0, display: 'flex', gap: '5px' }}>
+          {history.length > 0 && (
+            <button className="settings-btn" style={{ position: 'static' }} onClick={() => setShowHistoryModal(true)} title="Last Result">📜</button>
+          )}
+          <button className="settings-btn" style={{ position: 'static' }} onClick={() => setShowSettings(true)} disabled={mustSpin} title="Settings">⚙️</button>
+        </div>
       </header>
 
       <section className="input-section">
@@ -344,24 +350,30 @@ function App() {
         </main>
       )}
 
-      {history.length > 0 && (
-        <section className="history-section">
-          <div className="history-header">
-            <h3 style={{ margin: 0 }}>📜 Spin History</h3>
-            <button onClick={clearHistory} style={{ fontSize: '0.7rem', padding: '0.4rem 1rem', background: '#333' }}>Clear</button>
+      {showHistoryModal && (
+        <div className="settings-overlay" onClick={() => setShowHistoryModal(false)}>
+          <div className="settings-modal" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h2 style={{ margin: 0 }}>📜 Last Result</h2>
+              <button onClick={() => setShowHistoryModal(false)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '1.5rem', cursor: 'pointer', padding: 0 }}>✕</button>
+            </div>
+            <div className="results-list" style={{ maxHeight: '400px' }}>
+              {history.map((item, i) => (
+                <div key={i} className="history-item" style={{ background: 'rgba(255,255,255,0.05)', padding: '10px', marginBottom: '5px', borderRadius: '8px' }}>
+                  <span>
+                    <span style={{ color: '#666', marginRight: '0.5rem' }}>[{item.index + 1}]</span>
+                    <strong>{item.name}</strong>
+                  </span>
+                  <span className="history-time">{item.timestamp}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '1rem' }}>
+              <button onClick={clearHistory} style={{ flex: 1, background: '#333' }}>Clear</button>
+              <button onClick={() => setShowHistoryModal(false)} style={{ flex: 1 }}>Close</button>
+            </div>
           </div>
-          <div className="history-list">
-            {history.map((item, i) => (
-              <div key={i} className="history-item">
-                <span>
-                  <span style={{ color: '#666', marginRight: '0.5rem' }}>[{item.index + 1}]</span>
-                  <strong>{item.name}</strong>
-                </span>
-                <span className="history-time">{item.timestamp}</span>
-              </div>
-            ))}
-          </div>
-        </section>
+        </div>
       )}
 
       {showSettings && (
