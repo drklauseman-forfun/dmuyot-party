@@ -27,6 +27,7 @@ const FireParticles = () => {
     const particleCount = 50;
 
     const resize = () => {
+      if (!canvas) return;
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
     };
@@ -36,6 +37,10 @@ const FireParticles = () => {
     class Particle {
       x: number; y: number; size: number; speedY: number; speedX: number; color: string; life: number;
       constructor() {
+        if (!canvas) { // Safety for TS
+          this.x = 0; this.y = 0; this.size = 0; this.speedY = 0; this.speedX = 0; this.color = ''; this.life = 0;
+          return;
+        }
         this.x = Math.random() * canvas.width;
         this.y = canvas.height + Math.random() * 20;
         this.size = Math.random() * 3 + 1;
