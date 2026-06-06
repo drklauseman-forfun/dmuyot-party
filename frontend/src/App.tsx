@@ -24,7 +24,7 @@ const FireParticles = () => {
 
     let animationFrameId: number;
     const particles: any[] = [];
-    const particleCount = 200; // Increased shootout intensity
+    const particleCount = 150; // Balanced density
 
     const resize = () => {
       if (!canvas) return;
@@ -41,18 +41,19 @@ const FireParticles = () => {
           this.x = 0; this.y = 0; this.size = 0; this.speedY = 0; this.speedX = 0; this.color = ''; this.life = 0; this.fadeSpeed = 0;
           return;
         }
-        // Shoot out from the bottom
+        // Shoot out from well below the bottom
         this.x = Math.random() * canvas.width;
-        this.y = canvas.height + 10;
-        this.size = Math.random() * 6 + 2; // Slightly larger for better 'glow'
-        this.speedY = Math.random() * -5 - 2; 
+        this.y = canvas.height + 50; 
+        this.size = Math.random() * 5 + 2; 
+        this.speedY = Math.random() * -5 - 3; // Fast vertical ascent
         this.speedX = Math.random() * 2 - 1;
         const colors = [
-          '#ff4500', '#ff8c00', '#ffd700', '#ff0000', '#ffae42', '#e25822' // Pure Fire Palette
+          '#ff4500', '#ff8c00', '#ffd700', '#ff0000', '#ffae42', '#e25822'
         ];
         this.color = colors[Math.floor(Math.random() * colors.length)];
         this.life = 1.0;
-        this.fadeSpeed = Math.random() * 0.012 + 0.006; 
+        // SLOWER FADE: Ensures they reach the top of tall mobile screens
+        this.fadeSpeed = Math.random() * 0.005 + 0.002; 
       }
       update() {
         this.y += this.speedY;
