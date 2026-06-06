@@ -20,8 +20,8 @@ function App() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   
-  // New states for multiple spins
-  const [spinCount, setSpinCount] = useState(1);
+  // New states for multiple spins - allow string for easier typing
+  const [spinCount, setSpinCount] = useState<number | string>(1);
   const [winners, setWinners] = useState<{ name: string; index: number; color: string }[]>([]);
   const [showModal, setShowModal] = useState(false);
 
@@ -37,6 +37,12 @@ function App() {
   const handleInputChange = (value: string) => {
     setInput(value);
     localStorage.setItem('dmuyot_party_input', value);
+  };
+
+  // Helper to get actual numeric spin count for logic
+  const getNumericSpinCount = () => {
+    const val = parseInt(spinCount.toString());
+    return isNaN(val) ? 1 : Math.min(1000, Math.max(1, val));
   };
 
   const handleExtract = async () => {
@@ -66,10 +72,11 @@ function App() {
 
   const handleSpinClick = () => {
     if (!mustSpin && characters.length > 0) {
-      if (spinCount > 1) {
+      const finalCount = getNumericSpinCount();
+      if (finalCount > 1) {
         // Instant multiple spins logic
         const newWinners: { name: string; index: number; color: string }[] = [];
-        for (let i = 0; i < spinCount; i++) {
+        for (let i = 0; i < finalCount; i++) {
           const idx = Math.floor(Math.random() * characters.length);
           newWinners.push({ 
             name: characters[idx].name, 
@@ -164,10 +171,7 @@ function App() {
                     value={spinCount} 
                     min={1} 
                     max={1000}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value) || 1;
-                      setSpinCount(Math.min(1000, Math.max(1, val)));
-                    }}
+                    onChange={(e) => setSpinCount(e.target.value)}
                   />
                 </div>
                 <button 
@@ -181,7 +185,7 @@ function App() {
                   }}
                   disabled={mustSpin}
                 >
-                  {spinCount > 1 ? `SPIN ${spinCount} TIMES` : 'SPIN'}
+                  {getNumericSpinCount() > 1 ? `SPIN ${getNumericSpinCount()} TIMES` : 'SPIN'}
                 </button>
               </div>
             </div>
