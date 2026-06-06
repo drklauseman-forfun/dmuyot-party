@@ -463,7 +463,7 @@ function App() {
           >
             {activeEffect === 'hellish' && <div className="fire-emoji">🔥 🔱 🔥</div>}
             <h2 className={activeEffect === 'hellish' ? 'hellish-text' : ''}>
-              {activeEffect === 'hellish' ? '⚠️ ENTITY DETECTED ⚠️' : '🎊 The Results are In! 🎊'}
+              {activeEffect === 'hellish' ? '🔱 SATAN THE ALL POWERFUL 🔱' : '🎊 The Results are In! 🎊'}
             </h2>
             <div className="results-list">
               {winners.map((winner, i) => (
