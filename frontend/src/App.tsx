@@ -97,7 +97,7 @@ function App() {
   const checkEffect = (winnersList: { name: string }[]) => {
     for (const winner of winnersList) {
       for (const rule of SPECIAL_EFFECTS) {
-        if (winner.name.includes(rule.trigger)) {
+        if (winner.name === rule.trigger) {
           setActiveEffect(rule.effect);
           return;
         }
