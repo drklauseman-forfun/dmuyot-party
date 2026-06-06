@@ -35,6 +35,13 @@ function App() {
   const [listSearch, setListSearch] = useState('');
   const [weights, setWeights] = useState<Record<number, number | string>>({});
   const [history, setHistory] = useState<{ name: string; index: number; timestamp: string }[]>([]);
+  
+  // Special Visuals State
+  const [activeEffect, setActiveEffect] = useState<string | null>(null);
+
+  const SPECIAL_EFFECTS = [
+    { trigger: 'דיבי', effect: 'hellish' },
+  ];
 
   useEffect(() => {
     const savedInput = localStorage.getItem('dmuyot_party_input');
@@ -85,6 +92,18 @@ function App() {
     const historyEntries = newWinners.map(w => ({ ...w, timestamp }));
     setHistory(historyEntries);
     localStorage.setItem('dmuyot_party_history', JSON.stringify(historyEntries));
+  };
+
+  const checkEffect = (winnersList: { name: string }[]) => {
+    for (const winner of winnersList) {
+      for (const rule of SPECIAL_EFFECTS) {
+        if (winner.name.includes(rule.trigger)) {
+          setActiveEffect(rule.effect);
+          return;
+        }
+      }
+    }
+    setActiveEffect(null);
   };
 
   const clearHistory = () => {
@@ -186,8 +205,6 @@ function App() {
     if (!mustSpin && filteredCharacters.length > 0) {
       const finalCount = getNumericSpinCount();
       
-      // Fast Path: If count > 1 OR spinDuration is very low (< 0.2s), skip animation.
-      // This bypasses the wheel library's internal ~1s 'slow down' overhead.
       if (finalCount > 1 || spinDuration < 0.2) {
         const actualCount = finalCount;
         const newWinners: { name: string; index: number; color: string }[] = [];
@@ -201,6 +218,7 @@ function App() {
           scrollToWinner(newWinners[0].index);
         }
         setWinners(newWinners);
+        checkEffect(newWinners);
         setShowModal(true);
         addToHistory(newWinners);
       } else {
@@ -224,8 +242,9 @@ function App() {
   };
 
   const wheelData = useMemo(() => {
+    const isTooLarge = filteredCharacters.length > 25;
     return filteredCharacters.map((char) => ({ 
-      label: char.name,
+      label: isTooLarge ? (char.originalIndex + 1).toString() : char.name,
       color: char.color,
       weight: Number(weights[char.originalIndex]) || 1
     }));
@@ -237,6 +256,9 @@ function App() {
         <h1>Dmuyot Party</h1>
         <p className="subtitle">Random character selector for your next big adventure</p>
         <div style={{ position: 'absolute', right: 0, top: 0, display: 'flex', gap: '5px' }}>
+          {history.length > 0 && (
+            <button className="settings-btn" style={{ position: 'static' }} onClick={() => setShowHistoryModal(true)} title="Last Result">📜</button>
+          )}
           <button className="settings-btn" style={{ position: 'static' }} onClick={() => setShowSettings(true)} disabled={mustSpin} title="Settings">⚙️</button>
         </div>
       </header>
@@ -297,6 +319,7 @@ function App() {
                   setSelectedIndex(winner.originalIndex);
                   const winnerObj = { name: winner.name, index: winner.originalIndex, color: winner.color };
                   setWinners([winnerObj]);
+                  checkEffect([winnerObj]);
                   setShowModal(true);
                   scrollToWinner(winner.originalIndex);
                   addToHistory([winnerObj]);
@@ -394,36 +417,13 @@ function App() {
               <label>Spin Duration (Seconds)</label>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
                 {[0, 1, 2, 5, 10].map(s => (
-                  <button 
-                    key={s}
-                    onClick={() => { setSpinDuration(s); localStorage.setItem('dmuyot_party_duration', s.toString()); }} 
-                    style={{ 
-                      flex: '1 0 30%', 
-                      fontSize: '0.8rem', 
-                      background: spinDuration === s ? '#646cff' : '#333',
-                      padding: '0.5rem'
-                    }}
-                  >
+                  <button key={s} onClick={() => { setSpinDuration(s); localStorage.setItem('dmuyot_party_duration', s.toString()); }} style={{ flex: '1 0 30%', fontSize: '0.8rem', background: spinDuration === s ? '#646cff' : '#333', padding: '0.5rem' }}>
                     {s === 0 ? '0s (Instant)' : `${s}s`}
                   </button>
                 ))}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <input 
-                  type="number" 
-                  min="0" 
-                  max="10" 
-                  step="0.1" 
-                  className="spin-input"
-                  style={{ width: '100px' }}
-                  value={spinDuration} 
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    const safeVal = isNaN(val) ? 0 : Math.min(10, Math.max(0, val));
-                    setSpinDuration(safeVal);
-                    localStorage.setItem('dmuyot_party_duration', safeVal.toString());
-                  }}
-                />
+                <input type="number" min="0" max="10" step="0.1" className="spin-input" style={{ width: '100px' }} value={spinDuration} onChange={(e) => { const val = parseFloat(e.target.value); const safeVal = isNaN(val) ? 0 : Math.min(10, Math.max(0, val)); setSpinDuration(safeVal); localStorage.setItem('dmuyot_party_duration', safeVal.toString()); }} />
                 <span style={{ color: '#666', fontSize: '0.8rem' }}>Custom (Max 10s)</span>
               </div>
             </div>
@@ -441,26 +441,45 @@ function App() {
       {showModal && (
         <div className="results-overlay" onClick={() => setShowModal(false)}>
           <div 
-            className="results-modal" 
+            className={`results-modal ${activeEffect === 'hellish' ? 'hellish-modal shake-effect' : ''}`}
             onClick={e => e.stopPropagation()}
             style={{
-              borderColor: winners[0]?.color || '#646cff',
-              boxShadow: `0 0 30px ${winners[0]?.color || '#646cff'}66`,
-              backgroundColor: winners[0]?.color ? `${winners[0].color}1a` : '#1e1e1e', 
+              borderColor: activeEffect === 'hellish' ? '#ff0000' : (winners[0]?.color || '#646cff'),
+              boxShadow: activeEffect === 'hellish' ? '0 0 50px #ff0000' : `0 0 30px ${winners[0]?.color || '#646cff'}66`,
+              backgroundColor: activeEffect === 'hellish' ? 'rgba(30, 0, 0, 0.95)' : (winners[0]?.color ? `${winners[0].color}1a` : '#1e1e1e'), 
               backdropFilter: 'blur(10px)'
             }}
           >
-            <h2>🎊 The Results are In! 🎊</h2>
+            {activeEffect === 'hellish' && <div className="fire-emoji">🔥 🔱 🔥</div>}
+            <h2 className={activeEffect === 'hellish' ? 'hellish-text' : ''}>
+              {activeEffect === 'hellish' ? '⚠️ ENTITY DETECTED ⚠️' : '🎊 The Results are In! 🎊'}
+            </h2>
             <div className="results-list">
               {winners.map((winner, i) => (
-                <div key={i} className="result-winner" style={{ color: winner.color !== '#ffffff' ? winner.color : '#ffffff' }}>
+                <div 
+                  key={i} 
+                  className={`result-winner ${activeEffect === 'hellish' ? 'hellish-text' : ''}`} 
+                  style={{ color: activeEffect === 'hellish' ? '#ff0000' : (winner.color !== '#ffffff' ? winner.color : '#ffffff') }}
+                >
                   {winners.length > 1 && <span style={{ fontSize: '0.9rem', color: '#888', marginRight: '0.5rem' }}>#{i + 1}</span>}
                   <span style={{ color: '#888', marginRight: '0.5rem' }}>[{winner.index + 1}]</span>
                   {winner.name}
                 </div>
               ))}
             </div>
-            <button onClick={() => setShowModal(false)} style={{ background: '#646cff', color: '#fff', fontWeight: 'bold', marginTop: '1.5rem', padding: '0.8rem 2rem' }}>Awesome!</button>
+            {activeEffect === 'hellish' && <div className="fire-emoji" style={{ marginBottom: '1rem' }}>🔱 🔥 🔱</div>}
+            <button 
+              onClick={() => setShowModal(false)}
+              style={{
+                background: activeEffect === 'hellish' ? '#ff0000' : '#646cff',
+                color: '#fff',
+                fontWeight: 'bold',
+                marginTop: '0.5rem',
+                padding: '0.8rem 2rem'
+              }}
+            >
+              {activeEffect === 'hellish' ? 'BEGONE' : 'Awesome!'}
+            </button>
           </div>
         </div>
       )}
