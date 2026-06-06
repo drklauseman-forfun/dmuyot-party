@@ -82,9 +82,9 @@ function App() {
   const addToHistory = (newWinners: { name: string; index: number }[]) => {
     const timestamp = new Date().toLocaleTimeString();
     const historyEntries = newWinners.map(w => ({ ...w, timestamp }));
-    const updatedHistory = [...history, ...historyEntries].slice(-50); // Keep last 50
-    setHistory(updatedHistory);
-    localStorage.setItem('dmuyot_party_history', JSON.stringify(updatedHistory));
+    // Only keep the results of the last spin
+    setHistory(historyEntries);
+    localStorage.setItem('dmuyot_party_history', JSON.stringify(historyEntries));
   };
 
   const clearHistory = () => {
