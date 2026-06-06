@@ -73,13 +73,16 @@ def parse_characters_html(html: str) -> List[Dict[str, str]]:
             continue
             
         # RULE: A character must start with a number in the user's view.
-        # In GDocs HTML:
-        # - Paragraphs starting with digits have the number in the text.
-        # - List Items (li) render the number via CSS counters, so text is just the name.
-        is_li = (item.name == 'li')
+        # 1. Standard paragraphs must start with a digit.
+        # 2. List items must belong to an <ol> (Ordered List), not <ul> (Unordered/Bullet).
         starts_with_digit = bool(re.match(r'^\d', line))
+        is_numbered_li = False
+        if item.name == 'li':
+            parent = item.find_parent(['ol', 'ul'])
+            if parent and parent.name == 'ol':
+                is_numbered_li = True
         
-        if not (is_li or starts_with_digit):
+        if not (starts_with_digit or is_numbered_li):
             continue
 
         name = clean_character_name(line)
