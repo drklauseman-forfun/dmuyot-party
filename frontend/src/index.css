@@ -334,7 +334,7 @@ h1 {
 }
 
 .shake-effect {
-  animation: shake 0.2s ease-in-out infinite;
+  animation: shake 0.2s ease-in-out 5; /* Runs for 1 second (0.2s * 5) */
 }
 
 .hellish-modal {
