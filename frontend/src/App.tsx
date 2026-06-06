@@ -24,12 +24,12 @@ const FireParticles = () => {
 
     let animationFrameId: number;
     const particles: any[] = [];
-    const particleCount = 50;
+    const particleCount = 60;
 
     const resize = () => {
       if (!canvas) return;
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     };
     resize();
     window.addEventListener('resize', resize);
@@ -37,15 +37,15 @@ const FireParticles = () => {
     class Particle {
       x: number; y: number; size: number; speedY: number; speedX: number; color: string; life: number;
       constructor() {
-        if (!canvas) { // Safety for TS
+        if (!canvas) {
           this.x = 0; this.y = 0; this.size = 0; this.speedY = 0; this.speedX = 0; this.color = ''; this.life = 0;
           return;
         }
         this.x = Math.random() * canvas.width;
         this.y = canvas.height + Math.random() * 20;
-        this.size = Math.random() * 3 + 1;
-        this.speedY = Math.random() * -2 - 1;
-        this.speedX = Math.random() * 1 - 0.5;
+        this.size = Math.random() * 4 + 1;
+        this.speedY = Math.random() * -3 - 1;
+        this.speedX = Math.random() * 1.5 - 0.75;
         const colors = ['#ff4500', '#ff8c00', '#ffd700', '#ff0000'];
         this.color = colors[Math.floor(Math.random() * colors.length)];
         this.life = 1;
@@ -53,7 +53,7 @@ const FireParticles = () => {
       update() {
         this.y += this.speedY;
         this.x += this.speedX;
-        this.life -= 0.005;
+        this.life -= 0.004;
       }
       draw() {
         if (!ctx) return;
@@ -62,7 +62,7 @@ const FireParticles = () => {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 15;
         ctx.shadowColor = this.color;
       }
     }
@@ -76,7 +76,7 @@ const FireParticles = () => {
       for (let i = 0; i < particles.length; i++) {
         particles[i].update();
         particles[i].draw();
-        if (particles[i].life <= 0 || particles[i].y < 0) {
+        if (particles[i].life <= 0 || (particles[i].y + 10) < 0) {
           particles[i] = new Particle();
         }
       }
@@ -90,7 +90,20 @@ const FireParticles = () => {
     };
   }, []);
 
-  return <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', borderRadius: '16px' }} />;
+  return (
+    <canvas 
+      ref={canvasRef} 
+      style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        width: '100vw', 
+        height: '100vh', 
+        pointerEvents: 'none', 
+        zIndex: 1050 
+      }} 
+    />
+  );
 };
 
 function App() {
@@ -526,6 +539,7 @@ function App() {
 
       {showModal && (
         <div className="results-overlay" onClick={() => setShowModal(false)}>
+          {activeEffect === 'hellish' && <FireParticles />}
           <div 
             className={`results-modal ${activeEffect === 'hellish' ? 'hellish-modal shake-effect' : ''}`}
             onClick={e => e.stopPropagation()}
@@ -536,7 +550,6 @@ function App() {
               backdropFilter: 'blur(10px)'
             }}
           >
-            {activeEffect === 'hellish' && <FireParticles />}
             <h2 className={activeEffect === 'hellish' ? 'hellish-text' : ''}>
               {activeEffect === 'hellish' ? '🔱 SATAN THE ALL POWERFUL 🔱' : '🎊 The Results are In! 🎊'}
             </h2>
@@ -565,7 +578,7 @@ function App() {
                 zIndex: 2
               }}
             >
-              {activeEffect === 'hellish' ? 'BEGONE' : 'Awesome!'}
+              Awesome!
             </button>
           </div>
         </div>
