@@ -32,7 +32,7 @@ function App() {
   // Filter & Weight States
   const [rangeInput, setRangeInput] = useState('');
   const [listSearch, setListSearch] = useState('');
-  const [weights, setWeights] = useState<Record<number, number>>({});
+  const [weights, setWeights] = useState<Record<number, number | string>>({});
 
   useEffect(() => {
     const savedInput = localStorage.getItem('dmuyot_party_input');
@@ -61,9 +61,14 @@ function App() {
     localStorage.setItem('dmuyot_party_ranges', value);
   };
 
-  const setManualWeight = (originalIndex: number, value: number) => {
+  const setManualWeight = (originalIndex: number, value: number | string) => {
     const newWeights = { ...weights };
-    newWeights[originalIndex] = Math.max(1, Math.min(1000, value));
+    if (typeof value === 'string' && value === '') {
+      newWeights[originalIndex] = '';
+    } else {
+      const num = parseInt(value.toString());
+      newWeights[originalIndex] = isNaN(num) ? 1 : Math.max(1, Math.min(9999, num));
+    }
     setWeights(newWeights);
     localStorage.setItem('dmuyot_party_weights', JSON.stringify(newWeights));
   };
@@ -105,14 +110,22 @@ function App() {
     if (!rangeInput.trim()) return null;
     const indices = new Set<number>();
     const parts = rangeInput.split(',');
+    const MAX_TOTAL_ITEMS = 5000;
+    
     for (const part of parts) {
+      if (indices.size >= MAX_TOTAL_ITEMS) break;
       const range = part.trim().split('-');
       if (range.length === 2) {
         const start = parseInt(range[0]);
         const end = parseInt(range[1]);
         if (!isNaN(start) && !isNaN(end)) {
-          for (let i = Math.min(start, end); i <= Math.max(start, end); i++) {
+          const s = Math.min(start, end);
+          const e = Math.max(start, end);
+          // Safety cap: don't process ranges larger than 5000 items
+          if (e - s > 5000) continue; 
+          for (let i = s; i <= e; i++) {
             indices.add(i - 1);
+            if (indices.size >= MAX_TOTAL_ITEMS) break;
           }
         }
       } else if (range.length === 1) {
@@ -128,7 +141,6 @@ function App() {
     return characters.filter(c => includedIndices.has(c.originalIndex));
   }, [characters, includedIndices]);
 
-  // Sidebar list search (doesn't affect wheel)
   const visibleInSidebar = useMemo(() => {
     if (!listSearch.trim()) return filteredCharacters;
     const query = listSearch.toLowerCase();
@@ -139,10 +151,10 @@ function App() {
   }, [filteredCharacters, listSearch]);
 
   const pickRandomIndex = (list: CharacterData[]) => {
-    const totalWeight = list.reduce((acc, c) => acc + (weights[c.originalIndex] || 1), 0);
+    const totalWeight = list.reduce((acc, c) => acc + (Number(weights[c.originalIndex]) || 1), 0);
     let random = Math.random() * totalWeight;
     for (let i = 0; i < list.length; i++) {
-      const weight = weights[list[i].originalIndex] || 1;
+      const weight = Number(weights[list[i].originalIndex]) || 1;
       if (random < weight) return i;
       random -= weight;
     }
@@ -187,12 +199,11 @@ function App() {
   };
 
   const wheelData = useMemo(() => {
-    // If more than 25 characters, use numbers to prevent text overlapping
     const isTooLarge = filteredCharacters.length > 25;
     return filteredCharacters.map((char) => ({ 
       option: isTooLarge ? (char.originalIndex + 1).toString() : char.name,
       style: { backgroundColor: '#1e1e1e', textColor: char.color !== '#ffffff' ? char.color : '#ffffff' },
-      optionSize: weights[char.originalIndex] || 1
+      optionSize: Number(weights[char.originalIndex]) || 1
     }));
   }, [filteredCharacters, weights]);
 
@@ -201,14 +212,7 @@ function App() {
       <header>
         <h1>Dmuyot Party</h1>
         <p className="subtitle">Random character selector for your next big adventure</p>
-        <button 
-          className="settings-btn" 
-          onClick={() => setShowSettings(true)} 
-          disabled={mustSpin}
-          title="Settings"
-        >
-          ⚙️
-        </button>
+        <button className="settings-btn" onClick={() => setShowSettings(true)} disabled={mustSpin} title="Settings">⚙️</button>
       </header>
 
       <section className="input-section">
@@ -299,15 +303,16 @@ function App() {
                   {char.originalIndex + 1}. {char.name}
                 </span>
                 <div className="weight-control">
-                  <button onClick={() => setManualWeight(char.originalIndex, (weights[char.originalIndex] || 1) - 1)} disabled={mustSpin}>-</button>
+                  <button onClick={() => setManualWeight(char.originalIndex, (Number(weights[char.originalIndex]) || 1) - 1)} disabled={mustSpin}>-</button>
                   <input 
                     type="number" 
                     className="weight-input" 
-                    value={weights[char.originalIndex] || 1} 
-                    onChange={(e) => setManualWeight(char.originalIndex, parseInt(e.target.value) || 1)}
+                    value={weights[char.originalIndex] ?? 1} 
+                    onChange={(e) => setManualWeight(char.originalIndex, e.target.value)}
+                    onBlur={(e) => { if (!e.target.value) setManualWeight(char.originalIndex, 1); }}
                     disabled={mustSpin}
                   />
-                  <button onClick={() => setManualWeight(char.originalIndex, (weights[char.originalIndex] || 1) + 1)} disabled={mustSpin}>+</button>
+                  <button onClick={() => setManualWeight(char.originalIndex, (Number(weights[char.originalIndex]) || 1) + 1)} disabled={mustSpin}>+</button>
                 </div>
               </div>
             ))}
