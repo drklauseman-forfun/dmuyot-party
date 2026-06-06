@@ -373,16 +373,12 @@ h1 {
 }
 
 @keyframes glitch {
-  /* Glitch Burst (0% to 30%) */
   0% { transform: translate(0); text-shadow: -2px 0 red, 2px 0 blue; }
-  5% { transform: translate(-2px, 2px); text-shadow: -2px 0 red, 2px 0 blue; }
-  10% { transform: translate(-2px, -2px); text-shadow: 2px -2px red, -2px 2px blue; }
-  15% { transform: translate(2px, 2px); text-shadow: -2px 0 red, 2px 0 blue; }
-  20% { transform: translate(2px, -2px); text-shadow: 2px -2px red, -2px 2px blue; }
-  25% { transform: translate(-1px, 1px); text-shadow: -1px 0 red, 1px 0 blue; }
-  30% { transform: translate(0); text-shadow: none; }
-  /* Static Period (30% to 100%) */
-  100% { transform: translate(0); text-shadow: none; }
+  20% { transform: translate(-2px, 2px); text-shadow: -2px 0 red, 2px 0 blue; }
+  40% { transform: translate(-2px, -2px); text-shadow: 2px -2px red, -2px 2px blue; }
+  60% { transform: translate(2px, 2px); text-shadow: -2px 0 red, 2px 0 blue; }
+  80% { transform: translate(2px, -2px); text-shadow: 2px -2px red, -2px 2px blue; }
+  100% { transform: translate(0); }
 }
 
 @keyframes glitch-bg {
@@ -392,7 +388,7 @@ h1 {
 }
 
 .glitch-effect {
-  animation: glitch 2s cubic-bezier(.25, .46, .45, .94) both infinite;
+  animation: glitch 1s cubic-bezier(.25, .46, .45, .94) both infinite;
 }
 
 .glitch-overlay {
