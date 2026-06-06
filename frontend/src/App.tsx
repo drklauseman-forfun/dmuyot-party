@@ -59,6 +59,9 @@ function App() {
   const handleRangeChange = (value: string) => {
     setRangeInput(value);
     localStorage.setItem('dmuyot_party_ranges', value);
+    // Reset selection as the list has changed
+    setSelectedIndex(null);
+    setWinners([]);
   };
 
   const setManualWeight = (originalIndex: number, value: number | string) => {
@@ -242,6 +245,7 @@ function App() {
           <div className="wheel-section">
             <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <Wheel
+                key={`wheel-${filteredCharacters.length}-${rangeInput}`} // Force complete reset on data change
                 mustStartSpinning={mustSpin}
                 prizeNumber={prizeNumber}
                 data={wheelData}
