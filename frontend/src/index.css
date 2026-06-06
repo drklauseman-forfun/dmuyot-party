@@ -391,13 +391,6 @@ h1 {
   animation: glitch 0.5s linear infinite; /* linear removes the easing pause */
 }
 
-@media (max-width: 768px) {
-  .glitch-effect {
-    animation-duration: 0.8s; /* Slower on mobile to reduce strain */
-    text-shadow: -1px 0 rgba(255,0,0,0.5), 1px 0 rgba(0,0,255,0.5) !important;
-  }
-}
-
 .glitch-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
