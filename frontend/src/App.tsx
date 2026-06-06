@@ -96,8 +96,19 @@ function App() {
 
   const checkEffect = (winnersList: { name: string }[]) => {
     for (const winner of winnersList) {
+      // Split the character's name into words
+      const nameWords = winner.name.trim().split(/\s+/);
+      
       for (const rule of SPECIAL_EFFECTS) {
-        if (winner.name === rule.trigger) {
+        // Split the trigger into words (could be 1 word or more)
+        const triggerWords = rule.trigger.trim().split(/\s+/);
+        
+        // Check if the start of the character's name matches the full trigger
+        // Example: If trigger is "דיבי", it matches "דיבי" and "דיבי המלכה"
+        // Example: If trigger is "דיבי המלכה", it only matches "דיבי המלכה הרשעה"
+        const nameStart = nameWords.slice(0, triggerWords.length).join(' ');
+        
+        if (nameStart === rule.trigger) {
           setActiveEffect(rule.effect);
           return;
         }
