@@ -334,3 +334,45 @@ h1 {
   padding: 0.5rem;
   border-radius: 4px;
 }
+
+.history-section {
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 800px;
+  background: #1e1e1e;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #333;
+  text-align: left;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #333;
+  padding-bottom: 0.5rem;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column-reverse; /* Newest at top */
+  max-height: 200px;
+  overflow-y: auto;
+  gap: 0.5rem;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem;
+  background: rgba(255,255,255,0.02);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.history-time {
+  color: #666;
+  font-size: 0.8rem;
+}

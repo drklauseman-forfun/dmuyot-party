@@ -29,10 +29,11 @@ function App() {
   const [spinDuration, setSpinDuration] = useState(0.4);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // Filter & Weight States
+  // Filter, Weight & History States
   const [rangeInput, setRangeInput] = useState('');
   const [listSearch, setListSearch] = useState('');
   const [weights, setWeights] = useState<Record<number, number | string>>({});
+  const [history, setHistory] = useState<{ name: string; index: number; timestamp: string }[]>([]);
 
   useEffect(() => {
     const savedInput = localStorage.getItem('dmuyot_party_input');
@@ -49,6 +50,9 @@ function App() {
 
     const savedWeights = localStorage.getItem('dmuyot_party_weights');
     if (savedWeights) setWeights(JSON.parse(savedWeights));
+
+    const savedHistory = localStorage.getItem('dmuyot_party_history');
+    if (savedHistory) setHistory(JSON.parse(savedHistory));
   }, []);
 
   const handleInputChange = (value: string) => {
@@ -59,7 +63,6 @@ function App() {
   const handleRangeChange = (value: string) => {
     setRangeInput(value);
     localStorage.setItem('dmuyot_party_ranges', value);
-    // Reset selection as the list has changed
     setSelectedIndex(null);
     setWinners([]);
   };
@@ -74,6 +77,21 @@ function App() {
     }
     setWeights(newWeights);
     localStorage.setItem('dmuyot_party_weights', JSON.stringify(newWeights));
+  };
+
+  const addToHistory = (newWinners: { name: string; index: number }[]) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const historyEntries = newWinners.map(w => ({ ...w, timestamp }));
+    const updatedHistory = [...history, ...historyEntries].slice(-50); // Keep last 50
+    setHistory(updatedHistory);
+    localStorage.setItem('dmuyot_party_history', JSON.stringify(updatedHistory));
+  };
+
+  const clearHistory = () => {
+    if (window.confirm('Clear all spin history?')) {
+      setHistory([]);
+      localStorage.removeItem('dmuyot_party_history');
+    }
   };
 
   const getNumericSpinCount = () => {
@@ -124,7 +142,6 @@ function App() {
         if (!isNaN(start) && !isNaN(end)) {
           const s = Math.min(start, end);
           const e = Math.max(start, end);
-          // Safety cap: don't process ranges larger than 5000 items
           if (e - s > 5000) continue; 
           for (let i = s; i <= e; i++) {
             indices.add(i - 1);
@@ -181,6 +198,7 @@ function App() {
         }
         setWinners(newWinners);
         setShowModal(true);
+        addToHistory(newWinners);
       } else {
         const newPrizeNumber = pickRandomIndex(filteredCharacters);
         setPrizeNumber(newPrizeNumber);
@@ -245,7 +263,7 @@ function App() {
           <div className="wheel-section">
             <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <Wheel
-                key={`wheel-${filteredCharacters.length}-${rangeInput}`} // Force complete reset on data change
+                key={`wheel-${filteredCharacters.length}-${rangeInput}`} 
                 mustStartSpinning={mustSpin}
                 prizeNumber={prizeNumber}
                 data={wheelData}
@@ -264,9 +282,11 @@ function App() {
                   setMustSpin(false);
                   const winner = filteredCharacters[prizeNumber];
                   setSelectedIndex(winner.originalIndex);
-                  setWinners([{ name: winner.name, index: winner.originalIndex, color: winner.color }]);
+                  const winnerObj = { name: winner.name, index: winner.originalIndex, color: winner.color };
+                  setWinners([winnerObj]);
                   setShowModal(true);
                   scrollToWinner(winner.originalIndex);
+                  addToHistory([winnerObj]);
                 }}
               />
               
@@ -322,6 +342,26 @@ function App() {
             ))}
           </div>
         </main>
+      )}
+
+      {history.length > 0 && (
+        <section className="history-section">
+          <div className="history-header">
+            <h3 style={{ margin: 0 }}>📜 Spin History</h3>
+            <button onClick={clearHistory} style={{ fontSize: '0.7rem', padding: '0.4rem 1rem', background: '#333' }}>Clear</button>
+          </div>
+          <div className="history-list">
+            {history.map((item, i) => (
+              <div key={i} className="history-item">
+                <span>
+                  <span style={{ color: '#666', marginRight: '0.5rem' }}>[{item.index + 1}]</span>
+                  <strong>{item.name}</strong>
+                </span>
+                <span className="history-time">{item.timestamp}</span>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       {showSettings && (
