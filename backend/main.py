@@ -73,14 +73,22 @@ def parse_characters_html(html: str) -> List[Dict[str, str]]:
             continue
             
         # RULE: A character must start with a number in the user's view.
-        # 1. Standard paragraphs must start with a digit.
-        # 2. List items must belong to an <ol> (Ordered List), not <ul> (Unordered/Bullet).
-        starts_with_digit = bool(re.match(r'^\d', line))
-        is_numbered_li = False
+        # 1. Identify if it's part of a bulleted (unordered) list
+        is_in_bullet_list = False
         if item.name == 'li':
             parent = item.find_parent(['ol', 'ul'])
-            if parent and parent.name == 'ol':
-                is_numbered_li = True
+            if parent and parent.name == 'ul':
+                is_in_bullet_list = True
+        elif item.find_parent('ul'):
+            is_in_bullet_list = True
+
+        # 2. If it's in a bullet list, it's NEVER a character (user rule)
+        if is_in_bullet_list:
+            continue
+
+        # 3. Check for starting digit or explicitly numbered list item
+        starts_with_digit = bool(re.match(r'^\d', line))
+        is_numbered_li = (item.name == 'li') # We already excluded ul items above
         
         if not (starts_with_digit or is_numbered_li):
             continue
