@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import axios from 'axios';
 import CustomWheel from './CustomWheel';
 import './index.css';
@@ -13,18 +13,80 @@ interface ExtractionResponse {
   characters: { name: string; color: string }[];
 }
 
-const FireIcon = () => (
-  <svg width="40" height="40" viewBox="0 0 100 100" className="svg-fire">
-    <path d="M50 10 Q80 50 50 95 Q20 50 50 10" fill="#ff4500" />
-    <path d="M50 30 Q70 60 50 85 Q30 60 50 30" fill="#ff8c00" />
-  </svg>
-);
+const FireParticles = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-const PitchforkIcon = () => (
-  <svg width="30" height="40" viewBox="0 0 100 100" className="svg-pitchfork">
-    <path d="M30 10 V60 M50 10 V90 M70 10 V60 M30 35 H70" stroke="#ff0000" strokeWidth="8" fill="none" strokeLinecap="round" />
-  </svg>
-);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    const particles: any[] = [];
+    const particleCount = 50;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    class Particle {
+      x: number; y: number; size: number; speedY: number; speedX: number; color: string; life: number;
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height + Math.random() * 20;
+        this.size = Math.random() * 3 + 1;
+        this.speedY = Math.random() * -2 - 1;
+        this.speedX = Math.random() * 1 - 0.5;
+        const colors = ['#ff4500', '#ff8c00', '#ffd700', '#ff0000'];
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.life = 1;
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+        this.life -= 0.005;
+      }
+      draw() {
+        if (!ctx) return;
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+        if (particles[i].life <= 0 || particles[i].y < 0) {
+          particles[i] = new Particle();
+        }
+      }
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', borderRadius: '16px' }} />;
+};
 
 function App() {
   const [input, setInput] = useState('');
@@ -469,17 +531,11 @@ function App() {
               backdropFilter: 'blur(10px)'
             }}
           >
-            {activeEffect === 'hellish' && (
-              <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginBottom: '1rem' }}>
-                <PitchforkIcon />
-                <FireIcon />
-                <PitchforkIcon />
-              </div>
-            )}
+            {activeEffect === 'hellish' && <FireParticles />}
             <h2 className={activeEffect === 'hellish' ? 'hellish-text' : ''}>
               {activeEffect === 'hellish' ? '🔱 SATAN THE ALL POWERFUL 🔱' : '🎊 The Results are In! 🎊'}
             </h2>
-            <div className="results-list">
+            <div className="results-list" style={{ position: 'relative', zIndex: 2 }}>
               {winners.map((winner, i) => (
                 <div 
                   key={i} 
@@ -492,21 +548,16 @@ function App() {
                 </div>
               ))}
             </div>
-            {activeEffect === 'hellish' && (
-              <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: '1rem', marginBottom: '1rem' }}>
-                <FireIcon />
-                <PitchforkIcon />
-                <FireIcon />
-              </div>
-            )}
             <button 
               onClick={() => setShowModal(false)}
               style={{
                 background: activeEffect === 'hellish' ? '#ff0000' : '#646cff',
                 color: '#fff',
                 fontWeight: 'bold',
-                marginTop: '0.5rem',
-                padding: '0.8rem 2rem'
+                marginTop: '1.5rem',
+                padding: '0.8rem 2rem',
+                position: 'relative',
+                zIndex: 2
               }}
             >
               {activeEffect === 'hellish' ? 'BEGONE' : 'Awesome!'}
