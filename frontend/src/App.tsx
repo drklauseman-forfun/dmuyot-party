@@ -24,10 +24,11 @@ const FireParticles = () => {
 
     let animationFrameId: number;
     const particles: any[] = [];
-    const particleCount = 150; 
+    const particleCount = 200; 
 
     const resize = () => {
       if (!canvas) return;
+      // Force the canvas to the absolute window dimensions
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
@@ -41,16 +42,17 @@ const FireParticles = () => {
           this.x = 0; this.y = 0; this.size = 0; this.speedY = 0; this.speedX = 0; this.color = ''; this.life = 0; this.fadeSpeed = 0;
           return;
         }
+        // Spread evenly across the TRUE canvas width
         this.x = Math.random() * canvas.width;
-        // Randomize spawn depth. If initialY is provided (on start), use that.
-        this.y = initialY !== undefined ? initialY : canvas.height + Math.random() * 500; 
+        // Start below the TRUE canvas height
+        this.y = initialY !== undefined ? initialY : canvas.height + Math.random() * 200; 
         this.size = Math.random() * 5 + 1;
         this.speedY = Math.random() * -6 - 3; 
         this.speedX = Math.random() * 3 - 1.5;
         const colors = ['#ff4500', '#ff8c00', '#ffd700', '#ff0000', '#ffae42', '#e25822'];
         this.color = colors[Math.floor(Math.random() * colors.length)];
         this.life = 1.0;
-        this.fadeSpeed = Math.random() * 0.005 + 0.002; 
+        this.fadeSpeed = Math.random() * 0.004 + 0.002; 
       }
       update() {
         this.y += this.speedY;
@@ -69,7 +71,7 @@ const FireParticles = () => {
       }
     }
 
-    // Initialize particles across the full screen height for immediate fullness
+    // Initialize with a variety of heights
     for (let i = 0; i < particleCount; i++) {
       particles.push(new Particle(Math.random() * (window.innerHeight + 500)));
     }
@@ -79,7 +81,7 @@ const FireParticles = () => {
       for (let i = 0; i < particles.length; i++) {
         particles[i].update();
         particles[i].draw();
-        if (particles[i].life <= 0 || (particles[i].y + 20) < 0) {
+        if (particles[i].life <= 0 || (particles[i].y + 50) < 0) {
           particles[i] = new Particle();
         }
       }
@@ -100,12 +102,11 @@ const FireParticles = () => {
         position: 'fixed', 
         top: 0, 
         left: 0, 
-        right: 0,
-        bottom: 0,
         width: '100vw', 
         height: '100vh', 
         pointerEvents: 'none', 
-        zIndex: 1050 
+        zIndex: 1050,
+        background: 'transparent'
       }} 
     />
   );

@@ -67,15 +67,20 @@ const CustomWheel: React.FC<CustomWheelProps> = ({
     setIsAnimating(true);
     
     // 1. Calculate target rotation
-    // We want the winning slice (midAngle) to point to the top (which is 0 degrees in CSS)
-    // SVG is drawn from -90. CSS rotates the WHOLE div.
-    // The pointer is at 0 degrees (top).
     const targetSlice = slices[prizeIndex];
-    const extraRotations = 5 * 360;
+    const extraRotations = 10 * 360; // More rotations for better feel
     
-    // The rotation needed to put targetSlice.midAngle at the top (0 deg)
-    // We rotate clockwise, so we subtract the midAngle.
-    const newRotation = rotation + extraRotations + (360 - (targetSlice.midAngle % 360));
+    // Calculate the precise angle needed to put the target slice at the top (0 deg)
+    // currentRotation % 360 is where we are now.
+    // (360 - targetSlice.midAngle) is where we WANT the 0-point to be.
+    const currentInternalAngle = rotation % 360;
+    const targetAngle = (360 - (targetSlice.midAngle % 360)) % 360;
+    
+    // Distance to travel to reach the target angle from current position
+    let distance = targetAngle - currentInternalAngle;
+    if (distance <= 0) distance += 360; // Ensure we always rotate forward
+    
+    const newRotation = rotation + extraRotations + distance;
     
     setRotation(newRotation);
 
