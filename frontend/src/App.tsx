@@ -26,12 +26,20 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  // Load saved input from localStorage on mount
+  // Phase 2 Settings
+  const [spinDuration, setSpinDuration] = useState(0.4);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Load saved settings from localStorage on mount
   useEffect(() => {
     const savedInput = localStorage.getItem('dmuyot_party_input');
-    if (savedInput) {
-      setInput(savedInput);
-    }
+    if (savedInput) setInput(savedInput);
+    
+    const savedDuration = localStorage.getItem('dmuyot_party_duration');
+    if (savedDuration) setSpinDuration(parseFloat(savedDuration));
+    
+    const savedSound = localStorage.getItem('dmuyot_party_sound');
+    if (savedSound !== null) setSoundEnabled(savedSound === 'true');
   }, []);
 
   // Save input to localStorage whenever it changes
@@ -46,6 +54,12 @@ function App() {
     return isNaN(val) ? 1 : Math.min(1000, Math.max(1, val));
   };
 
+  // Placeholder for sound effect
+  const playSpinSound = (duration: number) => {
+    if (!soundEnabled) return;
+    console.log(`🔊 [SOUND PLACEHOLDER] Playing spin sound for ${duration}s`);
+  };
+
   const handleExtract = async () => {
     setLoading(true);
     setSelectedIndex(null);
@@ -54,7 +68,6 @@ function App() {
       const isUrl = input.trim().startsWith('http');
       const payload = isUrl ? { url: input.trim() } : { text: input };
       
-      // Use environment variable for API URL in production, fallback to localhost
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       const response = await axios.post<ExtractionResponse>(`${apiUrl}/api/extract`, payload);
       
@@ -94,11 +107,12 @@ function App() {
         setMustSpin(true);
         setSelectedIndex(null);
         setWinners([]);
+        playSpinSound(spinDuration);
       }
     }
   };
 
-  // Color palette for the wheel (default backgrounds)
+  // Color palette for the wheel
   const backgroundColors = ['#1e1e1e', '#2c2c2c'];
 
   const data = useMemo(() => {
@@ -151,7 +165,7 @@ function App() {
                 radiusLineWidth={1}
                 fontSize={characters.length > 100 ? 10 : 16}
                 perpendicularText={true}
-                spinDuration={0.4} // Faster spin (default is usually ~0.8 or 1.0)
+                spinDuration={spinDuration}
                 onStopSpinning={() => {
                   setMustSpin(false);
                   setSelectedIndex(prizeNumber);
@@ -218,7 +232,38 @@ function App() {
             </div>
             
             <div className="settings-row">
-              <p style={{ color: '#666', fontSize: '0.9rem' }}>More settings coming in Phase 2!</p>
+              <label>Spin Duration: {spinDuration}s</label>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                <button onClick={() => { setSpinDuration(0.1); localStorage.setItem('dmuyot_party_duration', '0.1'); }} style={{ flex: 1, fontSize: '0.8rem' }}>Immediate</button>
+                <button onClick={() => { setSpinDuration(2.0); localStorage.setItem('dmuyot_party_duration', '2.0'); }} style={{ flex: 1, fontSize: '0.8rem' }}>Normal (2s)</button>
+              </div>
+              <input 
+                type="range" 
+                min="0.1" 
+                max="10" 
+                step="0.1" 
+                value={spinDuration} 
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value);
+                  setSpinDuration(val);
+                  localStorage.setItem('dmuyot_party_duration', val.toString());
+                }}
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div className="settings-row">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: '#888' }}>
+                <input 
+                  type="checkbox" 
+                  checked={soundEnabled} 
+                  onChange={(e) => {
+                    setSoundEnabled(e.target.checked);
+                    localStorage.setItem('dmuyot_party_sound', e.target.checked.toString());
+                  }}
+                />
+                Enable Spin Sound
+              </label>
             </div>
 
             <button onClick={() => setShowSettings(false)} style={{ width: '100%', marginTop: '1rem' }}>Close</button>
@@ -234,7 +279,7 @@ function App() {
             style={{
               borderColor: winners[0]?.color || '#646cff',
               boxShadow: `0 0 30px ${winners[0]?.color || '#646cff'}66`,
-              backgroundColor: winners[0]?.color ? `${winners[0].color}1a` : '#1e1e1e', // 10% opacity
+              backgroundColor: winners[0]?.color ? `${winners[0].color}1a` : '#1e1e1e', 
               backdropFilter: 'blur(10px)'
             }}
           >
@@ -251,7 +296,7 @@ function App() {
             <button 
               onClick={() => setShowModal(false)}
               style={{
-                background: '#646cff', // Standard theme purple
+                background: '#646cff',
                 color: '#fff',
                 fontWeight: 'bold',
                 marginTop: '1.5rem',
