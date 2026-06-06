@@ -235,9 +235,6 @@ function App() {
         <h1>Dmuyot Party</h1>
         <p className="subtitle">Random character selector for your next big adventure</p>
         <div style={{ position: 'absolute', right: 0, top: 0, display: 'flex', gap: '5px' }}>
-          {history.length > 0 && (
-            <button className="settings-btn" style={{ position: 'static' }} onClick={() => setShowHistoryModal(true)} title="Last Result">📜</button>
-          )}
           <button className="settings-btn" style={{ position: 'static' }} onClick={() => setShowSettings(true)} disabled={mustSpin} title="Settings">⚙️</button>
         </div>
       </header>
@@ -268,6 +265,24 @@ function App() {
         <main className="main-content">
           <div className="wheel-section">
             <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              {history.length > 0 && (
+                <button 
+                  onClick={() => setShowHistoryModal(true)}
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid #444',
+                    padding: '0.6rem 1.5rem',
+                    borderRadius: '20px',
+                    fontSize: '0.8rem',
+                    marginBottom: '1rem',
+                    cursor: 'pointer',
+                    color: '#888'
+                  }}
+                  disabled={mustSpin}
+                >
+                  📜 View Last Results
+                </button>
+              )}
               <Wheel
                 key={`wheel-${filteredCharacters.length}-${rangeInput}`} 
                 mustStartSpinning={mustSpin}
