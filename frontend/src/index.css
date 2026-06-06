@@ -372,6 +372,33 @@ h1 {
   animation: pulse-red 1s ease-in-out infinite;
 }
 
+@keyframes glitch {
+  0% { transform: translate(0); text-shadow: -2px 0 red, 2px 0 blue; }
+  20% { transform: translate(-2px, 2px); text-shadow: -2px 0 red, 2px 0 blue; }
+  40% { transform: translate(-2px, -2px); text-shadow: 2px -2px red, -2px 2px blue; }
+  60% { transform: translate(2px, 2px); text-shadow: -2px 0 red, 2px 0 blue; }
+  80% { transform: translate(2px, -2px); text-shadow: 2px -2px red, -2px 2px blue; }
+  100% { transform: translate(0); }
+}
+
+@keyframes glitch-bg {
+  0%, 100% { opacity: 0; }
+  5%, 15%, 25%, 35%, 45% { opacity: 0.1; background: red; }
+  10%, 20%, 30%, 40% { opacity: 0.1; background: blue; }
+}
+
+.glitch-effect {
+  animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+}
+
+.glitch-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 1040;
+  animation: glitch-bg 1s steps(1) 1;
+}
+
 .large-list-warning {
   color: #ffcc00;
   font-size: 0.8rem;

@@ -24,7 +24,7 @@ const FireParticles = () => {
 
     let animationFrameId: number;
     const particles: any[] = [];
-    const particleCount = 100; // More particles for denser shootout
+    const particleCount = 200; // Increased shootout intensity
 
     const resize = () => {
       if (!canvas) return;
@@ -44,10 +44,13 @@ const FireParticles = () => {
         // Shoot out from the bottom
         this.x = Math.random() * canvas.width;
         this.y = canvas.height + 10;
-        this.size = Math.random() * 4 + 1;
-        this.speedY = Math.random() * -4 - 2; // Faster shootout
-        this.speedX = Math.random() * 2 - 1;
-        const colors = ['#ff4500', '#ff8c00', '#ffd700', '#ff0000'];
+        this.size = Math.random() * 5 + 1;
+        this.speedY = Math.random() * -6 - 2; // Stronger shootout
+        this.speedX = Math.random() * 3 - 1.5;
+        const colors = [
+          '#ff4500', '#ff8c00', '#ffd700', '#ff0000', 
+          '#8a2be2', '#ff00ff', '#4b0082', '#ff1493' // Added Purples, Magentas, Pinks
+        ];
         this.color = colors[Math.floor(Math.random() * colors.length)];
         this.life = 1.0;
         this.fadeSpeed = Math.random() * 0.01 + 0.005; // Random fade for natural look
@@ -543,6 +546,7 @@ function App() {
       {showModal && (
         <div className="results-overlay" onClick={() => setShowModal(false)}>
           {activeEffect === 'hellish' && <FireParticles />}
+          {activeEffect === 'hellish' && <div className="glitch-overlay" />}
           <div 
             className={`results-modal ${activeEffect === 'hellish' ? 'hellish-modal shake-effect' : ''}`}
             onClick={e => e.stopPropagation()}
@@ -553,7 +557,7 @@ function App() {
               backdropFilter: 'blur(10px)'
             }}
           >
-            <h2 className={activeEffect === 'hellish' ? 'hellish-text' : ''}>
+            <h2 className={`${activeEffect === 'hellish' ? 'hellish-text glitch-effect' : ''}`}>
               {activeEffect === 'hellish' ? '🔱 SATAN THE ALL POWERFUL 🔱' : '🎊 The Results are In! 🎊'}
             </h2>
             <div className="results-list" style={{ position: 'relative', zIndex: 2 }}>
