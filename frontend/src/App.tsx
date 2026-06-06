@@ -44,16 +44,15 @@ const FireParticles = () => {
         // Shoot out from the bottom
         this.x = Math.random() * canvas.width;
         this.y = canvas.height + 10;
-        this.size = Math.random() * 5 + 1;
-        this.speedY = Math.random() * -6 - 2; // Stronger shootout
-        this.speedX = Math.random() * 3 - 1.5;
+        this.size = Math.random() * 6 + 2; // Slightly larger for better 'glow'
+        this.speedY = Math.random() * -5 - 2; 
+        this.speedX = Math.random() * 2 - 1;
         const colors = [
-          '#ff4500', '#ff8c00', '#ffd700', '#ff0000', 
-          '#8a2be2', '#ff00ff', '#4b0082', '#ff1493' // Added Purples, Magentas, Pinks
+          '#ff4500', '#ff8c00', '#ffd700', '#ff0000', '#ffae42', '#e25822' // Pure Fire Palette
         ];
         this.color = colors[Math.floor(Math.random() * colors.length)];
         this.life = 1.0;
-        this.fadeSpeed = Math.random() * 0.01 + 0.005; // Random fade for natural look
+        this.fadeSpeed = Math.random() * 0.012 + 0.006; 
       }
       update() {
         this.y += this.speedY;
@@ -67,7 +66,7 @@ const FireParticles = () => {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 25; // More intense glow
         ctx.shadowColor = this.color;
       }
     }
