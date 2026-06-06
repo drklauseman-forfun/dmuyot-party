@@ -30,12 +30,19 @@ def extract_doc_id(url: str) -> Optional[str]:
 
 def clean_character_name(line: str) -> str:
     name = line.strip()
-    # 1. Aggressively strip leading numbers: e.g. "1. Name", "1) Name"
-    while True:
-        new_name = re.sub(r"^\s*\d+[\.\)]?\s*", "", name).strip()
-        if new_name == name:
-            break
-        name = new_name
+    
+    # 1. Smartly strip leading numbers: e.g. "1. Name", "1) Name", "1 Name"
+    # It ensures we don't accidentally strip a character named "11" or "1.5"
+    m = re.match(r"^\s*\d+([\.\)\-]\s*|\s+)(.*)$", name)
+    if m:
+        prefix = m.group(1)
+        remainder = m.group(2).strip()
+        
+        # Prevent stripping decimal numbers like "1.5"
+        if prefix in ['.', ')', '-'] and remainder and remainder[0].isdigit():
+            pass # Keep it intact
+        elif remainder:
+            name = remainder
     
     # 2. For the format "Name (Source): Description...", 
     # we only want the "Name (Source)" part.
