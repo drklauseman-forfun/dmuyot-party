@@ -36,7 +36,7 @@ function App() {
     if (savedInput) setInput(savedInput);
     
     const savedDuration = localStorage.getItem('dmuyot_party_duration');
-    if (savedDuration) setSpinDuration(parseFloat(savedDuration));
+    if (savedDuration !== null) setSpinDuration(parseFloat(savedDuration));
     
     const savedSound = localStorage.getItem('dmuyot_party_sound');
     if (savedSound !== null) setSoundEnabled(savedSound === 'true');
@@ -87,10 +87,13 @@ function App() {
   const handleSpinClick = () => {
     if (!mustSpin && characters.length > 0) {
       const finalCount = getNumericSpinCount();
-      if (finalCount > 1) {
-        // Instant multiple spins logic
+      
+      // If count > 1 OR spinDuration is 0, do truly immediate logic
+      if (finalCount > 1 || spinDuration === 0) {
+        const actualCount = finalCount;
         const newWinners: { name: string; index: number; color: string }[] = [];
-        for (let i = 0; i < finalCount; i++) {
+        
+        for (let i = 0; i < actualCount; i++) {
           const idx = Math.floor(Math.random() * characters.length);
           newWinners.push({ 
             name: characters[idx].name, 
@@ -98,6 +101,11 @@ function App() {
             color: characters[idx].color 
           });
         }
+        
+        if (actualCount === 1) {
+          setSelectedIndex(newWinners[0].index);
+        }
+        
         setWinners(newWinners);
         setShowModal(true);
       } else {
@@ -234,12 +242,12 @@ function App() {
             <div className="settings-row">
               <label>Spin Duration: {spinDuration}s</label>
               <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                <button onClick={() => { setSpinDuration(0.1); localStorage.setItem('dmuyot_party_duration', '0.1'); }} style={{ flex: 1, fontSize: '0.8rem' }}>Immediate</button>
+                <button onClick={() => { setSpinDuration(0); localStorage.setItem('dmuyot_party_duration', '0'); }} style={{ flex: 1, fontSize: '0.8rem' }}>Immediate (0s)</button>
                 <button onClick={() => { setSpinDuration(2.0); localStorage.setItem('dmuyot_party_duration', '2.0'); }} style={{ flex: 1, fontSize: '0.8rem' }}>Normal (2s)</button>
               </div>
               <input 
                 type="range" 
-                min="0.1" 
+                min="0" 
                 max="10" 
                 step="0.1" 
                 value={spinDuration} 
