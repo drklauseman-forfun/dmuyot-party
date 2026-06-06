@@ -24,7 +24,7 @@ const FireParticles = () => {
 
     let animationFrameId: number;
     const particles: any[] = [];
-    const particleCount = 60;
+    const particleCount = 100; // More particles for denser shootout
 
     const resize = () => {
       if (!canvas) return;
@@ -35,29 +35,31 @@ const FireParticles = () => {
     window.addEventListener('resize', resize);
 
     class Particle {
-      x: number; y: number; size: number; speedY: number; speedX: number; color: string; life: number;
+      x: number; y: number; size: number; speedY: number; speedX: number; color: string; life: number; fadeSpeed: number;
       constructor() {
         if (!canvas) {
-          this.x = 0; this.y = 0; this.size = 0; this.speedY = 0; this.speedX = 0; this.color = ''; this.life = 0;
+          this.x = 0; this.y = 0; this.size = 0; this.speedY = 0; this.speedX = 0; this.color = ''; this.life = 0; this.fadeSpeed = 0;
           return;
         }
+        // Shoot out from the bottom
         this.x = Math.random() * canvas.width;
-        this.y = canvas.height + Math.random() * 20;
+        this.y = canvas.height + 10;
         this.size = Math.random() * 4 + 1;
-        this.speedY = Math.random() * -3 - 1;
-        this.speedX = Math.random() * 1.5 - 0.75;
+        this.speedY = Math.random() * -4 - 2; // Faster shootout
+        this.speedX = Math.random() * 2 - 1;
         const colors = ['#ff4500', '#ff8c00', '#ffd700', '#ff0000'];
         this.color = colors[Math.floor(Math.random() * colors.length)];
-        this.life = 1;
+        this.life = 1.0;
+        this.fadeSpeed = Math.random() * 0.01 + 0.005; // Random fade for natural look
       }
       update() {
         this.y += this.speedY;
         this.x += this.speedX;
-        this.life -= 0.004;
+        this.life -= this.fadeSpeed;
       }
       draw() {
         if (!ctx) return;
-        ctx.globalAlpha = this.life;
+        ctx.globalAlpha = Math.max(0, this.life);
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
@@ -76,7 +78,8 @@ const FireParticles = () => {
       for (let i = 0; i < particles.length; i++) {
         particles[i].update();
         particles[i].draw();
-        if (particles[i].life <= 0 || (particles[i].y + 10) < 0) {
+        // If life is out, reset it immediately to keep the 'shootout' constant
+        if (particles[i].life <= 0) {
           particles[i] = new Particle();
         }
       }
