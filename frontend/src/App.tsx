@@ -24,7 +24,7 @@ const FireParticles = () => {
 
     let animationFrameId: number;
     const particles: any[] = [];
-    const particleCount = 150; // Balanced density
+    const particleCount = 150; 
 
     const resize = () => {
       if (!canvas) return;
@@ -36,23 +36,20 @@ const FireParticles = () => {
 
     class Particle {
       x: number; y: number; size: number; speedY: number; speedX: number; color: string; life: number; fadeSpeed: number;
-      constructor() {
+      constructor(initialY?: number) {
         if (!canvas) {
           this.x = 0; this.y = 0; this.size = 0; this.speedY = 0; this.speedX = 0; this.color = ''; this.life = 0; this.fadeSpeed = 0;
           return;
         }
-        // Shoot out from well below the bottom
         this.x = Math.random() * canvas.width;
-        this.y = canvas.height + 50; 
-        this.size = Math.random() * 5 + 2; 
-        this.speedY = Math.random() * -5 - 3; // Fast vertical ascent
-        this.speedX = Math.random() * 2 - 1;
-        const colors = [
-          '#ff4500', '#ff8c00', '#ffd700', '#ff0000', '#ffae42', '#e25822'
-        ];
+        // Randomize spawn depth. If initialY is provided (on start), use that.
+        this.y = initialY !== undefined ? initialY : canvas.height + Math.random() * 500; 
+        this.size = Math.random() * 5 + 1;
+        this.speedY = Math.random() * -6 - 3; 
+        this.speedX = Math.random() * 3 - 1.5;
+        const colors = ['#ff4500', '#ff8c00', '#ffd700', '#ff0000', '#ffae42', '#e25822'];
         this.color = colors[Math.floor(Math.random() * colors.length)];
         this.life = 1.0;
-        // SLOWER FADE: Ensures they reach the top of tall mobile screens
         this.fadeSpeed = Math.random() * 0.005 + 0.002; 
       }
       update() {
@@ -67,13 +64,14 @@ const FireParticles = () => {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 25; // More intense glow
+        ctx.shadowBlur = 20;
         ctx.shadowColor = this.color;
       }
     }
 
+    // Initialize particles across the full screen height for immediate fullness
     for (let i = 0; i < particleCount; i++) {
-      particles.push(new Particle());
+      particles.push(new Particle(Math.random() * (window.innerHeight + 500)));
     }
 
     const animate = () => {
@@ -81,8 +79,7 @@ const FireParticles = () => {
       for (let i = 0; i < particles.length; i++) {
         particles[i].update();
         particles[i].draw();
-        // If life is out, reset it immediately to keep the 'shootout' constant
-        if (particles[i].life <= 0) {
+        if (particles[i].life <= 0 || (particles[i].y + 20) < 0) {
           particles[i] = new Particle();
         }
       }
@@ -103,6 +100,8 @@ const FireParticles = () => {
         position: 'fixed', 
         top: 0, 
         left: 0, 
+        right: 0,
+        bottom: 0,
         width: '100vw', 
         height: '100vh', 
         pointerEvents: 'none', 
