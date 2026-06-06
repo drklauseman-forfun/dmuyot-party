@@ -399,12 +399,41 @@ function App() {
               <button onClick={() => setShowSettings(false)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '1.5rem', cursor: 'pointer', padding: 0 }}>✕</button>
             </div>
             <div className="settings-row">
-              <label>Spin Duration: {spinDuration}s</label>
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                <button onClick={() => { setSpinDuration(0); localStorage.setItem('dmuyot_party_duration', '0'); }} style={{ flex: 1, fontSize: '0.8rem' }}>Immediate (0s)</button>
-                <button onClick={() => { setSpinDuration(2.0); localStorage.setItem('dmuyot_party_duration', '2.0'); }} style={{ flex: 1, fontSize: '0.8rem' }}>Normal (2s)</button>
+              <label>Spin Duration (Seconds)</label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                {[0, 1, 2, 5, 10].map(s => (
+                  <button 
+                    key={s}
+                    onClick={() => { setSpinDuration(s); localStorage.setItem('dmuyot_party_duration', s.toString()); }} 
+                    style={{ 
+                      flex: '1 0 30%', 
+                      fontSize: '0.8rem', 
+                      background: spinDuration === s ? '#646cff' : '#333',
+                      padding: '0.5rem'
+                    }}
+                  >
+                    {s === 0 ? '0s (Instant)' : `${s}s`}
+                  </button>
+                ))}
               </div>
-              <input type="range" min="0" max="10" step="0.1" value={spinDuration} onChange={(e) => { const val = parseFloat(e.target.value); setSpinDuration(val); localStorage.setItem('dmuyot_party_duration', val.toString()); }} style={{ width: '100%' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <input 
+                  type="number" 
+                  min="0" 
+                  max="10" 
+                  step="0.1" 
+                  className="spin-input"
+                  style={{ width: '100px' }}
+                  value={spinDuration} 
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    const safeVal = isNaN(val) ? 0 : Math.min(10, Math.max(0, val));
+                    setSpinDuration(safeVal);
+                    localStorage.setItem('dmuyot_party_duration', safeVal.toString());
+                  }}
+                />
+                <span style={{ color: '#666', fontSize: '0.8rem' }}>Custom (Max 10s)</span>
+              </div>
             </div>
             <div className="settings-row">
               <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: '#888' }}>
