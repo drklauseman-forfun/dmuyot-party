@@ -13,6 +13,19 @@ interface ExtractionResponse {
   characters: { name: string; color: string }[];
 }
 
+const FireIcon = () => (
+  <svg width="40" height="40" viewBox="0 0 100 100" className="svg-fire">
+    <path d="M50 10 Q80 50 50 95 Q20 50 50 10" fill="#ff4500" />
+    <path d="M50 30 Q70 60 50 85 Q30 60 50 30" fill="#ff8c00" />
+  </svg>
+);
+
+const PitchforkIcon = () => (
+  <svg width="30" height="40" viewBox="0 0 100 100" className="svg-pitchfork">
+    <path d="M30 10 V60 M50 10 V90 M70 10 V60 M30 35 H70" stroke="#ff0000" strokeWidth="8" fill="none" strokeLinecap="round" />
+  </svg>
+);
+
 function App() {
   const [input, setInput] = useState('');
   const [characters, setCharacters] = useState<CharacterData[]>([]);
@@ -99,21 +112,16 @@ function App() {
       setActiveEffect(null);
       return;
     }
-
-    // Only check the FIRST character in the list
     const firstWinner = winnersList[0];
     const nameWords = firstWinner.name.trim().split(/\s+/);
-    
     for (const rule of SPECIAL_EFFECTS) {
       const triggerWords = rule.trigger.trim().split(/\s+/);
       const nameStart = nameWords.slice(0, triggerWords.length).join(' ');
-      
       if (nameStart === rule.trigger) {
         setActiveEffect(rule.effect);
         return;
       }
     }
-    
     setActiveEffect(null);
   };
 
@@ -461,7 +469,13 @@ function App() {
               backdropFilter: 'blur(10px)'
             }}
           >
-            {activeEffect === 'hellish' && <div className="fire-emoji">🔥 🔱 🔥</div>}
+            {activeEffect === 'hellish' && (
+              <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginBottom: '1rem' }}>
+                <PitchforkIcon />
+                <FireIcon />
+                <PitchforkIcon />
+              </div>
+            )}
             <h2 className={activeEffect === 'hellish' ? 'hellish-text' : ''}>
               {activeEffect === 'hellish' ? '🔱 SATAN THE ALL POWERFUL 🔱' : '🎊 The Results are In! 🎊'}
             </h2>
@@ -478,7 +492,13 @@ function App() {
                 </div>
               ))}
             </div>
-            {activeEffect === 'hellish' && <div className="fire-emoji" style={{ marginBottom: '1rem' }}>🔱 🔥 🔱</div>}
+            {activeEffect === 'hellish' && (
+              <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: '1rem', marginBottom: '1rem' }}>
+                <FireIcon />
+                <PitchforkIcon />
+                <FireIcon />
+              </div>
+            )}
             <button 
               onClick={() => setShowModal(false)}
               style={{

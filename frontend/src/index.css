@@ -354,6 +354,24 @@ h1 {
   animation: fadeIn 0.5s ease;
 }
 
+@keyframes flicker {
+  0%, 100% { transform: scale(1) translateY(0); opacity: 0.9; }
+  50% { transform: scale(1.1) translateY(-5px); opacity: 1; }
+}
+
+@keyframes pulse-red {
+  0%, 100% { filter: drop-shadow(0 0 5px #ff0000); }
+  50% { filter: drop-shadow(0 0 15px #ff4500); }
+}
+
+.svg-fire {
+  animation: flicker 0.3s ease-in-out infinite;
+}
+
+.svg-pitchfork {
+  animation: pulse-red 1s ease-in-out infinite;
+}
+
 .large-list-warning {
   color: #ffcc00;
   font-size: 0.8rem;
