@@ -6,7 +6,7 @@ import './index.css';
 interface CharacterData {
   name: string;
   color: string;
-  originalIndex: number; // Keep track for range filtering
+  originalIndex: number; 
 }
 
 interface ExtractionResponse {
@@ -21,7 +21,7 @@ function App() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   
-  // Phase 1/2 states
+  // Settings & Core Logic
   const [spinCount, setSpinCount] = useState<number | string>(1);
   const [winners, setWinners] = useState<{ name: string; index: number; color: string }[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -29,11 +29,11 @@ function App() {
   const [spinDuration, setSpinDuration] = useState(0.4);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // Phase 3 states
+  // Filter & Weight States
   const [rangeInput, setRangeInput] = useState('');
+  const [listSearch, setListSearch] = useState('');
   const [weights, setWeights] = useState<Record<number, number>>({});
 
-  // Load saved settings from localStorage
   useEffect(() => {
     const savedInput = localStorage.getItem('dmuyot_party_input');
     if (savedInput) setInput(savedInput);
@@ -61,11 +61,9 @@ function App() {
     localStorage.setItem('dmuyot_party_ranges', value);
   };
 
-  const updateWeight = (originalIndex: number, delta: number) => {
+  const setManualWeight = (originalIndex: number, value: number) => {
     const newWeights = { ...weights };
-    const current = newWeights[originalIndex] || 1;
-    const next = Math.max(1, Math.min(10, current + delta));
-    newWeights[originalIndex] = next;
+    newWeights[originalIndex] = Math.max(1, Math.min(1000, value));
     setWeights(newWeights);
     localStorage.setItem('dmuyot_party_weights', JSON.stringify(newWeights));
   };
@@ -103,7 +101,6 @@ function App() {
     }
   };
 
-  // Logic to parse ranges like "1-10, 20, 30-40"
   const includedIndices = useMemo(() => {
     if (!rangeInput.trim()) return null;
     const indices = new Set<number>();
@@ -115,7 +112,7 @@ function App() {
         const end = parseInt(range[1]);
         if (!isNaN(start) && !isNaN(end)) {
           for (let i = Math.min(start, end); i <= Math.max(start, end); i++) {
-            indices.add(i - 1); // convert to 0-based
+            indices.add(i - 1);
           }
         }
       } else if (range.length === 1) {
@@ -131,7 +128,16 @@ function App() {
     return characters.filter(c => includedIndices.has(c.originalIndex));
   }, [characters, includedIndices]);
 
-  // Weighted random picker
+  // Sidebar list search (doesn't affect wheel)
+  const visibleInSidebar = useMemo(() => {
+    if (!listSearch.trim()) return filteredCharacters;
+    const query = listSearch.toLowerCase();
+    return filteredCharacters.filter(c => 
+      c.name.toLowerCase().includes(query) || 
+      (c.originalIndex + 1).toString() === query
+    );
+  }, [filteredCharacters, listSearch]);
+
   const pickRandomIndex = (list: CharacterData[]) => {
     const totalWeight = list.reduce((acc, c) => acc + (weights[c.originalIndex] || 1), 0);
     let random = Math.random() * totalWeight;
@@ -154,7 +160,10 @@ function App() {
           const char = filteredCharacters[idx];
           newWinners.push({ name: char.name, index: char.originalIndex, color: char.color });
         }
-        if (finalCount === 1) setSelectedIndex(newWinners[0].index);
+        if (finalCount === 1) {
+          setSelectedIndex(newWinners[0].index);
+          scrollToWinner(newWinners[0].index);
+        }
         setWinners(newWinners);
         setShowModal(true);
       } else {
@@ -168,12 +177,22 @@ function App() {
     }
   };
 
+  const scrollToWinner = (originalIndex: number) => {
+    setTimeout(() => {
+      const element = document.getElementById(`char-${originalIndex}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  };
+
   const wheelData = useMemo(() => {
-    const isTooLarge = filteredCharacters.length > 50;
+    // If more than 25 characters, use numbers to prevent text overlapping
+    const isTooLarge = filteredCharacters.length > 25;
     return filteredCharacters.map((char) => ({ 
       option: isTooLarge ? (char.originalIndex + 1).toString() : char.name,
       style: { backgroundColor: '#1e1e1e', textColor: char.color !== '#ffffff' ? char.color : '#ffffff' },
-      optionSize: weights[char.originalIndex] || 1 // Visually larger slices
+      optionSize: weights[char.originalIndex] || 1
     }));
   }, [filteredCharacters, weights]);
 
@@ -182,7 +201,14 @@ function App() {
       <header>
         <h1>Dmuyot Party</h1>
         <p className="subtitle">Random character selector for your next big adventure</p>
-        <button className="settings-btn" onClick={() => setShowSettings(true)} title="Settings">⚙️</button>
+        <button 
+          className="settings-btn" 
+          onClick={() => setShowSettings(true)} 
+          disabled={mustSpin}
+          title="Settings"
+        >
+          ⚙️
+        </button>
       </header>
 
       <section className="input-section">
@@ -190,6 +216,7 @@ function App() {
           placeholder="Paste Google Doc Link or raw text..."
           value={input}
           onChange={(e) => handleInputChange(e.target.value)}
+          disabled={mustSpin}
         />
         <div className="filter-section">
           <label style={{ fontSize: '0.8rem', color: '#888' }}>Include Ranges (e.g. 1-10, 25, 40-50)</label>
@@ -198,9 +225,10 @@ function App() {
             placeholder="All" 
             value={rangeInput} 
             onChange={(e) => handleRangeChange(e.target.value)}
+            disabled={mustSpin}
           />
         </div>
-        <button onClick={handleExtract} disabled={loading || !input.trim()}>
+        <button onClick={handleExtract} disabled={loading || !input.trim() || mustSpin}>
           {loading ? 'Processing...' : 'Load Characters'}
         </button>
       </section>
@@ -230,13 +258,14 @@ function App() {
                   setSelectedIndex(winner.originalIndex);
                   setWinners([{ name: winner.name, index: winner.originalIndex, color: winner.color }]);
                   setShowModal(true);
+                  scrollToWinner(winner.originalIndex);
                 }}
               />
               
               <div className="spin-controls">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                   <label style={{ fontSize: '0.8rem', color: '#888' }}>Spins</label>
-                  <input type="number" className="spin-input" value={spinCount} min={1} max={1000} onChange={(e) => setSpinCount(e.target.value)} />
+                  <input type="number" className="spin-input" value={spinCount} min={1} max={1000} onChange={(e) => setSpinCount(e.target.value)} disabled={mustSpin} />
                 </div>
                 <button 
                   onClick={handleSpinClick} 
@@ -250,18 +279,35 @@ function App() {
           </div>
 
           <div className="list-section">
-            <h3>Characters ({filteredCharacters.length})</h3>
-            {filteredCharacters.map((char) => (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3>Characters ({filteredCharacters.length})</h3>
+              <input 
+                placeholder="Search..." 
+                value={listSearch} 
+                onChange={(e) => setListSearch(e.target.value)}
+                style={{ padding: '5px 10px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: '4px', width: '100px' }}
+              />
+            </div>
+            {visibleInSidebar.map((char) => (
               <div 
                 key={char.originalIndex} 
+                id={`char-${char.originalIndex}`}
                 className={`character-item ${selectedIndex === char.originalIndex ? 'highlight' : ''}`}
                 style={{ color: char.color !== '#ffffff' ? char.color : 'inherit' }}
               >
-                <span>{char.originalIndex + 1}. {char.name}</span>
+                <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginRight: '10px' }}>
+                  {char.originalIndex + 1}. {char.name}
+                </span>
                 <div className="weight-control">
-                  <button onClick={() => updateWeight(char.originalIndex, -1)} style={{ background: 'none', padding: '0 5px' }}>-</button>
-                  <span className="weight-input">{weights[char.originalIndex] || 1}x</span>
-                  <button onClick={() => updateWeight(char.originalIndex, 1)} style={{ background: 'none', padding: '0 5px' }}>+</button>
+                  <button onClick={() => setManualWeight(char.originalIndex, (weights[char.originalIndex] || 1) - 1)} disabled={mustSpin}>-</button>
+                  <input 
+                    type="number" 
+                    className="weight-input" 
+                    value={weights[char.originalIndex] || 1} 
+                    onChange={(e) => setManualWeight(char.originalIndex, parseInt(e.target.value) || 1)}
+                    disabled={mustSpin}
+                  />
+                  <button onClick={() => setManualWeight(char.originalIndex, (weights[char.originalIndex] || 1) + 1)} disabled={mustSpin}>+</button>
                 </div>
               </div>
             ))}
