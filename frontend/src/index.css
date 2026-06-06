@@ -373,12 +373,12 @@ h1 {
 }
 
 @keyframes glitch {
-  0% { transform: translate(0); text-shadow: -2px 0 red, 2px 0 blue; }
-  20% { transform: translate(-2px, 2px); text-shadow: -2px 0 red, 2px 0 blue; }
-  40% { transform: translate(-2px, -2px); text-shadow: 2px -2px red, -2px 2px blue; }
-  60% { transform: translate(2px, 2px); text-shadow: -2px 0 red, 2px 0 blue; }
-  80% { transform: translate(2px, -2px); text-shadow: 2px -2px red, -2px 2px blue; }
-  100% { transform: translate(0); }
+  0% { transform: translate(1px, 1px); text-shadow: -1px 0 red, 1px 0 blue; }
+  20% { transform: translate(-1px, 1px); text-shadow: -1px 0 red, 2px 0 blue; }
+  40% { transform: translate(-1px, -1px); text-shadow: 2px -1px red, -2px 1px blue; }
+  60% { transform: translate(1px, 1px); text-shadow: -1px 0 red, 1px 0 blue; }
+  80% { transform: translate(1px, -1px); text-shadow: 1px -1px red, -1px 1px blue; }
+  100% { transform: translate(1px, 1px); text-shadow: -1px 0 red, 1px 0 blue; }
 }
 
 @keyframes glitch-bg {
@@ -388,7 +388,14 @@ h1 {
 }
 
 .glitch-effect {
-  animation: glitch 1s cubic-bezier(.25, .46, .45, .94) both infinite;
+  animation: glitch 0.5s linear infinite; /* linear removes the easing pause */
+}
+
+@media (max-width: 768px) {
+  .glitch-effect {
+    animation-duration: 0.8s; /* Slower on mobile to reduce strain */
+    text-shadow: -1px 0 rgba(255,0,0,0.5), 1px 0 rgba(0,0,255,0.5) !important;
+  }
 }
 
 .glitch-overlay {
