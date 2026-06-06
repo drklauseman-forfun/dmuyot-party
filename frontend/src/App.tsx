@@ -186,14 +186,17 @@ function App() {
     if (!mustSpin && filteredCharacters.length > 0) {
       const finalCount = getNumericSpinCount();
       
-      if (finalCount > 1 || spinDuration === 0) {
+      // Fast Path: If count > 1 OR spinDuration is very low (< 0.2s), skip animation.
+      // This bypasses the wheel library's internal ~1s 'slow down' overhead.
+      if (finalCount > 1 || spinDuration < 0.2) {
+        const actualCount = finalCount;
         const newWinners: { name: string; index: number; color: string }[] = [];
-        for (let i = 0; i < finalCount; i++) {
+        for (let i = 0; i < actualCount; i++) {
           const idx = pickRandomIndex(filteredCharacters);
           const char = filteredCharacters[idx];
           newWinners.push({ name: char.name, index: char.originalIndex, color: char.color });
         }
-        if (finalCount === 1) {
+        if (actualCount === 1) {
           setSelectedIndex(newWinners[0].index);
           scrollToWinner(newWinners[0].index);
         }
