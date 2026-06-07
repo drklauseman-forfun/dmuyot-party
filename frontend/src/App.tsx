@@ -388,9 +388,9 @@ function App() {
   const wheelData = useMemo(() => {
     const isTooLarge = wheelCharacters.length > 25;
     return wheelCharacters.map((char) => ({ 
-      label: isTooLarge ? (char.originalIndex + 1).toString() : char.name,
+      label: isTooLarge ? (char.originalIndex + 1).toString() : `${char.originalIndex + 1}. ${char.name}`,
       color: char.color,
-      weight: Number(weights[char.originalIndex]) ?? 1
+      weight: getWeight(char.originalIndex)
     }));
   }, [wheelCharacters, weights]);
 
