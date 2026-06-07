@@ -43,14 +43,14 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
         }}
       >
         <Suspense fallback={null}>
-          {/* The Sun: Needs to be extremely bright for GodRays */}
+          {/* The Sun: Positioned high up for "From Above" effect */}
           <mesh 
             ref={setSun} 
-            position={[0, 3, -5]}
+            position={[0, 10, 0]}
           >
-            <sphereGeometry args={[1, 32, 32]} />
+            <sphereGeometry args={[2, 32, 32]} />
             <meshBasicMaterial 
-                color={[10, 8, 5]} // HDR Color (Super White/Gold)
+                color={[20, 15, 10]} // Even brighter HDR gold
                 toneMapped={false}
             />
           </mesh>
@@ -59,17 +59,17 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
           
           <EffectComposer multisampling={0}>
             <Bloom 
-              intensity={1.5} 
-              luminanceThreshold={1.0} 
+              intensity={2.0} 
+              luminanceThreshold={0.5} // Lowered to ensure rays are caught
               mipmapBlur
             />
             {sun && config.type === 'legendary' ? (
               <GodRays
                 sun={sun}
                 samples={100}
-                density={0.97}
-                decay={0.96}
-                weight={0.8}
+                density={0.98}
+                decay={0.97}
+                weight={1.0} // Max weight for thick rays
                 exposure={1.0}
                 clampMax={1}
                 blur
