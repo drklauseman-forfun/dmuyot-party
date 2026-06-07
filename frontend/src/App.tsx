@@ -2,6 +2,8 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import axios from 'axios';
 import CustomWheel from './CustomWheel';
 import './index.css';
+import EffectCanvas from './vfx/EffectCanvas';
+import type { EffectConfig } from './vfx/types';
 
 interface CharacterData {
   name: string;
@@ -137,6 +139,7 @@ function App() {
   
   // Special Visuals State
   const [activeEffect, setActiveEffect] = useState<string | null>(null);
+  const [vfxConfig, setVfxConfig] = useState<EffectConfig | null>(null);
 
   const SPECIAL_EFFECTS = [
     { trigger: 'דיבי', effect: 'hellish' },
@@ -196,6 +199,7 @@ function App() {
   const checkEffect = (winnersList: { name: string }[]) => {
     if (winnersList.length === 0) {
       setActiveEffect(null);
+      setVfxConfig(null);
       return;
     }
     const firstWinner = winnersList[0];
@@ -205,10 +209,16 @@ function App() {
       const nameStart = nameWords.slice(0, triggerWords.length).join(' ');
       if (nameStart === rule.trigger) {
         setActiveEffect(rule.effect);
+        setVfxConfig({
+          type: rule.effect as any,
+          characterName: firstWinner.name,
+          timestamp: Date.now()
+        });
         return;
       }
     }
     setActiveEffect(null);
+    setVfxConfig(null);
   };
 
   const clearHistory = () => {
@@ -357,6 +367,7 @@ function App() {
 
   return (
     <div className="app-container">
+      <EffectCanvas config={vfxConfig} onComplete={() => setVfxConfig(null)} />
       <header>
         <h1>Dmuyot Party</h1>
         <p className="subtitle">Random character selector for your next big adventure</p>
