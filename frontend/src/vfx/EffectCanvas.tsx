@@ -45,7 +45,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
               luminanceSmoothing={0.9} 
               height={300} 
             />
-            {config.type === 'hellish' && (
+            {config.type === 'hellish' ? (
               <Glitch
                 delay={[0.1, 0.5] as any}
                 duration={[0.1, 0.3] as any}
@@ -54,7 +54,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
                 active
                 ratio={0.85}
               />
-            )}
+            ) : <></>}
           </EffectComposer>
         </Suspense>
       </Canvas>

@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import { Sparkles, Float, Text, MeshDistortMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import gsap from 'gsap';
-import { EffectConfig } from '../types';
+import type { EffectConfig } from '../types';
 import RealisticFire from '../components/RealisticFire';
 
 interface ElfSummonProps {
