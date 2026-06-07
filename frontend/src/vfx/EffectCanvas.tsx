@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { EffectComposer, Bloom, GodRays } from '@react-three/postprocessing';
-import * as THREE from 'three';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import type { EffectConfig } from './types';
 import HellishEffect from './effects/HellishEffect';
 import ElfSummon from './effects/ElfSummon';
+import ShaderRays from './components/ShaderRays';
 
 interface EffectCanvasProps {
   config: EffectConfig | null;
@@ -13,8 +13,6 @@ interface EffectCanvasProps {
 }
 
 const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
-  const [sun, setSun] = useState<THREE.Mesh | null>(null);
-
   return (
     <div style={{
       position: 'fixed',
@@ -23,55 +21,39 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       right: 0,
       bottom: 0,
       pointerEvents: 'none',
-      zIndex: 1010, // Above overlay (1000), below modal (1100)
+      zIndex: 900, // COMPLETELY BEHIND THE UI
       background: 'transparent',
-      display: config ? 'block' : 'none'
+      visibility: config ? 'visible' : 'hidden',
+      opacity: config ? 1 : 0,
+      transition: 'opacity 0.5s ease'
     }}>
       <Canvas
         camera={{ position: [0, 0, 5], fov: 45 }}
         gl={{ 
             alpha: true, 
-            antialias: true,
-            toneMapping: THREE.NoToneMapping
+            antialias: false, // Better mobile performance
+            powerPreference: "high-performance"
         }}
         style={{ pointerEvents: 'none' }}
       >
-        <ambientLight intensity={0.5} />
-        
-        {/* Production Sun for GodRays */}
-        <mesh 
-            ref={setSun} 
-            position={[0, 4, -3]} 
-        >
-            <sphereGeometry args={[1, 32, 32]} />
-            <meshBasicMaterial 
-                color={[10, 8, 4]} 
-                toneMapped={false}
-                transparent
-                opacity={0.5} // Slightly transparent so it's not a hard circle
+        <Suspense fallback={null}>
+          <ambientLight intensity={0.8} />
+          
+          {/* Guaranteed Visible Rays using Shader */}
+          {config?.type === 'legendary' && (
+            <ShaderRays position={[0, 4, -5]} color="#ffd700" />
+          )}
+          
+          {config && <EffectSwitcher config={config} onComplete={onComplete} />}
+          
+          <EffectComposer>
+            <Bloom 
+              intensity={1.0} 
+              luminanceThreshold={0.5}
+              mipmapBlur
             />
-        </mesh>
-        
-        {config && <EffectSwitcher config={config} onComplete={onComplete} />}
-        
-        <EffectComposer multisampling={0}>
-          <Bloom 
-            intensity={2.0} 
-            luminanceThreshold={0.2}
-            mipmapBlur
-          />
-          {sun && config?.type === 'legendary' ? (
-            <GodRays
-              sun={sun}
-              samples={60}
-              density={0.96}
-              decay={0.9}
-              weight={1.0}
-              exposure={0.8}
-              blur
-            />
-          ) : <></>}
-        </EffectComposer>
+          </EffectComposer>
+        </Suspense>
       </Canvas>
     </div>
   );
