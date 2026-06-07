@@ -1,6 +1,6 @@
 
-import React, { Suspense, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
+import React, { Suspense, useState, useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { EffectComposer, Bloom, GodRays } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import type { EffectConfig } from './types';
@@ -12,11 +12,26 @@ interface EffectCanvasProps {
   onComplete: () => void;
 }
 
+const DebugCube = () => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.x = state.clock.getElapsedTime();
+      meshRef.current.rotation.y = state.clock.getElapsedTime();
+    }
+  });
+  return (
+    <mesh ref={meshRef} position={[-2, 0, 0]}>
+      <boxGeometry args={[0.5, 0.5, 0.5]} />
+      <meshBasicMaterial color="red" />
+    </mesh>
+  );
+};
+
 const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
   const [sun, setSun] = useState<THREE.Mesh | null>(null);
 
-  if (!config) return null;
-
+  // We keep the Canvas alive to avoid context loss, but only show it when config exists
   return (
     <div style={{
       position: 'fixed',
@@ -25,8 +40,9 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       width: '100vw',
       height: '100vh',
       pointerEvents: 'none',
-      zIndex: 1010,
-      background: 'transparent'
+      zIndex: 1050, // Higher than dark overlay (1000)
+      background: 'transparent',
+      display: config ? 'block' : 'none'
     }}>
       <Canvas
         shadows
@@ -38,34 +54,30 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
             toneMapping: THREE.NoToneMapping 
         }}
         style={{ pointerEvents: 'none' }}
-        onCreated={({ gl }) => {
-          gl.setClearColor(0x000000, 0);
-        }}
       >
         <Suspense fallback={null}>
-          {/* VISIBLE SUN: Critical for GodRays to have a bright source in the frustum */}
+          <DebugCube />
+          
           <mesh 
             ref={setSun} 
             position={[0, 4, -2]} 
           >
-            <sphereGeometry args={[0.5, 32, 32]} />
+            <sphereGeometry args={[0.8, 32, 32]} />
             <meshBasicMaterial 
-                color={[50, 40, 20]} // Extremely bright HDR value
+                color={[100, 80, 40]} // Ultra bright HDR
                 toneMapped={false}
-                transparent
-                opacity={1}
             />
           </mesh>
           
-          <EffectSwitcher config={config} onComplete={onComplete} />
+          {config && <EffectSwitcher config={config} onComplete={onComplete} />}
           
           <EffectComposer multisampling={0}>
             <Bloom 
-              intensity={2.5} 
-              luminanceThreshold={0.1} // Catch everything bright
+              intensity={2.0} 
+              luminanceThreshold={0.1}
               mipmapBlur
             />
-            {sun && config.type === 'legendary' ? (
+            {sun && config?.type === 'legendary' ? (
               <GodRays
                 sun={sun}
                 samples={60}
