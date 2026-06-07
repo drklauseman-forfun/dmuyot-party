@@ -511,7 +511,7 @@ function App() {
                   {char.originalIndex + 1}. {char.name}
                 </span>
                 <div className="weight-control">
-                  <button onClick={() => setManualWeight(char.originalIndex, (Number(weights[char.originalIndex]) || 1) - 1)} disabled={mustSpin}>-</button>
+                  <button onClick={() => setManualWeight(char.originalIndex, (Number(weights[char.originalIndex]) ?? 1) - 1)} disabled={mustSpin}>-</button>
                   <input 
                     type="number" 
                     className="weight-input" 
@@ -520,7 +520,7 @@ function App() {
                     onBlur={(e) => { if (!e.target.value) setManualWeight(char.originalIndex, 1); }}
                     disabled={mustSpin}
                   />
-                  <button onClick={() => setManualWeight(char.originalIndex, (Number(weights[char.originalIndex]) || 1) + 1)} disabled={mustSpin}>+</button>
+                  <button onClick={() => setManualWeight(char.originalIndex, (Number(weights[char.originalIndex]) ?? 1) + 1)} disabled={mustSpin}>+</button>
                 </div>
               </div>
             ))}
