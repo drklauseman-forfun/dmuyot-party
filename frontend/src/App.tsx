@@ -208,7 +208,7 @@ function App() {
     const normalizedName = firstWinner.name.trim();
     
     for (const rule of SPECIAL_EFFECTS) {
-      if (normalizedName.includes(rule.trigger)) {
+      if (normalizedName.toLowerCase().startsWith(rule.trigger.toLowerCase())) {
         setActiveEffect(rule.effect);
         setVfxConfig({
           type: rule.effect as any,
