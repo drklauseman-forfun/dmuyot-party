@@ -1,8 +1,6 @@
 
-import React, { useRef, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import React, { useEffect } from 'react';
 import { Sparkles } from '@react-three/drei';
-import * as THREE from 'three';
 import gsap from 'gsap';
 import type { EffectConfig } from '../types';
 import RealisticFire from '../components/RealisticFire';
