@@ -56,29 +56,29 @@ const ElfSummon: React.FC<ElfSummonProps> = ({ config, onComplete }) => {
       <pointLight position={[0, 2, 2]} intensity={2} color="#00ff88" />
 
       {/* Realistic Fire at the base */}
-      <RealisticFire position={[0, -2, 0]} scale={2} />
+      <RealisticFire position={[0, -1, 0]} scale={5} />
 
       {/* The "Elf" Soul */}
-      <mesh ref={soulRef} position={[0, 0, 0]}>
+      <mesh ref={soulRef} position={[0, 1, 0]}>
         <sphereGeometry args={[0.5, 32, 32]} />
         <MeshDistortMaterial
           color="#00ffcc"
           speed={3}
           distort={0.4}
           radius={1}
-          emissive="#004422"
-          emissiveIntensity={2}
+          emissive="#00ff88"
+          emissiveIntensity={5}
         />
       </mesh>
 
       {/* Pointy "Ears" (Cylinders) */}
-      <mesh position={[0.4, 0.4, 0]} rotation={[0, 0, -0.5]}>
+      <mesh position={[0.4, 1.4, 0]} rotation={[0, 0, -0.5]}>
         <cylinderGeometry args={[0, 0.1, 0.8]} />
-        <meshStandardMaterial color="#00ffcc" emissive="#00ffcc" />
+        <meshStandardMaterial color="#00ffcc" emissive="#00ffcc" emissiveIntensity={2} />
       </mesh>
-      <mesh position={[-0.4, 0.4, 0]} rotation={[0, 0, 0.5]}>
+      <mesh position={[-0.4, 1.4, 0]} rotation={[0, 0, 0.5]}>
         <cylinderGeometry args={[0, 0.1, 0.8]} />
-        <meshStandardMaterial color="#00ffcc" emissive="#00ffcc" />
+        <meshStandardMaterial color="#00ffcc" emissive="#00ffcc" emissiveIntensity={2} />
       </mesh>
 
       <Sparkles 

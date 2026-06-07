@@ -29,7 +29,7 @@ const fragmentShader = `
     float fire = 1.0 - smoothstep(0.0, 0.7, length(uv - vec2(0.5, 0.2)));
     fire *= noise(uv * 10.0 - time * 2.0);
     
-    vec3 fireColor = mix(vec3(1.0, 0.1, 0.0), vec3(1.0, 0.8, 0.0), fire);
+    vec3 fireColor = mix(vec3(5.0, 0.5, 0.0), vec3(5.0, 4.0, 0.0), fire);
     float alpha = smoothstep(0.1, 0.5, fire * (1.0 - uv.y));
     
     gl_FragColor = vec4(fireColor, alpha);

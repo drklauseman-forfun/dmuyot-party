@@ -345,10 +345,35 @@ h1 {
   background-color: rgba(20, 0, 0, 0.95) !important;
 }
 
+.elf-modal {
+  border-color: #00ff88 !important;
+  box-shadow: 0 0 50px #00ff88, 0 0 80px rgba(0, 255, 136, 0.3) !important;
+  background-color: rgba(0, 20, 10, 0.95) !important;
+}
+
+.legendary-modal {
+  border-color: #ffd700 !important;
+  box-shadow: 0 0 60px #ffd700, 0 0 120px rgba(255, 215, 0, 0.4) !important;
+  background-color: rgba(25, 25, 0, 0.95) !important;
+}
+
 .hellish-text {
   color: #ff0000 !important;
   text-shadow: 0 0 10px #ff4500;
   font-family: 'Georgia', serif;
+}
+
+.elf-text {
+  color: #00ff88 !important;
+  text-shadow: 0 0 10px #00ff44;
+  font-family: 'Trebuchet MS', sans-serif;
+}
+
+.legendary-text {
+  color: #ffd700 !important;
+  text-shadow: 0 0 15px #ffffff;
+  font-family: 'Palatino', serif;
+  letter-spacing: 2px;
 }
 
 .fire-emoji {

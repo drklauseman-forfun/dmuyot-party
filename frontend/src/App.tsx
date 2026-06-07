@@ -205,11 +205,10 @@ function App() {
       return;
     }
     const firstWinner = winnersList[0];
-    const nameWords = firstWinner.name.trim().split(/\s+/);
+    const normalizedName = firstWinner.name.trim();
+    
     for (const rule of SPECIAL_EFFECTS) {
-      const triggerWords = rule.trigger.trim().split(/\s+/);
-      const nameStart = nameWords.slice(0, triggerWords.length).join(' ');
-      if (nameStart === rule.trigger) {
+      if (normalizedName.includes(rule.trigger)) {
         setActiveEffect(rule.effect);
         setVfxConfig({
           type: rule.effect as any,
@@ -561,24 +560,48 @@ function App() {
           {activeEffect === 'hellish' && <FireParticles />}
           {activeEffect === 'hellish' && <div className="glitch-overlay" />}
           <div 
-            className={`results-modal ${activeEffect === 'hellish' ? 'hellish-modal shake-effect' : ''}`}
+            className={`results-modal ${
+                activeEffect === 'hellish' ? 'hellish-modal shake-effect' : 
+                activeEffect === 'elf' ? 'elf-modal' : 
+                activeEffect === 'legendary' ? 'legendary-modal' : ''
+            }`}
             onClick={e => e.stopPropagation()}
             style={{
               borderColor: activeEffect === 'hellish' ? '#ff0000' : (winners[0]?.color || '#646cff'),
               boxShadow: activeEffect === 'hellish' ? '0 0 50px #ff0000' : `0 0 30px ${winners[0]?.color || '#646cff'}66`,
-              backgroundColor: activeEffect === 'hellish' ? 'rgba(30, 0, 0, 0.95)' : (winners[0]?.color ? `${winners[0].color}1a` : '#1e1e1e'), 
+              backgroundColor: 
+                activeEffect === 'hellish' ? 'rgba(30, 0, 0, 0.95)' : 
+                activeEffect === 'elf' ? 'rgba(0, 30, 15, 0.95)' :
+                activeEffect === 'legendary' ? 'rgba(30, 30, 0, 0.95)' :
+                (winners[0]?.color ? `${winners[0].color}1a` : '#1e1e1e'), 
               backdropFilter: 'blur(10px)'
             }}
           >
-            <h2 className={`${activeEffect === 'hellish' ? 'hellish-text glitch-effect' : ''}`}>
-              {activeEffect === 'hellish' ? '🔱 SATAN THE ALL POWERFUL 🔱' : '🎊 The Results are In! 🎊'}
+            <h2 className={`
+                ${activeEffect === 'hellish' ? 'hellish-text glitch-effect' : ''}
+                ${activeEffect === 'elf' ? 'elf-text' : ''}
+                ${activeEffect === 'legendary' ? 'legendary-text' : ''}
+            `}>
+              {activeEffect === 'hellish' ? '🔱 SATAN THE ALL POWERFUL 🔱' : 
+               activeEffect === 'elf' ? '🧝 ANCIENT SUMMON 🧝' :
+               activeEffect === 'legendary' ? '✨ LEGENDARY HERO ✨' :
+               '🎊 The Results are In! 🎊'}
             </h2>
             <div className="results-list" style={{ position: 'relative', zIndex: 2 }}>
               {winners.map((winner, i) => (
                 <div 
                   key={i} 
-                  className={`result-winner ${activeEffect === 'hellish' ? 'hellish-text' : ''}`} 
-                  style={{ color: activeEffect === 'hellish' ? '#ff0000' : (winner.color !== '#ffffff' ? winner.color : '#ffffff') }}
+                  className={`result-winner 
+                    ${activeEffect === 'hellish' ? 'hellish-text' : ''}
+                    ${activeEffect === 'elf' ? 'elf-text' : ''}
+                    ${activeEffect === 'legendary' ? 'legendary-text' : ''}
+                  `} 
+                  style={{ color: 
+                    activeEffect === 'hellish' ? '#ff0000' : 
+                    activeEffect === 'elf' ? '#00ff88' :
+                    activeEffect === 'legendary' ? '#ffd700' :
+                    (winner.color !== '#ffffff' ? winner.color : '#ffffff') 
+                  }}
                 >
                   {winners.length > 1 && <span style={{ fontSize: '0.9rem', color: '#888', marginRight: '0.5rem' }}>#{i + 1}</span>}
                   <span style={{ color: '#888', marginRight: '0.5rem' }}>[{winner.index + 1}]</span>
@@ -589,8 +612,12 @@ function App() {
             <button 
               onClick={() => setShowModal(false)}
               style={{
-                background: activeEffect === 'hellish' ? '#ff0000' : '#646cff',
-                color: '#fff',
+                background: 
+                    activeEffect === 'hellish' ? '#ff0000' : 
+                    activeEffect === 'elf' ? '#00ff88' :
+                    activeEffect === 'legendary' ? '#ffd700' :
+                    '#646cff',
+                color: activeEffect === 'elf' || activeEffect === 'legendary' ? '#000' : '#fff',
                 fontWeight: 'bold',
                 marginTop: '1.5rem',
                 padding: '0.8rem 2rem',
