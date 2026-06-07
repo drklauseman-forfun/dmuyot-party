@@ -35,7 +35,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
             antialias: true, 
             alpha: true,
             powerPreference: "high-performance",
-            toneMapping: THREE.NoToneMapping // Important for HDR colors
+            toneMapping: THREE.NoToneMapping 
         }}
         style={{ pointerEvents: 'none' }}
         onCreated={({ gl }) => {
@@ -43,15 +43,17 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
         }}
       >
         <Suspense fallback={null}>
-          {/* The Sun: Positioned high up for "From Above" effect */}
+          {/* VISIBLE SUN: Critical for GodRays to have a bright source in the frustum */}
           <mesh 
             ref={setSun} 
-            position={[0, 10, 0]}
+            position={[0, 4, -2]} 
           >
-            <sphereGeometry args={[2, 32, 32]} />
+            <sphereGeometry args={[0.5, 32, 32]} />
             <meshBasicMaterial 
-                color={[20, 15, 10]} // Even brighter HDR gold
+                color={[50, 40, 20]} // Extremely bright HDR value
                 toneMapped={false}
+                transparent
+                opacity={1}
             />
           </mesh>
           
@@ -59,18 +61,18 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
           
           <EffectComposer multisampling={0}>
             <Bloom 
-              intensity={2.0} 
-              luminanceThreshold={0.5} // Lowered to ensure rays are caught
+              intensity={2.5} 
+              luminanceThreshold={0.1} // Catch everything bright
               mipmapBlur
             />
             {sun && config.type === 'legendary' ? (
               <GodRays
                 sun={sun}
-                samples={100}
-                density={0.98}
-                decay={0.97}
-                weight={1.0} // Max weight for thick rays
-                exposure={1.0}
+                samples={60}
+                density={0.96}
+                decay={0.9}
+                weight={0.8}
+                exposure={0.8}
                 clampMax={1}
                 blur
               />
