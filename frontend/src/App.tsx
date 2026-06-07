@@ -311,7 +311,7 @@ function App() {
 
   const pickRandomIndex = (list: CharacterData[]) => {
     const totalWeight = list.reduce((acc, c) => acc + (Number(weights[c.originalIndex]) ?? 1), 0);
-    if (totalWeight <= 0) return -1; // Special case for all zero weights
+    if (totalWeight <= 0) return -1; 
 
     let random = Math.random() * totalWeight;
     for (let i = 0; i < list.length; i++) {
@@ -322,6 +322,10 @@ function App() {
     return Math.floor(Math.random() * list.length);
   };
 
+  const wheelCharacters = useMemo(() => {
+    return filteredCharacters.filter(char => (Number(weights[char.originalIndex]) ?? 1) > 0);
+  }, [filteredCharacters, weights]);
+
   const handleSpinClick = () => {
     if (!mustSpin && filteredCharacters.length > 0) {
       const finalCount = getNumericSpinCount();
@@ -330,11 +334,11 @@ function App() {
         const actualCount = finalCount;
         const newWinners: { name: string; index: number; color: string }[] = [];
         for (let i = 0; i < actualCount; i++) {
-          const idx = pickRandomIndex(filteredCharacters);
+          const idx = pickRandomIndex(wheelCharacters);
           if (idx === -1) {
             newWinners.push({ name: 'VOID', index: -1, color: '#ff00ff' });
           } else {
-            const char = filteredCharacters[idx];
+            const char = wheelCharacters[idx];
             newWinners.push({ name: char.name, index: char.originalIndex, color: char.color });
           }
         }
@@ -346,7 +350,7 @@ function App() {
         setShowModal(true);
         addToHistory(newWinners);
       } else {
-        const newPrizeNumber = pickRandomIndex(filteredCharacters);
+        const newPrizeNumber = pickRandomIndex(wheelCharacters);
         if (newPrizeNumber === -1) {
           const voidWinner = { name: 'VOID', index: -1, color: '#ff00ff' };
           setWinners([voidWinner]);
@@ -376,13 +380,13 @@ function App() {
   };
 
   const wheelData = useMemo(() => {
-    const isTooLarge = filteredCharacters.length > 25;
-    return filteredCharacters.map((char) => ({ 
+    const isTooLarge = wheelCharacters.length > 25;
+    return wheelCharacters.map((char) => ({ 
       label: isTooLarge ? (char.originalIndex + 1).toString() : char.name,
       color: char.color,
-      weight: Number(weights[char.originalIndex]) || 1
+      weight: Number(weights[char.originalIndex]) ?? 1
     }));
-  }, [filteredCharacters, weights]);
+  }, [wheelCharacters, weights]);
 
   return (
     <div className="app-container">
@@ -443,14 +447,14 @@ function App() {
                 </button>
               )}
               <CustomWheel
-                key={`wheel-${filteredCharacters.length}-${rangeInput}`} 
+                key={`wheel-${wheelCharacters.length}-${rangeInput}`} 
                 mustSpin={mustSpin}
                 prizeIndex={prizeNumber}
                 data={wheelData}
                 spinDuration={spinDuration}
                 onStopSpinning={() => {
                   setMustSpin(false);
-                  const winner = filteredCharacters[prizeNumber];
+                  const winner = wheelCharacters[prizeNumber];
                   setSelectedIndex(winner.originalIndex);
                   const winnerObj = { name: winner.name, index: winner.originalIndex, color: winner.color };
                   setWinners([winnerObj]);
@@ -483,7 +487,7 @@ function App() {
                 <h3 style={{ margin: 0 }}>Characters ({filteredCharacters.length})</h3>
                 <button 
                   onClick={resetWeights}
-                  style={{ padding: '2px 8px', fontSize: '0.7rem', background: '#333', border: '1px solid #444' }}
+                  style={{ padding: '2px 8px', fontSize: '0.7rem', background: '#333', border: '1px solid #444', borderRadius: '4px', cursor: 'pointer' }}
                   title="Reset all weights to 1"
                 >
                   Reset
