@@ -199,6 +199,7 @@ function App() {
   };
 
   const checkEffect = (winnersList: { name: string }[]) => {
+    console.log("🎯 [EFFECT] Checking effects for:", winnersList[0]?.name);
     if (winnersList.length === 0) {
       setActiveEffect(null);
       setVfxConfig(null);
@@ -209,6 +210,7 @@ function App() {
     
     for (const rule of SPECIAL_EFFECTS) {
       if (normalizedName.toLowerCase().startsWith(rule.trigger.toLowerCase())) {
+        console.log("🔥 [EFFECT] Trigger found:", rule.trigger, "->", rule.effect);
         setActiveEffect(rule.effect);
         setVfxConfig({
           type: rule.effect as any,
@@ -218,6 +220,7 @@ function App() {
         return;
       }
     }
+    console.log("⚪ [EFFECT] No special trigger matched.");
     setActiveEffect(null);
     setVfxConfig(null);
   };

@@ -13,6 +13,7 @@ interface EffectCanvasProps {
 }
 
 const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
+  console.log("🎨 [VFX] Rendering Canvas with config:", config?.type);
   return (
     <div style={{
       position: 'fixed',
@@ -21,7 +22,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       right: 0,
       bottom: 0,
       pointerEvents: 'none',
-      zIndex: 900,
+      zIndex: 2000, // TOP OF EVERYTHING
       background: 'transparent',
       visibility: config ? 'visible' : 'hidden',
       opacity: config ? 1 : 0,
@@ -34,6 +35,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
             antialias: false,
             powerPreference: "high-performance"
         }}
+        onCreated={() => console.log("🎮 [VFX] WebGL Context Created")}
         style={{ pointerEvents: 'none' }}
       >
         <Suspense fallback={null}>
