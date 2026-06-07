@@ -143,6 +143,8 @@ function App() {
 
   const SPECIAL_EFFECTS = [
     { trigger: 'דיבי', effect: 'hellish' },
+    { trigger: 'אלף', effect: 'elf' },
+    { trigger: 'לגנדרי', effect: 'legendary' },
   ];
 
   useEffect(() => {

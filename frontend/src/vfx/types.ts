@@ -1,5 +1,5 @@
 
-export type EffectType = 'hellish' | 'glow' | 'explosion' | 'void';
+export type EffectType = 'hellish' | 'glow' | 'explosion' | 'void' | 'legendary' | 'elf';
 
 export interface EffectConfig {
   type: EffectType;

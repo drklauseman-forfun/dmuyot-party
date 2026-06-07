@@ -1,8 +1,11 @@
 
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
+import { EffectComposer, Bloom, Glitch } from '@react-three/postprocessing';
+import { GlitchMode } from 'postprocessing';
 import type { EffectConfig } from './types';
 import HellishEffect from './effects/HellishEffect';
+import ElfSummon from './effects/ElfSummon';
 
 interface EffectCanvasProps {
   config: EffectConfig | null;
@@ -34,6 +37,25 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       >
         <Suspense fallback={null}>
           <EffectSwitcher config={config} onComplete={onComplete} />
+          
+          <EffectComposer>
+            <Bloom 
+              intensity={1.5} 
+              luminanceThreshold={0.2} 
+              luminanceSmoothing={0.9} 
+              height={300} 
+            />
+            {config.type === 'hellish' && (
+              <Glitch
+                delay={[0.1, 0.5] as any}
+                duration={[0.1, 0.3] as any}
+                strength={[0.1, 0.3] as any}
+                mode={GlitchMode.SPORADIC}
+                active
+                ratio={0.85}
+              />
+            )}
+          </EffectComposer>
         </Suspense>
       </Canvas>
     </div>
@@ -44,6 +66,9 @@ const EffectSwitcher: React.FC<{ config: EffectConfig; onComplete: () => void }>
   switch (config.type) {
     case 'hellish':
       return <HellishEffect config={config} onComplete={onComplete} />;
+    case 'elf':
+    case 'legendary':
+      return <ElfSummon config={config} onComplete={onComplete} />;
     default:
       return null;
   }
