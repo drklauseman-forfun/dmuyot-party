@@ -21,13 +21,14 @@ const fragmentShader = `
     float dist = length(p);
     
     // Create thick, rotating beams
-    float beams = sin(angle * 8.0 + time) * 0.5 + 0.5;
-    beams *= (1.0 - dist * 0.5); // Fade out towards edges
+    float beams = sin(angle * 6.0 + time) * 0.5 + 0.5;
+    beams = pow(beams, 2.0); // Sharpen the rays
+    beams *= (1.2 - dist); // Fade out towards edges
     
-    vec3 goldColor = vec3(1.0, 0.8, 0.2);
-    vec3 finalColor = goldColor * beams * 1.5;
+    vec3 goldColor = vec3(1.0, 0.9, 0.3);
+    vec3 finalColor = goldColor * beams * 3.0; // Overdrive for Bloom
     
-    gl_FragColor = vec4(finalColor, beams * 0.7);
+    gl_FragColor = vec4(finalColor, beams * 0.9);
   }
 `;
 

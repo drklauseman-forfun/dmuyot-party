@@ -136,28 +136,26 @@ const HellishEffect: React.FC<HellishEffectProps> = ({ config, onComplete }) => 
       <group ref={coreRef}>
         <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
             <Text
-            fontSize={0.6}
-            color="#ff0000"
-            anchorX="center"
-            anchorY="middle"
-            maxWidth={4}
-            textAlign="center"
-            outlineWidth={0.04}
-            outlineColor="#220000"
-            font="https://fonts.gstatic.com/s/pressstart2p/v15/e3t4euO8jc-yh3Ufw7zXotu8.woff" // Pixel font for "High End" feel
+              fontSize={0.6}
+              color="#ff0000"
+              anchorX="center"
+              anchorY="middle"
+              maxWidth={4}
+              textAlign="center"
+              outlineWidth={0.04}
+              outlineColor="#220000"
             >
-            {config.characterName.toUpperCase()}
+              {config.characterName.toUpperCase()}
             </Text>
-            
+
             <Text
-            position={[0, -0.8, 0]}
-            fontSize={0.25}
-            color="#ffcc00"
-            anchorX="center"
-            anchorY="middle"
-            font="https://fonts.gstatic.com/s/pressstart2p/v15/e3t4euO8jc-yh3Ufw7zXotu8.woff"
+              position={[0, -0.8, 0]}
+              fontSize={0.25}
+              color="#ffcc00"
+              anchorX="center"
+              anchorY="middle"
             >
-            {"< HELLISH RARE >"}
+              {"< HELLISH RARE >"}
             </Text>
         </Float>
 

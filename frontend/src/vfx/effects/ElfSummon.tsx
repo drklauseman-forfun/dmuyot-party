@@ -99,7 +99,6 @@ const ElfSummon: React.FC<ElfSummonProps> = ({ config, onComplete }) => {
           textAlign="center"
           outlineWidth={0.04}
           outlineColor="#002211"
-          font="https://fonts.gstatic.com/s/pressstart2p/v15/e3t4euO8jc-yh3Ufw7zXotu8.woff"
         >
           {config.characterName.toUpperCase()}
         </Text>

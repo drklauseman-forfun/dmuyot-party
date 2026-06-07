@@ -14,6 +14,7 @@ interface EffectCanvasProps {
 
 const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
   console.log("🎨 [VFX] Rendering Canvas with config:", config?.type);
+  
   return (
     <div style={{
       position: 'fixed',
@@ -22,7 +23,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       right: 0,
       bottom: 0,
       pointerEvents: 'none',
-      zIndex: 2000, // TOP OF EVERYTHING
+      zIndex: 2000,
       background: 'transparent',
       visibility: config ? 'visible' : 'hidden',
       opacity: config ? 1 : 0,
@@ -38,24 +39,24 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
         onCreated={() => console.log("🎮 [VFX] WebGL Context Created")}
         style={{ pointerEvents: 'none' }}
       >
+        <ambientLight intensity={1.0} />
+        
+        {/* CORE BACKGROUND EFFECT: Outside Suspense for stability */}
+        {config?.type === 'legendary' && (
+          <SunBeamBackground />
+        )}
+        
         <Suspense fallback={null}>
-          <ambientLight intensity={1.0} />
-          
-          {/* Guaranteed Full-Screen Sunburst */}
-          {config?.type === 'legendary' && (
-            <SunBeamBackground />
-          )}
-          
           {config && <EffectSwitcher config={config} onComplete={onComplete} />}
-          
-          <EffectComposer>
-            <Bloom 
-              intensity={1.5} 
-              luminanceThreshold={0.2}
-              mipmapBlur
-            />
-          </EffectComposer>
         </Suspense>
+
+        <EffectComposer>
+          <Bloom 
+            intensity={1.5} 
+            luminanceThreshold={0.2}
+            mipmapBlur
+          />
+        </EffectComposer>
       </Canvas>
     </div>
   );
