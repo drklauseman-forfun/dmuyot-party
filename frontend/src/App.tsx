@@ -309,13 +309,19 @@ function App() {
     );
   }, [filteredCharacters, listSearch]);
 
+  const getWeight = (originalIndex: number) => {
+    const w = weights[originalIndex];
+    if (w === undefined || w === '') return 1;
+    return Number(w);
+  };
+
   const pickRandomIndex = (list: CharacterData[]) => {
-    const totalWeight = list.reduce((acc, c) => acc + (Number(weights[c.originalIndex]) ?? 1), 0);
+    const totalWeight = list.reduce((acc, c) => acc + getWeight(c.originalIndex), 0);
     if (totalWeight <= 0) return -1; 
 
     let random = Math.random() * totalWeight;
     for (let i = 0; i < list.length; i++) {
-      const weight = Number(weights[list[i].originalIndex]) ?? 1;
+      const weight = getWeight(list[i].originalIndex);
       if (random < weight) return i;
       random -= weight;
     }
@@ -323,7 +329,7 @@ function App() {
   };
 
   const wheelCharacters = useMemo(() => {
-    return filteredCharacters.filter(char => (Number(weights[char.originalIndex]) ?? 1) > 0);
+    return filteredCharacters.filter(char => getWeight(char.originalIndex) > 0);
   }, [filteredCharacters, weights]);
 
   const handleSpinClick = () => {
