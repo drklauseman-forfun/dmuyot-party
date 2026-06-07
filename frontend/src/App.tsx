@@ -1,7 +1,9 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import axios from 'axios';
 import CustomWheel from './CustomWheel';
 import './index.css';
+import EffectCanvas from './vfx/EffectCanvas';
+import type { EffectConfig } from './vfx/types';
 
 interface CharacterData {
   name: string;
@@ -12,105 +14,6 @@ interface CharacterData {
 interface ExtractionResponse {
   characters: { name: string; color: string }[];
 }
-
-const FireParticles = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let animationFrameId: number;
-    const particles: any[] = [];
-    const particleCount = 200; 
-
-    const resize = () => {
-      if (!canvas) return;
-      // Force the canvas to the absolute window dimensions
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    class Particle {
-      x: number; y: number; size: number; speedY: number; speedX: number; color: string; life: number; fadeSpeed: number;
-      constructor(initialY?: number) {
-        if (!canvas) {
-          this.x = 0; this.y = 0; this.size = 0; this.speedY = 0; this.speedX = 0; this.color = ''; this.life = 0; this.fadeSpeed = 0;
-          return;
-        }
-        // Spread evenly across the TRUE canvas width
-        this.x = Math.random() * canvas.width;
-        // Start below the TRUE canvas height
-        this.y = initialY !== undefined ? initialY : canvas.height + Math.random() * 200; 
-        this.size = Math.random() * 5 + 1;
-        this.speedY = Math.random() * -6 - 3; 
-        this.speedX = Math.random() * 3 - 1.5;
-        const colors = ['#ff4500', '#ff8c00', '#ffd700', '#ff0000', '#ffae42', '#e25822'];
-        this.color = colors[Math.floor(Math.random() * colors.length)];
-        this.life = 1.0;
-        this.fadeSpeed = Math.random() * 0.004 + 0.002; 
-      }
-      update() {
-        this.y += this.speedY;
-        this.x += this.speedX;
-        this.life -= this.fadeSpeed;
-      }
-      draw() {
-        if (!ctx) return;
-        ctx.globalAlpha = Math.max(0, this.life);
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = this.color;
-      }
-    }
-
-    // Initialize with a variety of heights
-    for (let i = 0; i < particleCount; i++) {
-      particles.push(new Particle(Math.random() * (window.innerHeight + 500)));
-    }
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw();
-        if (particles[i].life <= 0 || (particles[i].y + 50) < 0) {
-          particles[i] = new Particle();
-        }
-      }
-      animationFrameId = requestAnimationFrame(animate);
-    };
-    animate();
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', resize);
-    };
-  }, []);
-
-  return (
-    <canvas 
-      ref={canvasRef} 
-      style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        width: '100vw', 
-        height: '100vh', 
-        pointerEvents: 'none', 
-        zIndex: 1050,
-        background: 'transparent'
-      }} 
-    />
-  );
-};
 
 function App() {
   const [input, setInput] = useState('');
@@ -137,6 +40,7 @@ function App() {
   
   // Special Visuals State
   const [activeEffect, setActiveEffect] = useState<string | null>(null);
+  const [vfxConfig, setVfxConfig] = useState<EffectConfig | null>(null);
 
   const SPECIAL_EFFECTS = [
     { trigger: 'דיבי', effect: 'hellish' },
@@ -196,6 +100,7 @@ function App() {
   const checkEffect = (winnersList: { name: string }[]) => {
     if (winnersList.length === 0) {
       setActiveEffect(null);
+      setVfxConfig(null);
       return;
     }
     const firstWinner = winnersList[0];
@@ -205,10 +110,16 @@ function App() {
       const nameStart = nameWords.slice(0, triggerWords.length).join(' ');
       if (nameStart === rule.trigger) {
         setActiveEffect(rule.effect);
+        setVfxConfig({
+          type: rule.effect as any,
+          characterName: firstWinner.name,
+          timestamp: Date.now()
+        });
         return;
       }
     }
     setActiveEffect(null);
+    setVfxConfig(null);
   };
 
   const clearHistory = () => {
@@ -357,6 +268,7 @@ function App() {
 
   return (
     <div className="app-container">
+      <EffectCanvas config={vfxConfig} onComplete={() => setVfxConfig(null)} />
       <header>
         <h1>Dmuyot Party</h1>
         <p className="subtitle">Random character selector for your next big adventure</p>
@@ -545,7 +457,6 @@ function App() {
 
       {showModal && (
         <div className="results-overlay" onClick={() => setShowModal(false)}>
-          {activeEffect === 'hellish' && <FireParticles />}
           {activeEffect === 'hellish' && <div className="glitch-overlay" />}
           <div 
             className={`results-modal ${activeEffect === 'hellish' ? 'hellish-modal shake-effect' : ''}`}
