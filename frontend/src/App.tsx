@@ -453,7 +453,7 @@ function App() {
                 </button>
               )}
               <CustomWheel
-                key={`wheel-${wheelCharacters.length}-${rangeInput}`} 
+                key={`wheel-${wheelCharacters.length}-${JSON.stringify(weights)}-${rangeInput}`} 
                 mustSpin={mustSpin}
                 prizeIndex={prizeNumber}
                 data={wheelData}
