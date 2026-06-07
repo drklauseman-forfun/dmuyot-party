@@ -185,7 +185,7 @@ function App() {
       newWeights[originalIndex] = '';
     } else {
       const num = parseInt(value.toString());
-      newWeights[originalIndex] = isNaN(num) ? 1 : Math.max(1, Math.min(9999, num));
+      newWeights[originalIndex] = isNaN(num) ? 1 : Math.max(0, Math.min(9999, num));
     }
     setWeights(newWeights);
     localStorage.setItem('dmuyot_party_weights', JSON.stringify(newWeights));
@@ -200,7 +200,7 @@ function App() {
 
   const checkEffect = (winnersList: { name: string }[]) => {
     console.log("🎯 [EFFECT] Checking effects for:", winnersList[0]?.name);
-    if (winnersList.length === 0) {
+    if (winnersList.length === 0 || winnersList[0].name === 'VOID') {
       setActiveEffect(null);
       setVfxConfig(null);
       return;
@@ -310,10 +310,12 @@ function App() {
   }, [filteredCharacters, listSearch]);
 
   const pickRandomIndex = (list: CharacterData[]) => {
-    const totalWeight = list.reduce((acc, c) => acc + (Number(weights[c.originalIndex]) || 1), 0);
+    const totalWeight = list.reduce((acc, c) => acc + (Number(weights[c.originalIndex]) ?? 1), 0);
+    if (totalWeight <= 0) return -1; // Special case for all zero weights
+
     let random = Math.random() * totalWeight;
     for (let i = 0; i < list.length; i++) {
-      const weight = Number(weights[list[i].originalIndex]) || 1;
+      const weight = Number(weights[list[i].originalIndex]) ?? 1;
       if (random < weight) return i;
       random -= weight;
     }
@@ -329,12 +331,15 @@ function App() {
         const newWinners: { name: string; index: number; color: string }[] = [];
         for (let i = 0; i < actualCount; i++) {
           const idx = pickRandomIndex(filteredCharacters);
-          const char = filteredCharacters[idx];
-          newWinners.push({ name: char.name, index: char.originalIndex, color: char.color });
+          if (idx === -1) {
+            newWinners.push({ name: 'VOID', index: -1, color: '#ff00ff' });
+          } else {
+            const char = filteredCharacters[idx];
+            newWinners.push({ name: char.name, index: char.originalIndex, color: char.color });
+          }
         }
         if (actualCount === 1) {
           setSelectedIndex(newWinners[0].index);
-          scrollToWinner(newWinners[0].index);
         }
         setWinners(newWinners);
         checkEffect(newWinners);
@@ -342,6 +347,14 @@ function App() {
         addToHistory(newWinners);
       } else {
         const newPrizeNumber = pickRandomIndex(filteredCharacters);
+        if (newPrizeNumber === -1) {
+          const voidWinner = { name: 'VOID', index: -1, color: '#ff00ff' };
+          setWinners([voidWinner]);
+          setSelectedIndex(-1);
+          setShowModal(true);
+          addToHistory([voidWinner]);
+          return;
+        }
         setPrizeNumber(newPrizeNumber);
         setMustSpin(true);
         setSelectedIndex(null);
@@ -351,13 +364,8 @@ function App() {
     }
   };
 
-  const scrollToWinner = (originalIndex: number) => {
-    setTimeout(() => {
-      const element = document.getElementById(`char-${originalIndex}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 100);
+  const scrollToWinner = (_originalIndex: number) => {
+    // Disabled auto-scroll as requested
   };
 
   const wheelData = useMemo(() => {
