@@ -386,12 +386,23 @@ function App() {
   };
 
   const wheelData = useMemo(() => {
+    const totalWeight = wheelCharacters.reduce((acc, char) => acc + getWeight(char.originalIndex), 0);
     const isTooLarge = wheelCharacters.length > 25;
-    return wheelCharacters.map((char) => ({ 
-      label: isTooLarge ? (char.originalIndex + 1).toString() : `${char.originalIndex + 1}. ${char.name}`,
-      color: char.color,
-      weight: getWeight(char.originalIndex)
-    }));
+    
+    return wheelCharacters.map((char) => {
+      const weight = getWeight(char.originalIndex);
+      const percentage = (weight / totalWeight) * 100;
+      
+      // If chance > 10%, always show full name. 
+      // Otherwise, show number if list is large, or full name if list is small.
+      const showFullName = percentage > 10 || !isTooLarge;
+      
+      return { 
+        label: showFullName ? `${char.originalIndex + 1}. ${char.name}` : (char.originalIndex + 1).toString(),
+        color: char.color,
+        weight: weight
+      };
+    });
   }, [wheelCharacters, weights]);
 
   return (
