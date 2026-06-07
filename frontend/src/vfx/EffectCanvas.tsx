@@ -13,7 +13,7 @@ interface EffectCanvasProps {
 }
 
 const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
-  const [sunMesh, setSunMesh] = useState<THREE.Mesh | null>(null);
+  const [sun, setSun] = useState<THREE.Mesh | null>(null);
 
   if (!config) return null;
 
@@ -34,7 +34,8 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
         gl={{ 
             antialias: true, 
             alpha: true,
-            powerPreference: "high-performance"
+            powerPreference: "high-performance",
+            toneMapping: THREE.NoToneMapping // Important for HDR colors
         }}
         style={{ pointerEvents: 'none' }}
         onCreated={({ gl }) => {
@@ -42,35 +43,35 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
         }}
       >
         <Suspense fallback={null}>
-          {/* The light source mesh for GodRays */}
+          {/* The Sun: Needs to be extremely bright for GodRays */}
           <mesh 
-            ref={(el) => setSunMesh(el)} 
-            position={[0, 1.5, -4]}
+            ref={setSun} 
+            position={[0, 3, -5]}
           >
-            <sphereGeometry args={[0.8, 32, 32]} />
-            <meshBasicMaterial color="#ffffff" transparent opacity={0.8} />
+            <sphereGeometry args={[1, 32, 32]} />
+            <meshBasicMaterial 
+                color={[10, 8, 5]} // HDR Color (Super White/Gold)
+                toneMapped={false}
+            />
           </mesh>
           
           <EffectSwitcher config={config} onComplete={onComplete} />
           
           <EffectComposer multisampling={0}>
             <Bloom 
-              intensity={2.0} 
-              luminanceThreshold={0.1} 
-              luminanceSmoothing={0.9} 
+              intensity={1.5} 
+              luminanceThreshold={1.0} 
+              mipmapBlur
             />
-            {sunMesh && config.type === 'legendary' ? (
+            {sun && config.type === 'legendary' ? (
               <GodRays
-                sun={sunMesh}
-                samples={60}
-                density={0.96}
-                decay={0.9}
-                weight={0.6}
-                exposure={0.8}
+                sun={sun}
+                samples={100}
+                density={0.97}
+                decay={0.96}
+                weight={0.8}
+                exposure={1.0}
                 clampMax={1}
-                width={480}
-                height={480}
-                kernelSize={1}
                 blur
               />
             ) : <></>}
