@@ -5,7 +5,7 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import type { EffectConfig } from './types';
 import HellishEffect from './effects/HellishEffect';
 import ElfSummon from './effects/ElfSummon';
-import ShaderRays from './components/ShaderRays';
+import SunBeamBackground from './components/SunBeamBackground';
 
 interface EffectCanvasProps {
   config: EffectConfig | null;
@@ -21,7 +21,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       right: 0,
       bottom: 0,
       pointerEvents: 'none',
-      zIndex: 900, // COMPLETELY BEHIND THE UI
+      zIndex: 900,
       background: 'transparent',
       visibility: config ? 'visible' : 'hidden',
       opacity: config ? 1 : 0,
@@ -31,25 +31,25 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
         camera={{ position: [0, 0, 5], fov: 45 }}
         gl={{ 
             alpha: true, 
-            antialias: false, // Better mobile performance
+            antialias: false,
             powerPreference: "high-performance"
         }}
         style={{ pointerEvents: 'none' }}
       >
         <Suspense fallback={null}>
-          <ambientLight intensity={0.8} />
+          <ambientLight intensity={1.0} />
           
-          {/* Guaranteed Visible Rays using Shader */}
+          {/* Guaranteed Full-Screen Sunburst */}
           {config?.type === 'legendary' && (
-            <ShaderRays position={[0, 4, -5]} color="#ffd700" />
+            <SunBeamBackground />
           )}
           
           {config && <EffectSwitcher config={config} onComplete={onComplete} />}
           
           <EffectComposer>
             <Bloom 
-              intensity={1.0} 
-              luminanceThreshold={0.5}
+              intensity={1.5} 
+              luminanceThreshold={0.2}
               mipmapBlur
             />
           </EffectComposer>
