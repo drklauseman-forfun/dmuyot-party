@@ -368,6 +368,13 @@ function App() {
     // Disabled auto-scroll as requested
   };
 
+  const resetWeights = () => {
+    if (window.confirm('Reset all weights to 1?')) {
+      setWeights({});
+      localStorage.removeItem('dmuyot_party_weights');
+    }
+  };
+
   const wheelData = useMemo(() => {
     const isTooLarge = filteredCharacters.length > 25;
     return filteredCharacters.map((char) => ({ 
@@ -472,7 +479,16 @@ function App() {
 
           <div className="list-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3>Characters ({filteredCharacters.length})</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h3 style={{ margin: 0 }}>Characters ({filteredCharacters.length})</h3>
+                <button 
+                  onClick={resetWeights}
+                  style={{ padding: '2px 8px', fontSize: '0.7rem', background: '#333', border: '1px solid #444' }}
+                  title="Reset all weights to 1"
+                >
+                  Reset
+                </button>
+              </div>
               <input 
                 placeholder="Search..." 
                 value={listSearch} 
