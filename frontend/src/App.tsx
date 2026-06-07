@@ -393,9 +393,9 @@ function App() {
       const weight = getWeight(char.originalIndex);
       const percentage = (weight / totalWeight) * 100;
       
-      // If chance > 10%, always show full name. 
-      // Otherwise, show number if list is large, or full name if list is small.
-      const showFullName = percentage > 10 || !isTooLarge;
+      // Force full name if chance > 5% (more generous than 10% for dense lists)
+      // Otherwise, show number only if the total list is large.
+      const showFullName = percentage >= 5 || !isTooLarge;
       
       return { 
         label: showFullName ? `${char.originalIndex + 1}. ${char.name}` : (char.originalIndex + 1).toString(),
