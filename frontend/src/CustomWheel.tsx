@@ -129,12 +129,12 @@ const CustomWheel: React.FC<CustomWheelProps> = ({
               />
             ))}
           </g>
-          {/* Labels */}
           <g>
             {slices.map((slice, i) => {
               const rotation = slice.midAngle;
               const isTooMany = slices.length > 25;
-              const text = isTooMany ? (i + 1).toString() : (slice.label.length > 15 ? slice.label.substring(0, 12) + '...' : slice.label);
+              // Trust the label from data prop, but apply light truncation if it's exceptionally long
+              const text = slice.label.length > 30 ? slice.label.substring(0, 27) + '...' : slice.label;
               
               return (
                 <text
@@ -142,7 +142,7 @@ const CustomWheel: React.FC<CustomWheelProps> = ({
                   x="100"
                   y="30"
                   fill={slice.color !== '#ffffff' ? slice.color : '#ffffff'}
-                  fontSize={isTooMany ? "5" : "7"}
+                  fontSize={isTooMany && text.length > 5 ? "4" : isTooMany ? "5" : "7"}
                   fontWeight="bold"
                   textAnchor="middle"
                   transform={`rotate(${rotation}, 100, 100)`}
