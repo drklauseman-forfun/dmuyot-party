@@ -283,6 +283,8 @@ h1 {
   width: 90%;
   box-shadow: 0 0 30px rgba(100, 108, 255, 0.4);
   text-align: center;
+  position: relative;
+  z-index: 1100;
 }
 
 .settings-modal {

@@ -20,13 +20,14 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       width: '100vw',
       height: '100vh',
       pointerEvents: 'none',
-      zIndex: 2000,
+      zIndex: 1010,
       background: 'transparent'
     }}>
       <Canvas
         shadows
         camera={{ position: [0, 0, 5], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
+        style={{ pointerEvents: 'none' }}
         onCreated={({ gl }) => {
           gl.setClearColor(0x000000, 0);
         }}
