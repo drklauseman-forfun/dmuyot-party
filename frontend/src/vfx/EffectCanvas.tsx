@@ -5,7 +5,7 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import type { EffectConfig } from './types';
 import HellishEffect from './effects/HellishEffect';
 import ElfSummon from './effects/ElfSummon';
-import SunBeamBackground from './components/SunBeamBackground';
+import SubtleTopBeams from './components/SubtleTopBeams';
 
 interface EffectCanvasProps {
   config: EffectConfig | null;
@@ -13,8 +13,6 @@ interface EffectCanvasProps {
 }
 
 const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
-  console.log("🎨 [VFX] Rendering Canvas with config:", config?.type);
-  
   return (
     <div style={{
       position: 'fixed',
@@ -23,11 +21,11 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       right: 0,
       bottom: 0,
       pointerEvents: 'none',
-      zIndex: 2000,
+      zIndex: 1050, // Between overlay (1000) and modal content
       background: 'transparent',
       visibility: config ? 'visible' : 'hidden',
       opacity: config ? 1 : 0,
-      transition: 'opacity 0.5s ease'
+      transition: 'opacity 1s ease'
     }}>
       <Canvas
         camera={{ position: [0, 0, 5], fov: 45 }}
@@ -36,14 +34,13 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
             antialias: false,
             powerPreference: "high-performance"
         }}
-        onCreated={() => console.log("🎮 [VFX] WebGL Context Created")}
         style={{ pointerEvents: 'none' }}
       >
         <ambientLight intensity={1.0} />
         
-        {/* CORE BACKGROUND EFFECT: Outside Suspense for stability */}
+        {/* SUBTLE TOP BEAMS: Replacing complex GodRays with top-down curtains */}
         {config?.type === 'legendary' && (
-          <SunBeamBackground />
+          <SubtleTopBeams />
         )}
         
         <Suspense fallback={null}>
@@ -52,8 +49,8 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
 
         <EffectComposer>
           <Bloom 
-            intensity={1.5} 
-            luminanceThreshold={0.2}
+            intensity={1.0} 
+            luminanceThreshold={0.5}
             mipmapBlur
           />
         </EffectComposer>
