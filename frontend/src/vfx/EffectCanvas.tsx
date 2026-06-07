@@ -1,5 +1,5 @@
 
-import React, { Suspense, useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { EffectComposer, Bloom, GodRays } from '@react-three/postprocessing';
 import * as THREE from 'three';
@@ -21,8 +21,8 @@ const DebugCube = () => {
     }
   });
   return (
-    <mesh ref={meshRef} position={[-2, 0, 0]}>
-      <boxGeometry args={[0.5, 0.5, 0.5]} />
+    <mesh ref={meshRef} position={[0, 0, 0]}>
+      <boxGeometry args={[1, 1, 1]} />
       <meshBasicMaterial color="red" />
     </mesh>
   );
@@ -31,66 +31,52 @@ const DebugCube = () => {
 const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
   const [sun, setSun] = useState<THREE.Mesh | null>(null);
 
-  // We keep the Canvas alive to avoid context loss, but only show it when config exists
   return (
     <div style={{
       position: 'fixed',
       top: 0,
       left: 0,
-      width: '100vw',
-      height: '100vh',
+      right: 0,
+      bottom: 0,
       pointerEvents: 'none',
-      zIndex: 1050, // Higher than dark overlay (1000)
+      zIndex: 9999, // TOP OF EVERYTHING
       background: 'transparent',
-      display: config ? 'block' : 'none'
+      border: '5px solid blue' // Blue border to see the container
     }}>
       <Canvas
-        shadows
-        camera={{ position: [0, 0, 5], fov: 45 }}
-        gl={{ 
-            antialias: true, 
-            alpha: true,
-            powerPreference: "high-performance",
-            toneMapping: THREE.NoToneMapping 
-        }}
-        style={{ pointerEvents: 'none' }}
+        camera={{ position: [0, 0, 10], fov: 50 }}
+        gl={{ alpha: true, antialias: true }}
       >
-        <Suspense fallback={null}>
-          <DebugCube />
-          
-          <mesh 
+        <ambientLight intensity={1} />
+        
+        {/* BIG RED CUBE IN THE MIDDLE */}
+        <DebugCube />
+        
+        {/* The Sun */}
+        <mesh 
             ref={setSun} 
-            position={[0, 4, -2]} 
-          >
-            <sphereGeometry args={[0.8, 32, 32]} />
-            <meshBasicMaterial 
-                color={[100, 80, 40]} // Ultra bright HDR
-                toneMapped={false}
+            position={[0, 5, -5]} 
+        >
+            <sphereGeometry args={[1, 32, 32]} />
+            <meshBasicMaterial color="white" />
+        </mesh>
+        
+        {config && <EffectSwitcher config={config} onComplete={onComplete} />}
+        
+        <EffectComposer multisampling={0}>
+          <Bloom intensity={1.5} />
+          {sun && config?.type === 'legendary' ? (
+            <GodRays
+              sun={sun}
+              samples={30}
+              density={0.96}
+              decay={0.9}
+              weight={0.8}
+              exposure={0.8}
+              blur
             />
-          </mesh>
-          
-          {config && <EffectSwitcher config={config} onComplete={onComplete} />}
-          
-          <EffectComposer multisampling={0}>
-            <Bloom 
-              intensity={2.0} 
-              luminanceThreshold={0.1}
-              mipmapBlur
-            />
-            {sun && config?.type === 'legendary' ? (
-              <GodRays
-                sun={sun}
-                samples={60}
-                density={0.96}
-                decay={0.9}
-                weight={0.8}
-                exposure={0.8}
-                clampMax={1}
-                blur
-              />
-            ) : <></>}
-          </EffectComposer>
-        </Suspense>
+          ) : <></>}
+        </EffectComposer>
       </Canvas>
     </div>
   );
