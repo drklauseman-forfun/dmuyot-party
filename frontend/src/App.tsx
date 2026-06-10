@@ -142,9 +142,41 @@ function App() {
   const [vfxConfig, setVfxConfig] = useState<EffectConfig | null>(null);
 
   const SPECIAL_EFFECTS = [
-    { trigger: 'דיבי', effect: 'hellish' },
-    { trigger: 'אלף', effect: 'elf' },
-    { trigger: 'לגנדרי', effect: 'legendary' },
+    {
+      trigger: 'דיבי',
+      theme: 'hellish',
+      glitch: true,
+      modules: [
+        { type: 'glow', color: '#ff0000', intensity: 0.6, duration: 4, fadeDuration: 2 },
+        { type: 'sparkles', color: '#ff4400', count: 250, size: 4, speed: 2, duration: 4, fadeDuration: 2 }
+      ]
+    },
+    {
+      trigger: 'אלף',
+      theme: 'elf',
+      modules: [
+        { type: 'fire', color: '#00ff88', scale: 3, position: [0, -2, 0], duration: 5, fadeDuration: 2 },
+        { type: 'sparkles', color: '#00ff88', count: 150, size: 2, speed: 0.5, scale: 10, duration: 5, fadeDuration: 2 }
+      ]
+    },
+    {
+      trigger: 'לגנדרי',
+      theme: 'legendary',
+      modules: [
+        { type: 'beams', color: '#fff2b2', duration: 6, fadeDuration: 2 },
+        { type: 'glow', color: '#d4af37', intensity: 0.4, duration: 6, fadeDuration: 2 },
+        { type: 'sparkles', color: '#ffd700', count: 200, size: 3, speed: 1, scale: 12, duration: 5, fadeDuration: 2 },
+        { type: 'fire', color: '#ffd700', scale: 2, position: [0, -2, 0], duration: 4, fadeDuration: 2 }
+      ]
+    },
+    {
+      trigger: 'טסט',
+      theme: 'custom',
+      modules: [
+        { type: 'glow', color: '#ff00ff', intensity: 0.8, duration: 2, fadeDuration: 1 },
+        { type: 'sparkles', color: '#ffffff', count: 500, size: 5, speed: 3, duration: 2, fadeDuration: 1 }
+      ]
+    }
   ];
 
   useEffect(() => {
@@ -210,11 +242,13 @@ function App() {
     
     for (const rule of SPECIAL_EFFECTS) {
       if (normalizedName.toLowerCase().startsWith(rule.trigger.toLowerCase())) {
-        console.log("🔥 [EFFECT] Trigger found:", rule.trigger, "->", rule.effect);
-        setActiveEffect(rule.effect);
+        console.log("🔥 [EFFECT] Trigger found:", rule.trigger, "-> theme:", rule.theme);
+        setActiveEffect(rule.theme);
         setVfxConfig({
-          type: rule.effect as any,
           characterName: firstWinner.name,
+          theme: rule.theme as any,
+          modules: rule.modules as any,
+          glitch: rule.glitch,
           timestamp: Date.now()
         });
         return;
