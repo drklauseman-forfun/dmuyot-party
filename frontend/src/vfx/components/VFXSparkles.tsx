@@ -155,21 +155,15 @@ const VFXSparkles: React.FC<VFXSparklesProps> = ({
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
-          count={count}
-          array={positions}
-          itemSize={3}
+          args={[positions, 3]}
         />
         <bufferAttribute
           attach="attributes-sizeRandomness"
-          count={count}
-          array={sizeRandomness}
-          itemSize={1}
+          args={[sizeRandomness, 1]}
         />
         <bufferAttribute
           attach="attributes-customOffset"
-          count={count}
-          array={customOffset}
-          itemSize={3}
+          args={[customOffset, 3]}
         />
       </bufferGeometry>
       <shaderMaterial

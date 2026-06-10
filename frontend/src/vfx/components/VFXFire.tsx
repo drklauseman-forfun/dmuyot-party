@@ -38,7 +38,7 @@ const fragmentShader = `
 interface VFXFireProps {
   color?: string;
   position?: [number, number, number];
-  scale?: number;
+  scale?: number | [number, number, number];
   duration?: number;
   fadeDuration?: number;
   active?: boolean;
