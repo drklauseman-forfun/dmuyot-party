@@ -1,5 +1,5 @@
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import type { EffectConfig } from './types';
@@ -13,6 +13,26 @@ interface EffectCanvasProps {
 }
 
 const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
+  const [displayConfig, setDisplayConfig] = useState<EffectConfig | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (config) {
+      setDisplayConfig(config);
+      setVisible(true);
+      console.log("🎨 [VFX] Rendering Canvas with config:", config.type);
+    } else {
+      // Fade out for 2 seconds before unmounting
+      setVisible(false);
+      const timer = setTimeout(() => {
+        setDisplayConfig(null);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [config]);
+
+  if (!displayConfig) return null;
+  
   return (
     <div style={{
       position: 'fixed',
@@ -21,11 +41,10 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       right: 0,
       bottom: 0,
       pointerEvents: 'none',
-      zIndex: 1050, // Between overlay (1000) and modal content
+      zIndex: 2000,
       background: 'transparent',
-      visibility: config ? 'visible' : 'hidden',
-      opacity: config ? 1 : 0,
-      transition: 'opacity 1s ease'
+      opacity: visible ? 1 : 0,
+      transition: 'opacity 2s ease-in-out'
     }}>
       <Canvas
         camera={{ position: [0, 0, 5], fov: 45 }}
@@ -34,17 +53,18 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
             antialias: false,
             powerPreference: "high-performance"
         }}
+        onCreated={() => console.log("🎮 [VFX] WebGL Context Created")}
         style={{ pointerEvents: 'none' }}
       >
         <ambientLight intensity={1.0} />
         
-        {/* SUBTLE TOP BEAMS: Replacing complex GodRays with top-down curtains */}
-        {config?.type === 'legendary' && (
+        {/* SUBTLE TOP BEAMS */}
+        {displayConfig?.type === 'legendary' && (
           <SubtleTopBeams />
         )}
         
         <Suspense fallback={null}>
-          {config && <EffectSwitcher config={config} onComplete={onComplete} />}
+          <EffectSwitcher config={displayConfig} onComplete={onComplete} />
         </Suspense>
 
         <EffectComposer>
