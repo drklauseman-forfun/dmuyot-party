@@ -65,8 +65,8 @@ const SubtleTopBeams: React.FC<SubtleTopBeamsProps> = ({
   });
 
   return (
-    <mesh>
-      <planeGeometry args={[2, 2]} />
+    <mesh position={[0, 0, 0]}>
+      <planeGeometry args={[20, 20]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
@@ -74,6 +74,7 @@ const SubtleTopBeams: React.FC<SubtleTopBeamsProps> = ({
         transparent
         blending={THREE.AdditiveBlending}
         depthTest={false}
+        depthWrite={false}
       />
     </mesh>
   );

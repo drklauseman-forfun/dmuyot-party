@@ -29,10 +29,6 @@ const vertexShader = `
   attribute vec3 customOffset;
   varying float vOpacity;
 
-  float random(vec2 st) {
-    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
-  }
-
   void main() {
     vec3 pos = position;
     float t = time * speed;
@@ -40,7 +36,7 @@ const vertexShader = `
     // Directional Movement
     if (length(directionVec) > 0.0) {
       pos += directionVec * t;
-      // Apply Gravity
+      // Apply Gravity (relative to start)
       pos.y -= 0.5 * gravity * t * t * 0.1;
       
       // Noise/Turbulence
@@ -49,8 +45,9 @@ const vertexShader = `
         pos.z += cos(t * 2.0 + customOffset.z) * noise;
       }
 
-      // Wrap around logic (centered at 0, size 40)
-      pos = mod(pos + 20.0, 40.0) - 20.0;
+      // Consistent wrap around to avoid gaps
+      // We use a large bounds and modulo to keep particles recycling
+      pos = mod(pos + 25.0, 50.0) - 25.0;
     } else {
       // Ambient Floating
       pos.x += sin(time * 0.5 + customOffset.x) * 2.0;
@@ -59,6 +56,7 @@ const vertexShader = `
     }
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+    // Scale particle size based on variable and depth
     gl_PointSize = size * sizeRandomness * (300.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
     vOpacity = 1.0;
