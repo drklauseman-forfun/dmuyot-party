@@ -169,13 +169,69 @@ function App() {
         { type: 'fire', color: '#ffd700', scale: 2, position: [0, -2, 0], duration: 4, fadeDuration: 2 }
       ]
     },
+    // --- GLOW TESTS ---
     {
-      trigger: 'טסט',
+      trigger: 'glowred',
       theme: 'custom',
-      modules: [
-        { type: 'glow', color: '#ff00ff', intensity: 0.8, duration: 2, fadeDuration: 1 },
-        { type: 'sparkles', color: '#ffffff', count: 500, size: 5, speed: 3, duration: 2, fadeDuration: 1 }
-      ]
+      modules: [{ type: 'glow', color: '#ff0000', intensity: 0.8, duration: 3, fadeDuration: 2 }]
+    },
+    {
+      trigger: 'glowgreen',
+      theme: 'custom',
+      modules: [{ type: 'glow', color: '#00ff00', intensity: 0.8, duration: 3, fadeDuration: 2 }]
+    },
+    {
+      trigger: 'glowpurple',
+      theme: 'custom',
+      modules: [{ type: 'glow', color: '#ff00ff', intensity: 0.8, duration: 3, fadeDuration: 2 }]
+    },
+    // --- SPARKLES TESTS ---
+    {
+      trigger: 'sparklesblue',
+      theme: 'custom',
+      modules: [{ type: 'sparkles', color: '#0088ff', count: 400, size: 3, speed: 2, duration: 4, fadeDuration: 2 }]
+    },
+    {
+      trigger: 'sparklesgold',
+      theme: 'custom',
+      modules: [{ type: 'sparkles', color: '#ffd700', count: 600, size: 2, speed: 1, duration: 5, fadeDuration: 2 }]
+    },
+    {
+      trigger: 'sparkleswhite',
+      theme: 'custom',
+      modules: [{ type: 'sparkles', color: '#ffffff', count: 1000, size: 1, speed: 4, duration: 3, fadeDuration: 1 }]
+    },
+    // --- FIRE TESTS ---
+    {
+      trigger: 'firered',
+      theme: 'custom',
+      modules: [{ type: 'fire', color: '#ff4400', scale: 4, position: [0, -2, 0], duration: 5, fadeDuration: 2 }]
+    },
+    {
+      trigger: 'fireblue',
+      theme: 'custom',
+      modules: [{ type: 'fire', color: '#00ffff', scale: 3, position: [0, -2, 0], duration: 5, fadeDuration: 2 }]
+    },
+    {
+      trigger: 'firegreen',
+      theme: 'custom',
+      modules: [{ type: 'fire', color: '#00ff88', scale: 5, position: [0, -2, 0], duration: 5, fadeDuration: 2 }]
+    },
+    // --- BEAMS TESTS ---
+    {
+      trigger: 'beamsgold',
+      theme: 'custom',
+      modules: [{ type: 'beams', color: '#ffd700', duration: 5, fadeDuration: 2 }]
+    },
+    {
+      trigger: 'beamswhite',
+      theme: 'custom',
+      modules: [{ type: 'beams', color: '#ffffff', duration: 5, fadeDuration: 2 }]
+    },
+    {
+      trigger: 'beamsblue',
+      theme: 'custom',
+      modules: [{ type: 'beams', color: '#00ccff', duration: 5, fadeDuration: 2 }]
     }
   ];
 
