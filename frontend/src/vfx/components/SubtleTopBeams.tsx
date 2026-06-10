@@ -16,6 +16,7 @@ const fragmentShader = `
   varying vec2 vUv;
   uniform float time;
   uniform float intensity;
+  uniform vec3 color;
   
   void main() {
     vec2 p = vUv;
@@ -24,35 +25,40 @@ const fragmentShader = `
     beams *= smoothstep(0.0, 0.8, p.y);
     beams *= smoothstep(0.0, 0.2, p.x) * smoothstep(1.0, 0.8, p.x);
     
-    vec3 lightColor = vec3(1.0, 0.95, 0.7);
-    vec3 finalColor = lightColor * beams * 1.2 * intensity;
+    vec3 finalColor = color * beams * 1.2 * intensity;
     
     gl_FragColor = vec4(finalColor, beams * 0.4 * intensity);
   }
 `;
 
-const SubtleTopBeams: React.FC = () => {
+interface SubtleTopBeamsProps {
+  color?: string;
+  duration?: number;
+  fadeDuration?: number;
+  active?: boolean;
+}
+
+const SubtleTopBeams: React.FC<SubtleTopBeamsProps> = ({
+  color = "#fff2b2", // soft golden white
+  duration = 3,
+  fadeDuration = 2,
+  active = true
+}) => {
   const uniforms = useRef({
     time: { value: 0 },
-    intensity: { value: 0 }
+    intensity: { value: 0 },
+    color: { value: new THREE.Color(color) }
   });
 
   useEffect(() => {
-    const tl = gsap.timeline();
-    
-    // Fade in
-    tl.to(uniforms.current.intensity, { value: 1, duration: 1.5, ease: "power2.out" });
-    
-    // Hold
-    tl.to({}, { duration: 2.5 });
-    
-    // Fade out
-    tl.to(uniforms.current.intensity, { value: 0, duration: 2, ease: "power2.inOut" });
-
-    return () => {
-      tl.kill();
-    };
-  }, []);
+    if (active) {
+      const tl = gsap.timeline();
+      tl.to(uniforms.current.intensity, { value: 1, duration: 1, ease: "power2.out" });
+      tl.to({}, { duration });
+      tl.to(uniforms.current.intensity, { value: 0, duration: fadeDuration, ease: "power2.inOut" });
+      return () => { tl.kill(); };
+    }
+  }, [active, duration, fadeDuration]);
 
   useFrame((state) => {
     uniforms.current.time.value = state.clock.getElapsedTime();
