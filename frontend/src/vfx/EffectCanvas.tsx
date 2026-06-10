@@ -114,6 +114,9 @@ const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], active: bool
                 size={mod.size} 
                 speed={mod.speed} 
                 scale={mod.scale} 
+                direction={mod.direction}
+                gravity={mod.gravity}
+                noise={mod.noise}
                 duration={mod.duration}
                 fadeDuration={mod.fadeDuration}
                 active={active} 

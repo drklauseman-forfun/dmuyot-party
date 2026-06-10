@@ -7,11 +7,14 @@ export interface VFXModuleConfig {
   color?: string;
   intensity?: number;
   count?: number;
-  scale?: number;
+  scale?: number | [number, number, number];
   size?: number;
   speed?: number;
   duration?: number;
   fadeDuration?: number;
+  direction?: 'up' | 'down' | 'left' | 'right' | 'random';
+  gravity?: number;
+  noise?: number;
   position?: [number, number, number];
 }
 

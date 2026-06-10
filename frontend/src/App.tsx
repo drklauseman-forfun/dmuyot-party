@@ -148,7 +148,7 @@ function App() {
       glitch: true,
       modules: [
         { type: 'glow', color: '#ff0000', intensity: 0.6, duration: 4, fadeDuration: 2 },
-        { type: 'sparkles', color: '#ff4400', count: 250, size: 4, speed: 2, duration: 4, fadeDuration: 2 }
+        { type: 'sparkles', color: '#ff4400', count: 300, size: 4, speed: 4, direction: 'up', duration: 4, fadeDuration: 2 }
       ]
     },
     {
@@ -185,21 +185,26 @@ function App() {
       theme: 'custom',
       modules: [{ type: 'glow', color: '#ff00ff', intensity: 0.8, duration: 3, fadeDuration: 2 }]
     },
-    // --- SPARKLES TESTS ---
+    // --- SPARKLES TESTS (NOW WITH DIRECTION & GRAVITY) ---
     {
-      trigger: 'sparklesblue',
+      trigger: 'sparklesup',
       theme: 'custom',
-      modules: [{ type: 'sparkles', color: '#0088ff', count: 400, size: 3, speed: 2, duration: 4, fadeDuration: 2 }]
+      modules: [{ type: 'sparkles', color: '#00ccff', count: 500, size: 3, speed: 5, direction: 'up', scale: [10, 10, 5], noise: 0.5, duration: 4, fadeDuration: 2 }]
     },
     {
-      trigger: 'sparklesgold',
+      trigger: 'sparklesdown',
       theme: 'custom',
-      modules: [{ type: 'sparkles', color: '#ffd700', count: 600, size: 2, speed: 1, duration: 5, fadeDuration: 2 }]
+      modules: [{ type: 'sparkles', color: '#ffff00', count: 500, size: 3, speed: 2, direction: 'down', gravity: 5.0, scale: [10, 10, 5], duration: 4, fadeDuration: 2 }]
     },
     {
-      trigger: 'sparkleswhite',
+      trigger: 'sparklesrain',
       theme: 'custom',
-      modules: [{ type: 'sparkles', color: '#ffffff', count: 1000, size: 1, speed: 4, duration: 3, fadeDuration: 1 }]
+      modules: [{ type: 'sparkles', color: '#ffffff', count: 1000, size: 1, speed: 10, direction: 'down', gravity: 2.0, scale: [20, 20, 5], duration: 4, fadeDuration: 1 }]
+    },
+    {
+      trigger: 'sparklesfire',
+      theme: 'custom',
+      modules: [{ type: 'sparkles', color: '#ff4400', count: 800, size: 4, speed: 3, direction: 'up', noise: 2.0, gravity: -1.0, scale: [5, 10, 5], duration: 4, fadeDuration: 2 }]
     },
     // --- FIRE TESTS ---
     {
