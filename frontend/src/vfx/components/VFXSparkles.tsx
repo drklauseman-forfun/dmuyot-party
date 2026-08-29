@@ -25,6 +25,7 @@ const vertexShader = `
   uniform float gravity;
   uniform float noise;
   uniform float size;
+  uniform vec3 bounds;
   attribute float sizeRandomness;
   attribute vec3 customOffset;
   varying float vOpacity;
@@ -45,9 +46,10 @@ const vertexShader = `
         pos.z += cos(t * 2.0 + customOffset.z) * noise;
       }
 
-      // Consistent wrap around to avoid gaps
-      // We use a large bounds and modulo to keep particles recycling
-      pos = mod(pos + 25.0, 50.0) - 25.0;
+      // Recycle particles through the same volume they were spawned in, so
+      // density stays even. Wrapping through a fixed box instead would spread
+      // them across a region the spawn never filled, leaving visible gaps.
+      pos = mod(pos + bounds, bounds * 2.0) - bounds;
     } else {
       // Ambient Floating
       pos.x += sin(time * 0.5 + customOffset.x) * 2.0;
@@ -102,22 +104,31 @@ const VFXSparkles: React.FC<VFXSparklesProps> = ({
     }
   }, [direction]);
 
+  // Half-extent of the spawn volume per axis. Particles spawn within
+  // [-halfExtent, +halfExtent] and the shader recycles them through the same
+  // range, so this is the single source of truth for both.
+  const halfExtent = useMemo(() => {
+    const s = Array.isArray(scale) ? scale : [scale, scale, scale];
+    // Guard against zero — the shader's modulo is undefined on a zero extent.
+    const safe = s.map((n) => Math.max(Math.abs(n), 0.001));
+    return new THREE.Vector3(safe[0], safe[1], safe[2]);
+  }, [scale]);
+
   const [positions, sizeRandomness, customOffset] = useMemo(() => {
     const pos = new Float32Array(count * 3);
     const rand = new Float32Array(count);
     const offset = new Float32Array(count * 3);
-    const s = Array.isArray(scale) ? scale : [scale, scale, scale];
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * s[0] * 2;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * s[1] * 2;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * s[2] * 2;
+      pos[i * 3] = (Math.random() - 0.5) * halfExtent.x * 2;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * halfExtent.y * 2;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * halfExtent.z * 2;
       rand[i] = Math.random() * 0.5 + 0.5;
       offset[i * 3] = Math.random() * 100;
       offset[i * 3 + 1] = Math.random() * 100;
       offset[i * 3 + 2] = Math.random() * 100;
     }
     return [pos, rand, offset];
-  }, [count, scale]);
+  }, [count, halfExtent]);
 
   const uniforms = useMemo(() => ({
     time: { value: 0 },
@@ -127,8 +138,9 @@ const VFXSparkles: React.FC<VFXSparklesProps> = ({
     directionVec: { value: directionVec },
     gravity: { value: gravity },
     noise: { value: noise },
-    size: { value: size }
-  }), [color, speed, directionVec, gravity, noise, size]);
+    size: { value: size },
+    bounds: { value: halfExtent }
+  }), [color, speed, directionVec, gravity, noise, size, halfExtent]);
 
   useEffect(() => {
     if (active) {
@@ -140,12 +152,18 @@ const VFXSparkles: React.FC<VFXSparklesProps> = ({
     }
   }, [active, duration, fadeDuration]);
 
-  useFrame((state) => {
-    if (pointsRef.current) {
-      const material = pointsRef.current.material as THREE.ShaderMaterial;
-      material.uniforms.time.value = state.clock.getElapsedTime();
-      material.uniforms.opacity.value = opacityState.current.value;
-    }
+  // Elapsed time is tracked locally rather than read from the canvas clock.
+  // The canvas outlives any single effect, so a shared clock would start a
+  // fresh burst at whatever time the canvas happened to be at — with its
+  // particles already displaced far outside the spawn volume.
+  const elapsed = useRef(0);
+
+  useFrame((_state, delta) => {
+    if (!pointsRef.current) return;
+    elapsed.current += delta;
+    const material = pointsRef.current.material as THREE.ShaderMaterial;
+    material.uniforms.time.value = elapsed.current;
+    material.uniforms.opacity.value = opacityState.current.value;
   });
 
   return (

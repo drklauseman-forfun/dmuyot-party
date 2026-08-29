@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import gsap from 'gsap';
@@ -44,33 +44,53 @@ const SubtleTopBeams: React.FC<SubtleTopBeamsProps> = ({
   fadeDuration = 2,
   active = true
 }) => {
-  const uniforms = useRef({
+  const meshRef = useRef<THREE.Mesh>(null);
+  const intensityState = useRef({ value: 0 });
+
+  // Initial uniform values only. Per-frame updates go through the material off
+  // meshRef below, matching VFXFire and VFXSparkles — mutating a hook's result
+  // directly is what the react-hooks immutability rule objects to.
+  const uniforms = useMemo(() => ({
     time: { value: 0 },
     intensity: { value: 0 },
     color: { value: new THREE.Color(color) }
-  });
+  }), [color]);
 
   useEffect(() => {
     if (active) {
       const tl = gsap.timeline();
-      tl.to(uniforms.current.intensity, { value: 1, duration: 1, ease: "power2.out" });
+      tl.to(intensityState.current, { value: 1, duration: 1, ease: "power2.out" });
       tl.to({}, { duration });
-      tl.to(uniforms.current.intensity, { value: 0, duration: fadeDuration, ease: "power2.inOut" });
+      tl.to(intensityState.current, { value: 0, duration: fadeDuration, ease: "power2.inOut" });
       return () => { tl.kill(); };
     }
   }, [active, duration, fadeDuration]);
 
-  useFrame((state) => {
-    uniforms.current.time.value = state.clock.getElapsedTime();
+  // Local elapsed time so each run starts at t=0 — the canvas clock keeps
+  // running between effects. See VFXSparkles for the same pattern.
+  const elapsed = useRef(0);
+
+  useFrame((_state, delta) => {
+    if (!meshRef.current) return;
+    elapsed.current += delta;
+    const material = meshRef.current.material as THREE.ShaderMaterial;
+    material.uniforms.time.value = elapsed.current;
+    material.uniforms.intensity.value = intensityState.current.value;
   });
 
   return (
-    <mesh position={[0, 0, 0]}>
-      <planeGeometry args={[20, 20]} />
+    <mesh ref={meshRef} position={[0, 0, 0]}>
+      {/*
+        The vertex shader writes gl_Position straight from `position`, so these
+        vertices are already in clip space and must span [-1, 1] to fill the
+        screen. A larger plane puts most of itself outside the frustum and
+        leaves only a narrow strip of the UV range visible.
+      */}
+      <planeGeometry args={[2, 2]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
-        uniforms={uniforms.current}
+        uniforms={uniforms}
         transparent
         blending={THREE.AdditiveBlending}
         depthTest={false}

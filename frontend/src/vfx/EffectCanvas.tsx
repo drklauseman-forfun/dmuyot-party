@@ -1,5 +1,5 @@
 
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import type { EffectConfig, VFXModuleConfig } from './types';
@@ -13,9 +13,21 @@ interface EffectCanvasProps {
   onComplete: () => void;
 }
 
+/** How long the canvas fades out before unmounting. Drives the CSS transition too. */
+const FADE_OUT_MS = 2000;
+
 const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
   const [displayConfig, setDisplayConfig] = useState<EffectConfig | null>(null);
   const [visible, setVisible] = useState(false);
+
+  // Held in a ref so the lifecycle effect below can depend on `config` alone.
+  // Parents commonly pass an inline arrow, which changes identity on every
+  // render — depending on it directly would restart the cleanup timer each
+  // time the parent re-rendered, letting effects outlive their duration.
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  });
 
   useEffect(() => {
     if (config) {
@@ -32,7 +44,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
 
       const cleanupTimer = setTimeout(() => {
         console.log("🧹 [VFX] Effect auto-cleanup triggered");
-        onComplete();
+        onCompleteRef.current();
       }, maxLife * 1000);
 
       return () => clearTimeout(cleanupTimer);
@@ -40,10 +52,10 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       setVisible(false);
       const timer = setTimeout(() => {
         setDisplayConfig(null);
-      }, 2000);
+      }, FADE_OUT_MS);
       return () => clearTimeout(timer);
     }
-  }, [config, onComplete]);
+  }, [config]);
 
   if (!displayConfig) return null;
   
@@ -58,7 +70,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       zIndex: 2000,
       background: 'transparent',
       opacity: visible ? 1 : 0,
-      transition: 'opacity 2s ease-in-out'
+      transition: `opacity ${FADE_OUT_MS}ms ease-in-out`
     }}>
       <Canvas
         camera={{ position: [0, 0, 5], fov: 45 }}
@@ -74,7 +86,11 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
         <pointLight position={[0, 2, 2]} intensity={1.0} color="#ffffff" />
         
         <Suspense fallback={null}>
-          <DynamicEffectRenderer modules={displayConfig.modules} active={visible} />
+          <DynamicEffectRenderer
+            modules={displayConfig.modules}
+            runId={displayConfig.timestamp}
+            active={visible}
+          />
           
           <EffectComposer>
             <Bloom 
@@ -89,15 +105,23 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
   );
 };
 
-const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], active: boolean }> = ({ modules, active }) => {
+/**
+ * `runId` is part of every key so a new effect always gets fresh module
+ * instances. The canvas outlives a single effect by its fade-out, and without
+ * this React would reuse an instance whenever the next effect happened to put
+ * the same module type at the same index — leaving its GSAP timeline and
+ * animation clock mid-flight instead of restarting them.
+ */
+const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], runId: number, active: boolean }> = ({ modules, runId, active }) => {
   return (
     <group>
       {modules.map((mod, index) => {
+        const key = `${runId}-${index}`;
         switch (mod.type) {
           case 'glow':
             return (
-              <VFXGlow 
-                key={index} 
+              <VFXGlow
+                key={key}
                 color={mod.color} 
                 intensity={mod.intensity} 
                 duration={mod.duration}
@@ -108,7 +132,7 @@ const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], active: bool
           case 'sparkles':
             return (
               <VFXSparkles 
-                key={index} 
+                key={key}
                 color={mod.color} 
                 count={mod.count} 
                 size={mod.size} 
@@ -125,7 +149,7 @@ const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], active: bool
           case 'fire':
             return (
               <VFXFire 
-                key={index} 
+                key={key}
                 color={mod.color} 
                 scale={mod.scale} 
                 position={mod.position} 
@@ -137,7 +161,7 @@ const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], active: bool
           case 'beams':
             return (
               <SubtleTopBeams 
-                key={index} 
+                key={key}
                 color={mod.color} 
                 duration={mod.duration}
                 fadeDuration={mod.fadeDuration}

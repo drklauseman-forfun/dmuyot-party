@@ -44,6 +44,15 @@ const CustomWheel: React.FC<CustomWheelProps> = ({
 
   function getSlicePath(startAngle: number, endAngle: number) {
     const radius = 100;
+
+    // A slice spanning the whole wheel (one character, or one with all the
+    // weight) would put its start and end points on the same coordinate, and
+    // an arc between identical points renders as nothing. Draw it as two
+    // half-arcs instead so the wheel isn't just an empty outline.
+    if (endAngle - startAngle >= 359.999) {
+      return `M 0 100 a ${radius} ${radius} 0 1 0 ${radius * 2} 0 a ${radius} ${radius} 0 1 0 ${-radius * 2} 0 Z`;
+    }
+
     const startRad = (startAngle - 90) * (Math.PI / 180);
     const endRad = (endAngle - 90) * (Math.PI / 180);
     

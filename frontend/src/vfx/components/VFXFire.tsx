@@ -71,12 +71,16 @@ const VFXFire: React.FC<VFXFireProps> = ({
     }
   }, [active, duration, fadeDuration]);
 
-  useFrame((state) => {
-    if (meshRef.current) {
-      const material = meshRef.current.material as THREE.ShaderMaterial;
-      material.uniforms.time.value = state.clock.getElapsedTime();
-      material.uniforms.intensity.value = intensityState.current.value;
-    }
+  // Local elapsed time so each run starts at t=0 — the canvas clock keeps
+  // running between effects. See VFXSparkles for the same pattern.
+  const elapsed = useRef(0);
+
+  useFrame((_state, delta) => {
+    if (!meshRef.current) return;
+    elapsed.current += delta;
+    const material = meshRef.current.material as THREE.ShaderMaterial;
+    material.uniforms.time.value = elapsed.current;
+    material.uniforms.intensity.value = intensityState.current.value;
   });
 
   return (
