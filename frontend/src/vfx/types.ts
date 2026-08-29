@@ -1,5 +1,4 @@
 
-export type VFXTheme = 'hellish' | 'elf' | 'legendary' | 'none';
 export type VFXModuleType = 'glow' | 'sparkles' | 'fire' | 'beams';
 
 export interface VFXModuleConfig {
@@ -18,10 +17,11 @@ export interface VFXModuleConfig {
   position?: [number, number, number];
 }
 
+/** What the 3D layer needs to play one effect. Built from a registry entry. */
 export interface EffectConfig {
-  characterName: string;
-  theme: VFXTheme;
-  glitch?: boolean;
+  /** Registry id of the effect that produced this, for logging. */
+  effectId: string;
   modules: VFXModuleConfig[];
+  /** Bumped on every trigger so a repeat winner still restarts the canvas. */
   timestamp: number;
 }

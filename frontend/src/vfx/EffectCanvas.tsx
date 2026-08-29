@@ -21,7 +21,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
     if (config) {
       setDisplayConfig(config);
       setVisible(true);
-      console.log("🎨 [VFX] Rendering Canvas with theme:", config.theme);
+      console.log("🎨 [VFX] Rendering Canvas for effect:", config.effectId);
 
       // Calculate max duration for auto-cleanup
       // Default to 5s (3s duration + 2s fade) if not specified

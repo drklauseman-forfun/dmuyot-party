@@ -1,118 +1,24 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import axios from 'axios';
 import CustomWheel from './CustomWheel';
 import './index.css';
 import EffectCanvas from './vfx/EffectCanvas';
 import type { EffectConfig } from './vfx/types';
+import { matchCharacterEffect, resolvePresentation } from './characters/registry';
+import type { CharacterEffect } from './characters/types';
 
 interface CharacterData {
   name: string;
   color: string;
-  originalIndex: number; 
+  originalIndex: number;
 }
 
 interface ExtractionResponse {
   characters: { name: string; color: string }[];
 }
 
-const FireParticles = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let animationFrameId: number;
-    const particles: any[] = [];
-    const particleCount = 200; 
-
-    const resize = () => {
-      if (!canvas) return;
-      // Force the canvas to the absolute window dimensions
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    class Particle {
-      x: number; y: number; size: number; speedY: number; speedX: number; color: string; life: number; fadeSpeed: number;
-      constructor(initialY?: number) {
-        if (!canvas) {
-          this.x = 0; this.y = 0; this.size = 0; this.speedY = 0; this.speedX = 0; this.color = ''; this.life = 0; this.fadeSpeed = 0;
-          return;
-        }
-        // Spread evenly across the TRUE canvas width
-        this.x = Math.random() * canvas.width;
-        // Start below the TRUE canvas height
-        this.y = initialY !== undefined ? initialY : canvas.height + Math.random() * 200; 
-        this.size = Math.random() * 5 + 1;
-        this.speedY = Math.random() * -6 - 3; 
-        this.speedX = Math.random() * 3 - 1.5;
-        const colors = ['#ff4500', '#ff8c00', '#ffd700', '#ff0000', '#ffae42', '#e25822'];
-        this.color = colors[Math.floor(Math.random() * colors.length)];
-        this.life = 1.0;
-        this.fadeSpeed = Math.random() * 0.004 + 0.002; 
-      }
-      update() {
-        this.y += this.speedY;
-        this.x += this.speedX;
-        this.life -= this.fadeSpeed;
-      }
-      draw() {
-        if (!ctx) return;
-        ctx.globalAlpha = Math.max(0, this.life);
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = this.color;
-      }
-    }
-
-    // Initialize with a variety of heights
-    for (let i = 0; i < particleCount; i++) {
-      particles.push(new Particle(Math.random() * (window.innerHeight + 500)));
-    }
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw();
-        if (particles[i].life <= 0 || (particles[i].y + 50) < 0) {
-          particles[i] = new Particle();
-        }
-      }
-      animationFrameId = requestAnimationFrame(animate);
-    };
-    animate();
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', resize);
-    };
-  }, []);
-
-  return (
-    <canvas 
-      ref={canvasRef} 
-      style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        width: '100vw', 
-        height: '100vh', 
-        pointerEvents: 'none', 
-        zIndex: 1050,
-        background: 'transparent'
-      }} 
-    />
-  );
-};
+/** Placeholder winner used when every candidate has been weighted to zero. */
+const VOID_NAME = 'VOID';
 
 function App() {
   const [input, setInput] = useState('');
@@ -137,108 +43,9 @@ function App() {
   const [weights, setWeights] = useState<Record<number, number | string>>({});
   const [history, setHistory] = useState<{ name: string; index: number; timestamp: string }[]>([]);
   
-  // Special Visuals State
-  const [activeEffect, setActiveEffect] = useState<string | null>(null);
+  // Special Visuals State. Effect definitions live in characters/registry.ts.
+  const [activeEffect, setActiveEffect] = useState<CharacterEffect | null>(null);
   const [vfxConfig, setVfxConfig] = useState<EffectConfig | null>(null);
-
-  const SPECIAL_EFFECTS = [
-    {
-      trigger: 'דיבי',
-      theme: 'hellish',
-      glitch: true,
-      modules: [
-        { type: 'glow', color: '#ff0000', intensity: 0.6, duration: 4, fadeDuration: 2 },
-        { type: 'sparkles', color: '#ff4400', count: 300, size: 1.5, speed: 4, direction: 'up', duration: 4, fadeDuration: 2 }
-      ]
-    },
-    {
-      trigger: 'אלף',
-      theme: 'elf',
-      modules: [
-        { type: 'fire', color: '#00ff88', scale: 3, position: [0, -2, 0], duration: 5, fadeDuration: 2 },
-        { type: 'sparkles', color: '#00ff88', count: 150, size: 1, speed: 0.5, scale: 10, duration: 5, fadeDuration: 2 }
-      ]
-    },
-    {
-      trigger: 'לגנדרי',
-      theme: 'legendary',
-      modules: [
-        { type: 'beams', color: '#fff2b2', duration: 6, fadeDuration: 2 },
-        { type: 'glow', color: '#d4af37', intensity: 0.4, duration: 6, fadeDuration: 2 },
-        { type: 'sparkles', color: '#ffd700', count: 200, size: 1.5, speed: 1, scale: 12, duration: 5, fadeDuration: 2 },
-        { type: 'fire', color: '#ffd700', scale: 2, position: [0, -2, 0], duration: 4, fadeDuration: 2 }
-      ]
-    },
-    // --- GLOW TESTS ---
-    {
-      trigger: 'glowred',
-      theme: 'custom',
-      modules: [{ type: 'glow', color: '#ff0000', intensity: 0.8, duration: 3, fadeDuration: 2 }]
-    },
-    {
-      trigger: 'glowgreen',
-      theme: 'custom',
-      modules: [{ type: 'glow', color: '#00ff00', intensity: 0.8, duration: 3, fadeDuration: 2 }]
-    },
-    {
-      trigger: 'glowpurple',
-      theme: 'custom',
-      modules: [{ type: 'glow', color: '#ff00ff', intensity: 0.8, duration: 3, fadeDuration: 2 }]
-    },
-    // --- SPARKLES TESTS (NOW WITH DIRECTION & GRAVITY) ---
-    {
-      trigger: 'sparklesup',
-      theme: 'custom',
-      modules: [{ type: 'sparkles', color: '#00ccff', count: 500, size: 1.2, speed: 5, direction: 'up', scale: [10, 10, 5], noise: 0.5, duration: 4, fadeDuration: 2 }]
-    },
-    {
-      trigger: 'sparklesdown',
-      theme: 'custom',
-      modules: [{ type: 'sparkles', color: '#ffff00', count: 500, size: 1.2, speed: 2, direction: 'down', gravity: 5.0, scale: [10, 10, 5], duration: 4, fadeDuration: 2 }]
-    },
-    {
-      trigger: 'sparklesrain',
-      theme: 'custom',
-      modules: [{ type: 'sparkles', color: '#ffffff', count: 1000, size: 0.8, speed: 10, direction: 'down', gravity: 2.0, scale: [20, 20, 5], duration: 4, fadeDuration: 1 }]
-    },
-    {
-      trigger: 'sparklesfire',
-      theme: 'custom',
-      modules: [{ type: 'sparkles', color: '#ff4400', count: 800, size: 1.8, speed: 3, direction: 'up', noise: 2.0, gravity: -1.0, scale: [5, 10, 5], duration: 4, fadeDuration: 2 }]
-    },
-    // --- FIRE TESTS ---
-    {
-      trigger: 'firered',
-      theme: 'custom',
-      modules: [{ type: 'fire', color: '#ff4400', scale: 4, position: [0, -2, 0], duration: 5, fadeDuration: 2 }]
-    },
-    {
-      trigger: 'fireblue',
-      theme: 'custom',
-      modules: [{ type: 'fire', color: '#00ffff', scale: 3, position: [0, -2, 0], duration: 5, fadeDuration: 2 }]
-    },
-    {
-      trigger: 'firegreen',
-      theme: 'custom',
-      modules: [{ type: 'fire', color: '#00ff88', scale: 5, position: [0, -2, 0], duration: 5, fadeDuration: 2 }]
-    },
-    // --- BEAMS TESTS ---
-    {
-      trigger: 'beamsgold',
-      theme: 'custom',
-      modules: [{ type: 'beams', color: '#ffd700', duration: 5, fadeDuration: 2 }]
-    },
-    {
-      trigger: 'beamswhite',
-      theme: 'custom',
-      modules: [{ type: 'beams', color: '#ffffff', duration: 5, fadeDuration: 2 }]
-    },
-    {
-      trigger: 'beamsblue',
-      theme: 'custom',
-      modules: [{ type: 'beams', color: '#00ccff', duration: 5, fadeDuration: 2 }]
-    }
-  ];
 
   useEffect(() => {
     const savedInput = localStorage.getItem('dmuyot_party_input');
@@ -291,33 +98,30 @@ function App() {
     localStorage.setItem('dmuyot_party_history', JSON.stringify(historyEntries));
   };
 
+  /** Fires the registry effect for the first winner, if one matches. */
   const checkEffect = (winnersList: { name: string }[]) => {
-    console.log("🎯 [EFFECT] Checking effects for:", winnersList[0]?.name);
-    if (winnersList.length === 0 || winnersList[0].name === 'VOID') {
+    const firstWinner = winnersList[0];
+    console.log("🎯 [EFFECT] Checking effects for:", firstWinner?.name);
+
+    const effect =
+      firstWinner && firstWinner.name !== VOID_NAME
+        ? matchCharacterEffect(firstWinner.name)
+        : null;
+
+    if (!effect) {
+      console.log("⚪ [EFFECT] No special trigger matched.");
       setActiveEffect(null);
       setVfxConfig(null);
       return;
     }
-    const firstWinner = winnersList[0];
-    const normalizedName = firstWinner.name.trim();
-    
-    for (const rule of SPECIAL_EFFECTS) {
-      if (normalizedName.toLowerCase().startsWith(rule.trigger.toLowerCase())) {
-        console.log("🔥 [EFFECT] Trigger found:", rule.trigger, "-> theme:", rule.theme);
-        setActiveEffect(rule.theme);
-        setVfxConfig({
-          characterName: firstWinner.name,
-          theme: rule.theme as any,
-          modules: rule.modules as any,
-          glitch: rule.glitch,
-          timestamp: Date.now()
-        });
-        return;
-      }
-    }
-    console.log("⚪ [EFFECT] No special trigger matched.");
-    setActiveEffect(null);
-    setVfxConfig(null);
+
+    console.log("🔥 [EFFECT] Matched effect:", effect.id);
+    setActiveEffect(effect);
+    setVfxConfig({
+      effectId: effect.id,
+      modules: effect.modules,
+      timestamp: Date.now()
+    });
   };
 
   const clearHistory = () => {
@@ -437,7 +241,7 @@ function App() {
         for (let i = 0; i < actualCount; i++) {
           const idx = pickRandomIndex(wheelCharacters);
           if (idx === -1) {
-            newWinners.push({ name: 'VOID', index: -1, color: '#ff00ff' });
+            newWinners.push({ name: VOID_NAME, index: -1, color: '#ff00ff' });
           } else {
             const char = wheelCharacters[idx];
             newWinners.push({ name: char.name, index: char.originalIndex, color: char.color });
@@ -453,7 +257,7 @@ function App() {
       } else {
         const newPrizeNumber = pickRandomIndex(wheelCharacters);
         if (newPrizeNumber === -1) {
-          const voidWinner = { name: 'VOID', index: -1, color: '#ff00ff' };
+          const voidWinner = { name: VOID_NAME, index: -1, color: '#ff00ff' };
           setWinners([voidWinner]);
           setSelectedIndex(-1);
           setShowModal(true);
@@ -499,6 +303,13 @@ function App() {
       };
     });
   }, [wheelCharacters, weights]);
+
+  // Concrete modal styling for the current winner — either the matched effect's
+  // presentation, or a neutral one tinted with the character's own colour.
+  const presentation = useMemo(
+    () => resolvePresentation(activeEffect, winners[0]?.color),
+    [activeEffect, winners]
+  );
 
   return (
     <div className="app-container">
@@ -700,50 +511,39 @@ function App() {
 
       {showModal && (
         <div className="results-overlay" onClick={() => setShowModal(false)}>
-          {activeEffect === 'hellish' && <FireParticles />}
-          {activeEffect === 'hellish' && <div className="glitch-overlay" />}
-          <div 
-            className={`results-modal ${
-                activeEffect === 'hellish' ? 'hellish-modal shake-effect' : 
-                activeEffect === 'elf' ? 'elf-modal' : 
-                activeEffect === 'legendary' ? 'legendary-modal' : ''
-            }`}
+          {presentation.glitch && <div className="glitch-overlay" />}
+          <div
+            className={`results-modal ${presentation.shake ? 'shake-effect' : ''}`}
             onClick={e => e.stopPropagation()}
             style={{
-              borderColor: activeEffect === 'hellish' ? '#ff0000' : (winners[0]?.color || '#646cff'),
-              boxShadow: activeEffect === 'hellish' ? '0 0 50px #ff0000' : `0 0 30px ${winners[0]?.color || '#646cff'}66`,
-              backgroundColor: 
-                activeEffect === 'hellish' ? 'rgba(30, 0, 0, 0.95)' : 
-                activeEffect === 'elf' ? 'rgba(0, 30, 15, 0.95)' :
-                activeEffect === 'legendary' ? 'rgba(30, 30, 0, 0.95)' :
-                (winners[0]?.color ? `${winners[0].color}1a` : '#1e1e1e'), 
+              borderColor: presentation.borderColor,
+              boxShadow: presentation.boxShadow,
+              backgroundColor: presentation.backgroundColor,
               backdropFilter: 'blur(10px)'
             }}
           >
-            <h2 className={`
-                ${activeEffect === 'hellish' ? 'hellish-text glitch-effect' : ''}
-                ${activeEffect === 'elf' ? 'elf-text' : ''}
-                ${activeEffect === 'legendary' ? 'legendary-text' : ''}
-            `}>
-              {activeEffect === 'hellish' ? '🔱 SATAN THE ALL POWERFUL 🔱' : 
-               activeEffect === 'elf' ? '🧝 ANCIENT SUMMON 🧝' :
-               activeEffect === 'legendary' ? '✨ LEGENDARY HERO ✨' :
-               '🎊 The Results are In! 🎊'}
+            <h2
+              className={presentation.glitch ? 'glitch-effect' : ''}
+              style={{
+                color: presentation.winnerColor,
+                fontFamily: presentation.fontFamily,
+                letterSpacing: presentation.letterSpacing,
+                textShadow: presentation.textShadow
+              }}
+            >
+              {presentation.title}
             </h2>
             <div className="results-list" style={{ position: 'relative', zIndex: 2 }}>
               {winners.map((winner, i) => (
-                <div 
-                  key={i} 
-                  className={`result-winner 
-                    ${activeEffect === 'hellish' ? 'hellish-text' : ''}
-                    ${activeEffect === 'elf' ? 'elf-text' : ''}
-                    ${activeEffect === 'legendary' ? 'legendary-text' : ''}
-                  `} 
-                  style={{ color: 
-                    activeEffect === 'hellish' ? '#ff0000' : 
-                    activeEffect === 'elf' ? '#00ff88' :
-                    activeEffect === 'legendary' ? '#ffd700' :
-                    (winner.color !== '#ffffff' ? winner.color : '#ffffff') 
+                <div
+                  key={i}
+                  className="result-winner"
+                  style={{
+                    // No effect: each winner keeps its own colour from the document.
+                    color: presentation.winnerColor ?? winner.color,
+                    fontFamily: presentation.fontFamily,
+                    letterSpacing: presentation.letterSpacing,
+                    textShadow: presentation.textShadow
                   }}
                 >
                   {winners.length > 1 && <span style={{ fontSize: '0.9rem', color: '#888', marginRight: '0.5rem' }}>#{i + 1}</span>}
@@ -752,15 +552,11 @@ function App() {
                 </div>
               ))}
             </div>
-            <button 
+            <button
               onClick={() => setShowModal(false)}
               style={{
-                background: 
-                    activeEffect === 'hellish' ? '#ff0000' : 
-                    activeEffect === 'elf' ? '#00ff88' :
-                    activeEffect === 'legendary' ? '#ffd700' :
-                    '#646cff',
-                color: activeEffect === 'elf' || activeEffect === 'legendary' ? '#000' : '#fff',
+                background: presentation.buttonColor,
+                color: presentation.buttonTextColor,
                 fontWeight: 'bold',
                 marginTop: '1.5rem',
                 padding: '0.8rem 2rem',
