@@ -7,6 +7,7 @@ import gsap from 'gsap';
 interface VFXGlowProps {
   color?: string;
   intensity?: number;
+  fadeInDuration?: number;
   duration?: number;
   fadeDuration?: number;
   active?: boolean;
@@ -15,6 +16,7 @@ interface VFXGlowProps {
 const VFXGlow: React.FC<VFXGlowProps> = ({ 
   color = "#ff2200", 
   intensity = 0.5, 
+  fadeInDuration = 1,
   duration = 3, 
   fadeDuration = 2,
   active = true 
@@ -25,12 +27,12 @@ const VFXGlow: React.FC<VFXGlowProps> = ({
   useEffect(() => {
     if (active) {
       const tl = gsap.timeline();
-      tl.to(opacityState.current, { value: intensity, duration: 1, ease: "power2.out" });
+      tl.to(opacityState.current, { value: intensity, duration: fadeInDuration, ease: "power2.out" });
       tl.to({}, { duration });
       tl.to(opacityState.current, { value: 0, duration: fadeDuration, ease: "power2.inOut" });
       return () => { tl.kill(); };
     }
-  }, [active, intensity, duration, fadeDuration]);
+  }, [active, intensity, fadeInDuration, duration, fadeDuration]);
 
   useFrame(() => {
     if (meshRef.current) {

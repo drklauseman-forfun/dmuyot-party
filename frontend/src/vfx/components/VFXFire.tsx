@@ -39,6 +39,7 @@ interface VFXFireProps {
   color?: string;
   position?: [number, number, number];
   scale?: number | [number, number, number];
+  fadeInDuration?: number;
   duration?: number;
   fadeDuration?: number;
   active?: boolean;
@@ -48,6 +49,7 @@ const VFXFire: React.FC<VFXFireProps> = ({
   color = "#ff4400", 
   position = [0, -2, 0], 
   scale = 1,
+  fadeInDuration = 1,
   duration = 3,
   fadeDuration = 2,
   active = true
@@ -64,12 +66,12 @@ const VFXFire: React.FC<VFXFireProps> = ({
   useEffect(() => {
     if (active) {
       const tl = gsap.timeline();
-      tl.to(intensityState.current, { value: 1, duration: 1, ease: "power2.out" });
+      tl.to(intensityState.current, { value: 1, duration: fadeInDuration, ease: "power2.out" });
       tl.to({}, { duration });
       tl.to(intensityState.current, { value: 0, duration: fadeDuration, ease: "power2.inOut" });
       return () => { tl.kill(); };
     }
-  }, [active, duration, fadeDuration]);
+  }, [active, fadeInDuration, duration, fadeDuration]);
 
   // Local elapsed time so each run starts at t=0 — the canvas clock keeps
   // running between effects. See VFXSparkles for the same pattern.

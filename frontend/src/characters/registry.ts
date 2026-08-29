@@ -28,7 +28,9 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       glitch: true,
     },
     modules: [
-      { type: 'glow', color: '#ff0000', intensity: 0.6, duration: 4, fadeDuration: 2 },
+      // Short, hard red flash — it washes the whole screen, so it reads as a
+      // punch rather than a filter. The embers below outlive it.
+      { type: 'glow', color: '#ff0000', intensity: 0.6, fadeInDuration: 0.3, duration: 0.6, fadeDuration: 1.2 },
       { type: 'sparkles', color: '#ff4400', count: 300, size: 1.5, speed: 4, direction: 'up', duration: 4, fadeDuration: 2 },
     ],
   },

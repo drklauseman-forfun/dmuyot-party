@@ -35,12 +35,14 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       setVisible(true);
       console.log("🎨 [VFX] Rendering Canvas for effect:", config.effectId);
 
-      // Calculate max duration for auto-cleanup
-      // Default to 5s (3s duration + 2s fade) if not specified
+      // Auto-cleanup once the longest-lived module has finished. A module's
+      // lifetime is all three phases — ramping in, holding, then fading out —
+      // so leaving the ramp out of this cut the tail off the longest fade.
       const maxLife = config.modules.reduce((max, mod) => {
-        const life = (mod.duration ?? 3) + (mod.fadeDuration ?? 2);
+        const life =
+          (mod.fadeInDuration ?? 1) + (mod.duration ?? 3) + (mod.fadeDuration ?? 2);
         return Math.max(max, life);
-      }, 0) || 5;
+      }, 0) || 6;
 
       const cleanupTimer = setTimeout(() => {
         console.log("🧹 [VFX] Effect auto-cleanup triggered");
@@ -124,6 +126,7 @@ const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], runId: numbe
                 key={key}
                 color={mod.color} 
                 intensity={mod.intensity} 
+                fadeInDuration={mod.fadeInDuration}
                 duration={mod.duration}
                 fadeDuration={mod.fadeDuration}
                 active={active} 
@@ -141,6 +144,7 @@ const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], runId: numbe
                 direction={mod.direction}
                 gravity={mod.gravity}
                 noise={mod.noise}
+                fadeInDuration={mod.fadeInDuration}
                 duration={mod.duration}
                 fadeDuration={mod.fadeDuration}
                 active={active} 
@@ -153,6 +157,7 @@ const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], runId: numbe
                 color={mod.color} 
                 scale={mod.scale} 
                 position={mod.position} 
+                fadeInDuration={mod.fadeInDuration}
                 duration={mod.duration}
                 fadeDuration={mod.fadeDuration}
                 active={active} 
@@ -163,6 +168,7 @@ const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], runId: numbe
               <SubtleTopBeams 
                 key={key}
                 color={mod.color} 
+                fadeInDuration={mod.fadeInDuration}
                 duration={mod.duration}
                 fadeDuration={mod.fadeDuration}
                 active={active} 

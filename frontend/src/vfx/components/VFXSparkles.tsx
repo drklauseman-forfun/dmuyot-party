@@ -13,6 +13,7 @@ interface VFXSparklesProps {
   direction?: 'up' | 'down' | 'left' | 'right' | 'random';
   gravity?: number;
   noise?: number;
+  fadeInDuration?: number;
   duration?: number;
   fadeDuration?: number;
   active?: boolean;
@@ -87,6 +88,7 @@ const VFXSparkles: React.FC<VFXSparklesProps> = ({
   direction = 'random',
   gravity = 0,
   noise = 0,
+  fadeInDuration = 1,
   duration = 3,
   fadeDuration = 2,
   active = true
@@ -145,12 +147,12 @@ const VFXSparkles: React.FC<VFXSparklesProps> = ({
   useEffect(() => {
     if (active) {
       const tl = gsap.timeline();
-      tl.to(opacityState.current, { value: 1, duration: 1, ease: "power2.out" });
+      tl.to(opacityState.current, { value: 1, duration: fadeInDuration, ease: "power2.out" });
       tl.to({}, { duration });
       tl.to(opacityState.current, { value: 0, duration: fadeDuration, ease: "power2.inOut" });
       return () => { tl.kill(); };
     }
-  }, [active, duration, fadeDuration]);
+  }, [active, fadeInDuration, duration, fadeDuration]);
 
   // Elapsed time is tracked locally rather than read from the canvas clock.
   // The canvas outlives any single effect, so a shared clock would start a

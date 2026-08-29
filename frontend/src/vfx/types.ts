@@ -9,7 +9,11 @@ export interface VFXModuleConfig {
   scale?: number | [number, number, number];
   size?: number;
   speed?: number;
+  /** Seconds to ramp from invisible to full. Default 1. */
+  fadeInDuration?: number;
+  /** Seconds to hold at full — NOT the module's total lifetime. Default 3. */
   duration?: number;
+  /** Seconds to fade back out. Default 2. */
   fadeDuration?: number;
   direction?: 'up' | 'down' | 'left' | 'right' | 'random';
   gravity?: number;
