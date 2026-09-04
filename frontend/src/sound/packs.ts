@@ -1,5 +1,6 @@
 import type { SoundPack } from './types';
 import { chord, noise, tone } from './voices';
+import { GEMINI_PACKS } from './geminiPacks';
 
 /**
  * Every selectable spin sound.
@@ -133,13 +134,34 @@ export const SOUND_PACKS: SoundPack[] = [
   },
 ];
 
+/**
+ * The picker's sections, in order.
+ *
+ * Two authors are on offer while it is being decided which set ships. Settings
+ * renders straight from this, so dropping a section is deleting an entry here.
+ */
+export const SOUND_PACK_GROUPS: { title: string; note: string; packs: SoundPack[] }[] = [
+  {
+    title: 'Hand-written',
+    note: 'Tuned by ear-less iteration, then against listening feedback.',
+    packs: SOUND_PACKS,
+  },
+  {
+    title: 'Gemini',
+    note: 'Written by Gemini from the same primitives, unedited.',
+    packs: GEMINI_PACKS,
+  },
+];
+
+const ALL_PACKS: SoundPack[] = SOUND_PACK_GROUPS.flatMap((group) => group.packs);
+
 export const DEFAULT_SOUND_PACK_ID = SOUND_PACKS[0].id;
 
 export function getSoundPack(id: string | null | undefined): SoundPack {
-  return SOUND_PACKS.find((pack) => pack.id === id) ?? SOUND_PACKS[0];
+  return ALL_PACKS.find((pack) => pack.id === id) ?? SOUND_PACKS[0];
 }
 
 /** A stored preference is only honoured if a pack still answers to it. */
 export function isKnownSoundPackId(id: string): boolean {
-  return SOUND_PACKS.some((pack) => pack.id === id);
+  return ALL_PACKS.some((pack) => pack.id === id);
 }

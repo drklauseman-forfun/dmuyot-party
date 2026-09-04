@@ -558,3 +558,34 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+/* Grouped sound picker: one section per author while the two sets are being
+   compared. Collapses to a single list once only one group remains. */
+.sound-group {
+  margin-top: 1rem;
+}
+
+.sound-group-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+  text-align: left;
+}
+
+.sound-group-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9aa0ff;
+}
+
+.sound-group-note {
+  font-size: 0.66rem;
+  color: #666;
+}
+
+.sound-group .sound-packs {
+  margin-top: 0;
+}

@@ -44,6 +44,13 @@ elapsed time rather than reading the canvas clock, and every module's React key
 includes the effect's run id. Both exist because the canvas outlives any single
 effect; removing either brings back a bug that has already been fixed once.
 
+**Two sets of sound packs are shipping side by side** while it is decided
+which to keep: the hand-written ones in `src/sound/packs.ts` and Gemini's in
+`src/sound/geminiPacks.ts`, kept verbatim so the comparison stays honest.
+Settings renders them from `SOUND_PACK_GROUPS`; dropping a set is deleting one
+entry there and its file. Note Gemini's peak quieter (0.26-0.47 against
+0.41-0.76), which is its own level choice, not a bug.
+
 **The spin sounds are synthesised, not sampled.** `src/sound/` builds them
 from oscillators and filtered noise at runtime — there are no audio files. Add
 a sound by appending to `SOUND_PACKS` in `src/sound/packs.ts`; Settings builds
