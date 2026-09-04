@@ -6,15 +6,13 @@ import './index.css';
 import EffectCanvas from './vfx/EffectCanvas';
 import type { EffectConfig } from './vfx/types';
 import { matchCharacterEffect, resolvePresentation } from './characters/registry';
+import { STORAGE_KEYS } from './storage';
 import {
-  STORAGE_KEYS,
-  readString,
-  readNumber,
-  readJSON,
-  writeString,
-  writeJSON,
-  remove as removeStored,
-} from './storage';
+  usePersistedBoolean,
+  usePersistedJSON,
+  usePersistedNumber,
+  usePersistedString,
+} from './usePersistedState';
 import type { CharacterEffect } from './characters/types';
 import type { CharacterData, HistoryEntry, WeightMap, Winner } from './types';
 import CharacterList from './components/CharacterList';
@@ -80,7 +78,7 @@ function describeExtractionFailure(error: unknown): string {
 }
 
 function App() {
-  const [input, setInput] = useState(() => readString(STORAGE_KEYS.input) ?? '');
+  const [input, setInput] = usePersistedString(STORAGE_KEYS.input, '');
   const [characters, setCharacters] = useState<CharacterData[]>([]);
   const [mustSpin, setMustSpin] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(0);
@@ -94,38 +92,21 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [spinDuration, setSpinDuration] = useState(
-    () => readNumber(STORAGE_KEYS.duration, 0.4),
-  );
-  const [soundEnabled, setSoundEnabled] = useState(() => {
-    const saved = readString(STORAGE_KEYS.sound);
-    return saved === null ? true : saved === 'true';
-  });
+  const [spinDuration, setSpinDuration] = usePersistedNumber(STORAGE_KEYS.duration, 0.4);
+  const [soundEnabled, setSoundEnabled] = usePersistedBoolean(STORAGE_KEYS.sound, true);
 
   // Filter, Weight & History States
-  const [rangeInput, setRangeInput] = useState(
-    () => readString(STORAGE_KEYS.ranges) ?? '',
-  );
+  const [rangeInput, setRangeInput] = usePersistedString(STORAGE_KEYS.ranges, '');
   const [listSearch, setListSearch] = useState('');
-  const [weights, setWeights] = useState<WeightMap>(
-    () => readJSON(STORAGE_KEYS.weights, {}, isWeightMap),
-  );
-  const [history, setHistory] = useState<HistoryEntry[]>(
-    () => readJSON(STORAGE_KEYS.history, [], isHistory),
-  );
+  const [weights, setWeights] = usePersistedJSON<WeightMap>(STORAGE_KEYS.weights, {}, isWeightMap);
+  const [history, setHistory] = usePersistedJSON<HistoryEntry[]>(STORAGE_KEYS.history, [], isHistory);
   
   // Special Visuals State. Effect definitions live in characters/registry.ts.
   const [activeEffect, setActiveEffect] = useState<CharacterEffect | null>(null);
   const [vfxConfig, setVfxConfig] = useState<EffectConfig | null>(null);
 
-  const handleInputChange = (value: string) => {
-    setInput(value);
-    writeString(STORAGE_KEYS.input, value);
-  };
-
   const handleRangeChange = (value: string) => {
     setRangeInput(value);
-    writeString(STORAGE_KEYS.ranges, value);
     setSelectedIndex(null);
     setWinners([]);
   };
@@ -139,14 +120,12 @@ function App() {
       newWeights[originalIndex] = isNaN(num) ? 1 : Math.max(0, Math.min(9999, num));
     }
     setWeights(newWeights);
-    writeJSON(STORAGE_KEYS.weights, newWeights);
   };
 
   const addToHistory = (newWinners: { name: string; index: number }[]) => {
     const timestamp = new Date().toLocaleTimeString();
     const historyEntries = newWinners.map(w => ({ ...w, timestamp }));
     setHistory(historyEntries);
-    writeJSON(STORAGE_KEYS.history, historyEntries);
   };
 
   /** Fires the registry effect for the first winner, if one matches. */
@@ -175,20 +154,9 @@ function App() {
     });
   };
 
-  const handleSpinDurationChange = (seconds: number) => {
-    setSpinDuration(seconds);
-    writeString(STORAGE_KEYS.duration, seconds.toString());
-  };
-
-  const handleSoundEnabledChange = (enabled: boolean) => {
-    setSoundEnabled(enabled);
-    writeString(STORAGE_KEYS.sound, enabled.toString());
-  };
-
   const clearHistory = () => {
     if (window.confirm('Clear last result?')) {
       setHistory([]);
-      removeStored(STORAGE_KEYS.history);
       setShowHistoryModal(false);
     }
   };
@@ -343,7 +311,6 @@ function App() {
   const resetWeights = () => {
     if (window.confirm('Reset all weights to 1?')) {
       setWeights({});
-      removeStored(STORAGE_KEYS.weights);
     }
   };
 
@@ -386,7 +353,7 @@ function App() {
         <textarea
           placeholder="Paste Google Doc Link or raw text..."
           value={input}
-          onChange={(e) => handleInputChange(e.target.value)}
+          onChange={(e) => setInput(e.target.value)}
           disabled={mustSpin}
         />
         <div className="filter-section">
@@ -491,8 +458,8 @@ function App() {
         <SettingsModal
           spinDuration={spinDuration}
           soundEnabled={soundEnabled}
-          onSpinDurationChange={handleSpinDurationChange}
-          onSoundEnabledChange={handleSoundEnabledChange}
+          onSpinDurationChange={setSpinDuration}
+          onSoundEnabledChange={setSoundEnabled}
           onClose={() => setShowSettings(false)}
         />
       )}
