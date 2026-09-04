@@ -17,7 +17,10 @@ interface ToneOptions {
   duration: number;
   gain: number;
   type?: OscillatorType;
-  /** Fraction of the duration spent on the attack. Keep tiny to avoid clicks. */
+  /**
+   * Attack in seconds. Near-instant by default: a tick is a physical impulse,
+   * and anything slower reads as a beep rather than something being struck.
+   */
   attack?: number;
 }
 
@@ -35,7 +38,7 @@ export function tone(v: Voice, o: ToneOptions): void {
 
   // A short ramp in and out rather than a hard start: an instant jump from
   // silence to full amplitude is itself a click, audible on top of the sound.
-  const attack = Math.min(o.attack ?? 0.004, o.duration * 0.5);
+  const attack = Math.min(o.attack ?? 0.0015, o.duration * 0.5);
   amp.gain.setValueAtTime(0.0001, o.at);
   amp.gain.exponentialRampToValueAtTime(Math.max(o.gain, 0.0002), o.at + attack);
   amp.gain.exponentialRampToValueAtTime(0.0001, o.at + o.duration);
@@ -50,11 +53,16 @@ interface NoiseOptions {
   at: number;
   duration: number;
   gain: number;
-  /** Bandpass centre. This is what gives a noise burst a sense of material. */
+  /** Filter corner or centre. This is what gives noise a sense of material. */
   freq: number;
   /** Higher is narrower, so more pitched and less "shh". */
   q?: number;
   endFreq?: number;
+  /**
+   * bandpass isolates a band, lowpass keeps the body and drops the fizz,
+   * highpass keeps only the snap of a transient.
+   */
+  filter?: BiquadFilterType;
 }
 
 export function noise(v: Voice, o: NoiseOptions): void {
@@ -66,7 +74,7 @@ export function noise(v: Voice, o: NoiseOptions): void {
   // Start somewhere random in the buffer so repeated ticks aren't bit-identical.
   const offset = Math.random() * Math.max(v.noise.duration - o.duration - 0.01, 0);
 
-  band.type = 'bandpass';
+  band.type = o.filter ?? 'bandpass';
   band.frequency.setValueAtTime(o.freq, o.at);
   if (o.endFreq !== undefined) {
     band.frequency.exponentialRampToValueAtTime(Math.max(o.endFreq, 1), o.at + o.duration);

@@ -16,32 +16,35 @@ export const SOUND_PACKS: SoundPack[] = [
     label: 'Ratchet',
     description: 'A real wheel’s flapper. Dry wooden clicks, bright landing.',
     tick(v, at, progress) {
-      // Rises in pitch and tightens as the wheel slows, so late clicks read as
-      // deliberate rather than as more of the early blur.
+      // Lowpassed, not a bright band: the earlier version put all its energy
+      // above 1.5 kHz, which reads as electrical arcing rather than as wood.
       noise(v, {
         at,
-        duration: 0.028,
-        gain: 0.30 + progress * 0.20,
-        freq: 1500 + progress * 900,
-        q: 3 + progress * 5,
+        duration: 0.014,
+        gain: 0.26 + progress * 0.12,
+        freq: 2200 + progress * 600,
+        filter: 'lowpass',
+        q: 0.9,
       });
-      // A touch of body under the click stops it sounding like static.
+      // The weight of the peg. Loud enough to be the body of the click rather
+      // than a hint under it, and pitched low enough to feel like mass.
       tone(v, {
         at,
-        freq: 320 + progress * 120,
-        endFreq: 160,
-        duration: 0.02,
-        gain: 0.11,
+        freq: 210 + progress * 60,
+        endFreq: 95,
+        duration: 0.015,
+        gain: 0.42,
         type: 'triangle',
       });
     },
     land(v, at) {
-      noise(v, { at, duration: 0.12, gain: 0.34, freq: 900, endFreq: 300, q: 1.2 });
-      chord(v, at + 0.01, [880, 1320, 1760], {
-        duration: 0.9,
-        gain: 0.40,
+      noise(v, { at, duration: 0.09, gain: 0.15, freq: 1400, endFreq: 400, filter: 'lowpass' });
+      tone(v, { at, freq: 190, endFreq: 80, duration: 0.22, gain: 0.20, type: 'triangle' });
+      chord(v, at + 0.012, [587.33, 880, 1174.66], {
+        duration: 0.8,
+        gain: 0.17,
         type: 'triangle',
-        stagger: 0.012,
+        stagger: 0.014,
       });
     },
   },
@@ -60,15 +63,15 @@ export const SOUND_PACKS: SoundPack[] = [
       });
     },
     land(v, at) {
-      // Ascending major arpeggio — the standard "you got it" cadence.
-      [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
-        tone(v, {
-          at: at + i * 0.075,
-          freq,
-          duration: i === 3 ? 0.42 : 0.1,
-          gain: 0.30,
-          type: 'square',
-        });
+      // A quick run *into* a held chord. The run alone just stopped — four
+      // separate blips in a row read as the spin timing out, not resolving.
+      [523.25, 659.25, 783.99].forEach((freq, i) => {
+        tone(v, { at: at + i * 0.06, freq, duration: 0.075, gain: 0.26, type: 'square' });
+      });
+      chord(v, at + 0.18, [523.25, 659.25, 783.99, 1046.5], {
+        duration: 0.55,
+        gain: 0.26,
+        type: 'square',
       });
     },
   },
@@ -77,13 +80,17 @@ export const SOUND_PACKS: SoundPack[] = [
     id: 'chime',
     label: 'Chime',
     description: 'Soft mallet taps and a warm bell. The quiet one.',
+    // No noise transient here on purpose. Adding one to "sharpen" the tap
+    // buried the rhythm in wash and cost this pack the thing it is for.
     tick(v, at, progress) {
+      // An octave down from the first attempt: 126 pure sine pings up at
+      // 900–1400 Hz is a hearing test, not a wheel.
       tone(v, {
         at,
-        freq: 900 + progress * 500,
-        endFreq: 600,
-        duration: 0.05,
-        gain: 0.12,
+        freq: 450 + progress * 250,
+        endFreq: 300,
+        duration: 0.04,
+        gain: 0.13,
         type: 'sine',
       });
     },
@@ -113,6 +120,9 @@ export const SOUND_PACKS: SoundPack[] = [
         gain: 0.26,
         type: 'sine',
       });
+      // Kept deliberately dull and quiet. A highpassed spike here defines the
+      // transient on paper and rings like a broken spring in practice; even
+      // nudging this brighter or louder brought back an audible wash.
       noise(v, { at, duration: 0.02, gain: 0.08, freq: 2400, q: 0.8 });
     },
     land(v, at) {
