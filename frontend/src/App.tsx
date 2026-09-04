@@ -16,25 +16,15 @@ import {
   remove as removeStored,
 } from './storage';
 import type { CharacterEffect } from './characters/types';
-
-interface CharacterData {
-  name: string;
-  color: string;
-  originalIndex: number;
-}
+import type { CharacterData, HistoryEntry, WeightMap, Winner } from './types';
+import CharacterList from './components/CharacterList';
+import HistoryModal from './components/HistoryModal';
+import ResultsModal from './components/ResultsModal';
+import SettingsModal from './components/SettingsModal';
 
 interface ExtractionResponse {
   characters: { name: string; color: string }[];
 }
-
-interface HistoryEntry {
-  name: string;
-  index: number;
-  timestamp: string;
-}
-
-/** Keyed by originalIndex. A string value is an in-progress edit of the field. */
-type WeightMap = Record<number, number | string>;
 
 /** Placeholder winner used when every candidate has been weighted to zero. */
 const VOID_NAME = 'VOID';
@@ -100,7 +90,7 @@ function App() {
   
   // Settings & Core Logic
   const [spinCount, setSpinCount] = useState<number | string>(1);
-  const [winners, setWinners] = useState<{ name: string; index: number; color: string }[]>([]);
+  const [winners, setWinners] = useState<Winner[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -183,6 +173,16 @@ function App() {
       modules: effect.modules,
       timestamp: Date.now()
     });
+  };
+
+  const handleSpinDurationChange = (seconds: number) => {
+    setSpinDuration(seconds);
+    writeString(STORAGE_KEYS.duration, seconds.toString());
+  };
+
+  const handleSoundEnabledChange = (enabled: boolean) => {
+    setSoundEnabled(enabled);
+    writeString(STORAGE_KEYS.sound, enabled.toString());
   };
 
   const clearHistory = () => {
@@ -464,170 +464,45 @@ function App() {
             </div>
           </div>
 
-          <div className="list-section">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <h3 style={{ margin: 0 }}>Characters ({filteredCharacters.length})</h3>
-                <button 
-                  onClick={resetWeights}
-                  style={{ padding: '2px 8px', fontSize: '0.7rem', background: '#333', border: '1px solid #444', borderRadius: '4px', cursor: 'pointer' }}
-                  title="Reset all weights to 1"
-                >
-                  Reset
-                </button>
-              </div>
-              <input 
-                placeholder="Search..." 
-                value={listSearch} 
-                onChange={(e) => setListSearch(e.target.value)}
-                style={{ padding: '5px 10px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: '4px', width: '100px' }}
-              />
-            </div>
-            {visibleInSidebar.map((char) => (
-              <div 
-                key={char.originalIndex} 
-                id={`char-${char.originalIndex}`}
-                className={`character-item ${selectedIndex === char.originalIndex ? 'highlight' : ''}`}
-                style={{ color: char.color !== '#ffffff' ? char.color : 'inherit' }}
-              >
-                <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginRight: '10px' }}>
-                  {char.originalIndex + 1}. {char.name}
-                </span>
-                <div className="weight-control">
-                  <button onClick={() => setManualWeight(char.originalIndex, getWeight(char.originalIndex) - 1)} disabled={mustSpin}>-</button>
-                  <input 
-                    type="number" 
-                    className="weight-input" 
-                    value={weights[char.originalIndex] ?? 1} 
-                    onChange={(e) => setManualWeight(char.originalIndex, e.target.value)}
-                    onBlur={(e) => { if (!e.target.value) setManualWeight(char.originalIndex, 1); }}
-                    disabled={mustSpin}
-                  />
-                  <button onClick={() => setManualWeight(char.originalIndex, getWeight(char.originalIndex) + 1)} disabled={mustSpin}>+</button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <CharacterList
+            totalCount={filteredCharacters.length}
+            visible={visibleInSidebar}
+            weights={weights}
+            getWeight={getWeight}
+            selectedIndex={selectedIndex}
+            search={listSearch}
+            disabled={mustSpin}
+            onSearchChange={setListSearch}
+            onWeightChange={setManualWeight}
+            onResetWeights={resetWeights}
+          />
         </main>
       )}
 
       {showHistoryModal && (
-        <div className="settings-overlay" onClick={() => setShowHistoryModal(false)}>
-          <div className="settings-modal" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h2 style={{ margin: 0 }}>📜 Last Result</h2>
-              <button onClick={() => setShowHistoryModal(false)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '1.5rem', cursor: 'pointer', padding: 0 }}>✕</button>
-            </div>
-            <div className="results-list" style={{ maxHeight: '400px' }}>
-              {history.map((item, i) => (
-                <div key={i} className="history-item" style={{ background: 'rgba(255,255,255,0.05)', padding: '10px', marginBottom: '5px', borderRadius: '8px' }}>
-                  <span>
-                    <span style={{ color: '#666', marginRight: '0.5rem' }}>[{item.index + 1}]</span>
-                    <strong>{item.name}</strong>
-                  </span>
-                  <span className="history-time">{item.timestamp}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: '10px', marginTop: '1rem' }}>
-              <button onClick={clearHistory} style={{ flex: 1, background: '#333' }}>Clear</button>
-              <button onClick={() => setShowHistoryModal(false)} style={{ flex: 1 }}>Close</button>
-            </div>
-          </div>
-        </div>
+        <HistoryModal
+          history={history}
+          onClear={clearHistory}
+          onClose={() => setShowHistoryModal(false)}
+        />
       )}
 
       {showSettings && (
-        <div className="settings-overlay" onClick={() => setShowSettings(false)}>
-          <div className="settings-modal" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-              <h2 style={{ margin: 0 }}>Settings</h2>
-              <button onClick={() => setShowSettings(false)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '1.5rem', cursor: 'pointer', padding: 0 }}>✕</button>
-            </div>
-            <div className="settings-row">
-              <label>Spin Duration (Seconds)</label>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                {[0, 1, 2, 5, 10].map(s => (
-                  <button key={s} onClick={() => { setSpinDuration(s); writeString(STORAGE_KEYS.duration, s.toString()); }} style={{ flex: '1 0 30%', fontSize: '0.8rem', background: spinDuration === s ? '#646cff' : '#333', padding: '0.5rem' }}>
-                    {s === 0 ? '0s (Instant)' : `${s}s`}
-                  </button>
-                ))}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <input type="number" min="0" max="10" step="0.1" className="spin-input" style={{ width: '100px' }} value={spinDuration} onChange={(e) => { const val = parseFloat(e.target.value); const safeVal = isNaN(val) ? 0 : Math.min(10, Math.max(0, val)); setSpinDuration(safeVal); writeString(STORAGE_KEYS.duration, safeVal.toString()); }} />
-                <span style={{ color: '#666', fontSize: '0.8rem' }}>Custom (Max 10s)</span>
-              </div>
-            </div>
-            <div className="settings-row">
-              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: '#888' }}>
-                <input type="checkbox" checked={soundEnabled} onChange={(e) => { setSoundEnabled(e.target.checked); writeString(STORAGE_KEYS.sound, e.target.checked.toString()); }} />
-                Enable Spin Sound
-              </label>
-            </div>
-            <button onClick={() => setShowSettings(false)} style={{ width: '100%', marginTop: '1rem' }}>Close</button>
-          </div>
-        </div>
+        <SettingsModal
+          spinDuration={spinDuration}
+          soundEnabled={soundEnabled}
+          onSpinDurationChange={handleSpinDurationChange}
+          onSoundEnabledChange={handleSoundEnabledChange}
+          onClose={() => setShowSettings(false)}
+        />
       )}
 
       {showModal && (
-        <div className="results-overlay" onClick={() => setShowModal(false)}>
-          {presentation.glitch && <div className="glitch-overlay" />}
-          <div
-            className={`results-modal ${presentation.shake ? 'shake-effect' : ''}`}
-            onClick={e => e.stopPropagation()}
-            style={{
-              borderColor: presentation.borderColor,
-              boxShadow: presentation.boxShadow,
-              backgroundColor: presentation.backgroundColor,
-              backdropFilter: 'blur(10px)'
-            }}
-          >
-            <h2
-              className={presentation.glitch ? 'glitch-effect' : ''}
-              style={{
-                color: presentation.winnerColor,
-                fontFamily: presentation.fontFamily,
-                letterSpacing: presentation.letterSpacing,
-                textShadow: presentation.textShadow
-              }}
-            >
-              {presentation.title}
-            </h2>
-            <div className="results-list" style={{ position: 'relative', zIndex: 2 }}>
-              {winners.map((winner, i) => (
-                <div
-                  key={i}
-                  className="result-winner"
-                  style={{
-                    // No effect: each winner keeps its own colour from the document.
-                    color: presentation.winnerColor ?? winner.color,
-                    fontFamily: presentation.fontFamily,
-                    letterSpacing: presentation.letterSpacing,
-                    textShadow: presentation.textShadow
-                  }}
-                >
-                  {winners.length > 1 && <span style={{ fontSize: '0.9rem', color: '#888', marginRight: '0.5rem' }}>#{i + 1}</span>}
-                  <span style={{ color: '#888', marginRight: '0.5rem' }}>[{winner.index + 1}]</span>
-                  {winner.name}
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={() => setShowModal(false)}
-              style={{
-                background: presentation.buttonColor,
-                color: presentation.buttonTextColor,
-                fontWeight: 'bold',
-                marginTop: '1.5rem',
-                padding: '0.8rem 2rem',
-                position: 'relative',
-                zIndex: 2
-              }}
-            >
-              Awesome!
-            </button>
-          </div>
-        </div>
+        <ResultsModal
+          winners={winners}
+          presentation={presentation}
+          onClose={() => setShowModal(false)}
+        />
       )}
     </div>
   );
