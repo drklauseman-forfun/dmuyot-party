@@ -1,9 +1,15 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react';
 import axios from 'axios';
 import CustomWheel from './CustomWheel';
 import type { WheelSlice } from './CustomWheel';
 import './index.css';
-import EffectCanvas from './vfx/EffectCanvas';
+/**
+ * three.js, postprocessing and the effect components come to about 900 kB, and
+ * most spins never fire an effect at all. Split out so first paint doesn't wait
+ * on them; the prefetch below then warms the chunk long before any spin, so the
+ * first effect isn't the one that pays for it.
+ */
+const EffectCanvas = lazy(() => import('./vfx/EffectCanvas'));
 import type { EffectConfig } from './vfx/types';
 import { matchCharacterEffect, resolvePresentation } from './characters/registry';
 import { STORAGE_KEYS } from './storage';
@@ -106,6 +112,15 @@ function App() {
   const [activeEffect, setActiveEffect] = useState<CharacterEffect | null>(null);
   const [vfxConfig, setVfxConfig] = useState<EffectConfig | null>(null);
 
+  // Once an effect has played, the canvas stays mounted. It runs its own
+  // fade-out after `config` goes null, so unmounting it between effects would
+  // cut that short.
+  const [vfxEverPlayed, setVfxEverPlayed] = useState(false);
+
+  useEffect(() => {
+    void import('./vfx/EffectCanvas');
+  }, []);
+
   const handleRangeChange = (value: string) => {
     setRangeInput(value);
     setSelectedIndex(null);
@@ -148,6 +163,7 @@ function App() {
 
     devLog("🔥 [EFFECT] Matched effect:", effect.id);
     setActiveEffect(effect);
+    setVfxEverPlayed(true);
     setVfxConfig({
       effectId: effect.id,
       modules: effect.modules,
@@ -338,7 +354,11 @@ function App() {
 
   return (
     <div className="app-container">
-      <EffectCanvas config={vfxConfig} onComplete={() => setVfxConfig(null)} />
+      {vfxEverPlayed && (
+        <Suspense fallback={null}>
+          <EffectCanvas config={vfxConfig} onComplete={() => setVfxConfig(null)} />
+        </Suspense>
+      )}
       <header>
         <h1>Dmuyot Party</h1>
         <p className="subtitle">Random character selector for your next big adventure</p>
