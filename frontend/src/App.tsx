@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import CustomWheel from './CustomWheel';
+import type { WheelSlice } from './CustomWheel';
 import './index.css';
 import EffectCanvas from './vfx/EffectCanvas';
 import type { EffectConfig } from './vfx/types';
@@ -346,25 +347,19 @@ function App() {
     }
   };
 
-  const wheelData = useMemo(() => {
-    const totalWeight = wheelCharacters.reduce((acc, char) => acc + getWeight(char.originalIndex), 0);
-    const isTooLarge = wheelCharacters.length > 25;
-    
-    return wheelCharacters.map((char) => {
-      const weight = getWeight(char.originalIndex);
-      const percentage = (weight / totalWeight) * 100;
-      
-      // Force full name if chance > 5% (more generous than 10% for dense lists)
-      // Otherwise, show number only if the total list is large.
-      const showFullName = percentage >= 5 || !isTooLarge;
-      
-      return { 
-        label: showFullName ? `${char.originalIndex + 1}. ${char.name}` : (char.originalIndex + 1).toString(),
+  // Raw slices. How a label is worded, truncated and sized is entirely
+  // CustomWheel's business, since it is the one that knows how much room a
+  // slice actually has.
+  const wheelData = useMemo<WheelSlice[]>(
+    () =>
+      wheelCharacters.map((char) => ({
+        number: char.originalIndex + 1,
+        name: char.name,
         color: char.color,
-        weight: weight
-      };
-    });
-  }, [wheelCharacters, getWeight]);
+        weight: getWeight(char.originalIndex),
+      })),
+    [wheelCharacters, getWeight],
+  );
 
   // Concrete modal styling for the current winner — either the matched effect's
   // presentation, or a neutral one tinted with the character's own colour.
@@ -437,7 +432,6 @@ function App() {
                 </button>
               )}
               <CustomWheel
-                key={`wheel-${wheelCharacters.length}-${JSON.stringify(weights)}-${rangeInput}`} 
                 mustSpin={mustSpin}
                 prizeIndex={prizeNumber}
                 data={wheelData}

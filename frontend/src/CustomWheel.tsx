@@ -1,11 +1,51 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 
+export interface WheelSlice {
+  /** The character's 1-based number, as shown everywhere in the UI. */
+  number: number;
+  name: string;
+  color: string;
+  weight: number;
+}
+
 interface CustomWheelProps {
-  data: { label: string; color: string; weight: number }[];
+  data: WheelSlice[];
   mustSpin: boolean;
   prizeIndex: number;
   spinDuration: number;
   onStopSpinning: () => void;
+}
+
+/*
+ * Label sizing lives here, and only here. It used to be split — the caller
+ * decided whether a slice showed its full name, this file independently
+ * re-derived the same crowding threshold to pick a font size — which meant two
+ * files had to agree on the number 25 for the wheel to look right.
+ */
+
+/** Past this many slices, thin ones fall back to their number alone. */
+const CROWDED_SLICE_COUNT = 25;
+
+/** A slice with at least this share of the wheel always shows its full name. */
+const MIN_SHARE_FOR_FULL_NAME = 5;
+
+/** Longer labels are cut; beyond this they overrun the slice regardless. */
+const MAX_LABEL_LENGTH = 30;
+
+function sliceLabel(slice: WheelSlice, sharePercent: number, crowded: boolean): string {
+  const label =
+    sharePercent >= MIN_SHARE_FOR_FULL_NAME || !crowded
+      ? `${slice.number}. ${slice.name}`
+      : slice.number.toString();
+
+  return label.length > MAX_LABEL_LENGTH
+    ? `${label.substring(0, MAX_LABEL_LENGTH - 3)}...`
+    : label;
+}
+
+function labelFontSize(label: string, crowded: boolean): string {
+  if (!crowded) return '7';
+  return label.length > 5 ? '4' : '5';
 }
 
 const CustomWheel: React.FC<CustomWheelProps> = ({ 
@@ -22,6 +62,7 @@ const CustomWheel: React.FC<CustomWheelProps> = ({
   // Calculate slice geometry
   const slices = useMemo(() => {
     const totalWeight = data.reduce((acc, item) => acc + item.weight, 0);
+    const crowded = data.length > CROWDED_SLICE_COUNT;
     const result = [];
     let cumulativeAngle = 0;
 
@@ -33,8 +74,12 @@ const CustomWheel: React.FC<CustomWheelProps> = ({
       const endAngle = cumulativeAngle + angle;
       cumulativeAngle = endAngle;
 
+      const label = sliceLabel(item, (item.weight / totalWeight) * 100, crowded);
+
       result.push({
         ...item,
+        label,
+        fontSize: labelFontSize(label, crowded),
         startAngle,
         endAngle,
         midAngle: startAngle + angle / 2,
@@ -159,28 +204,21 @@ const CustomWheel: React.FC<CustomWheelProps> = ({
             ))}
           </g>
           <g>
-            {slices.map((slice, i) => {
-              const rotation = slice.midAngle;
-              const isTooMany = slices.length > 25;
-              // Trust the label from data prop, but apply light truncation if it's exceptionally long
-              const text = slice.label.length > 30 ? slice.label.substring(0, 27) + '...' : slice.label;
-              
-              return (
-                <text
-                  key={i}
-                  x="100"
-                  y="30"
-                  fill={slice.color !== '#ffffff' ? slice.color : '#ffffff'}
-                  fontSize={isTooMany && text.length > 5 ? "4" : isTooMany ? "5" : "7"}
-                  fontWeight="bold"
-                  textAnchor="middle"
-                  transform={`rotate(${rotation}, 100, 100)`}
-                  style={{ pointerEvents: 'none', userSelect: 'none' }}
-                >
-                  {text}
-                </text>
-              );
-            })}
+            {slices.map((slice, i) => (
+              <text
+                key={i}
+                x="100"
+                y="30"
+                fill={slice.color !== '#ffffff' ? slice.color : '#ffffff'}
+                fontSize={slice.fontSize}
+                fontWeight="bold"
+                textAnchor="middle"
+                transform={`rotate(${slice.midAngle}, 100, 100)`}
+                style={{ pointerEvents: 'none', userSelect: 'none' }}
+              >
+                {slice.label}
+              </text>
+            ))}
           </g>
           {/* Outer Border */}
           <circle cx="100" cy="100" r="98" fill="none" stroke="#333" strokeWidth="4" />
