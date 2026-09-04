@@ -7,6 +7,7 @@ import EffectCanvas from './vfx/EffectCanvas';
 import type { EffectConfig } from './vfx/types';
 import { matchCharacterEffect, resolvePresentation } from './characters/registry';
 import { STORAGE_KEYS } from './storage';
+import { devLog } from './log';
 import {
   usePersistedBoolean,
   usePersistedJSON,
@@ -131,7 +132,7 @@ function App() {
   /** Fires the registry effect for the first winner, if one matches. */
   const checkEffect = (winnersList: { name: string }[]) => {
     const firstWinner = winnersList[0];
-    console.log("🎯 [EFFECT] Checking effects for:", firstWinner?.name);
+    devLog("🎯 [EFFECT] Checking effects for:", firstWinner?.name);
 
     const effect =
       firstWinner && firstWinner.name !== VOID_NAME
@@ -139,13 +140,13 @@ function App() {
         : null;
 
     if (!effect) {
-      console.log("⚪ [EFFECT] No special trigger matched.");
+      devLog("⚪ [EFFECT] No special trigger matched.");
       setActiveEffect(null);
       setVfxConfig(null);
       return;
     }
 
-    console.log("🔥 [EFFECT] Matched effect:", effect.id);
+    devLog("🔥 [EFFECT] Matched effect:", effect.id);
     setActiveEffect(effect);
     setVfxConfig({
       effectId: effect.id,
@@ -168,7 +169,7 @@ function App() {
 
   const playSpinSound = (duration: number) => {
     if (!soundEnabled) return;
-    console.log(`🔊 [SOUND] Playing spin sound for ${duration}s`);
+    devLog(`🔊 [SOUND] Playing spin sound for ${duration}s`);
   };
 
   const handleExtract = async () => {

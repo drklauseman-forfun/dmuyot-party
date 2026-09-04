@@ -7,6 +7,7 @@ import VFXGlow from './components/VFXGlow';
 import VFXSparkles from './components/VFXSparkles';
 import VFXFire from './components/VFXFire';
 import SubtleTopBeams from './components/SubtleTopBeams';
+import { devLog } from '../log';
 
 interface EffectCanvasProps {
   config: EffectConfig | null;
@@ -39,7 +40,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       setDisplayConfig(config);
       setVisible(true);
       /* eslint-enable react-hooks/set-state-in-effect */
-      console.log("🎨 [VFX] Rendering Canvas for effect:", config.effectId);
+      devLog("🎨 [VFX] Rendering Canvas for effect:", config.effectId);
 
       // Auto-cleanup once the longest-lived module has finished. A module's
       // lifetime is all three phases — ramping in, holding, then fading out —
@@ -51,7 +52,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
       }, 0) || 6;
 
       const cleanupTimer = setTimeout(() => {
-        console.log("🧹 [VFX] Effect auto-cleanup triggered");
+        devLog("🧹 [VFX] Effect auto-cleanup triggered");
         onCompleteRef.current();
       }, maxLife * 1000);
 
@@ -87,7 +88,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
             antialias: false,
             powerPreference: "high-performance"
         }}
-        onCreated={() => console.log("🎮 [VFX] WebGL Context Created")}
+        onCreated={() => devLog("🎮 [VFX] WebGL Context Created")}
         style={{ pointerEvents: 'none' }}
       >
         <ambientLight intensity={1.0} />
