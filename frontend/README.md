@@ -25,11 +25,14 @@ npm run lint     # expected to pass with zero problems
 ## Things that will bite you
 
 **`originalIndex` is identity, and it is positional.** Weights, ranges and
-history all key off it, and none of them are cleared when a new list is loaded.
-Load one document, set character 5's weight to 0, load a different document,
-and character 5 of the *new* list is silently off the wheel. This is known and
-unfixed — the fix is a product decision about whether loading a list should
-reset the weights, warn, or carry them over.
+history all key off a character's position in the document, not its name. A
+successful load therefore resets every weight to 1 — otherwise setting
+character 5 to weight 0 in one document would silently keep character 5 of the
+*next* document off the wheel.
+
+The include-range is left alone on purpose: it stays visible in its own input,
+so a stale one is obvious in a way a stale weight is not. Anything else keyed
+by position needs the same consideration.
 
 **The wheel's label thresholds are tuned together.** `CROWDED_SLICE_COUNT`,
 `MIN_SHARE_FOR_FULL_NAME` and `MAX_LABEL_LENGTH` in `CustomWheel.tsx` decide

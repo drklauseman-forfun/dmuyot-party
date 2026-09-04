@@ -75,9 +75,10 @@ Consequences worth knowing:
 - More than one spin, or a spin duration under 0.2s, skips the wheel animation
   and resolves instantly. Multi-spin samples **with replacement** — the same
   character can win twice, by design.
-- Weights and ranges are **not** cleared when a new list is loaded. They are
-  keyed by position, so they carry over onto whatever occupies that position
-  next. See the note in `frontend/README.md`.
+- Loading a list resets every weight to 1. Weights are keyed by position, so
+  carrying them over would apply the old list's tuning to whoever now occupies
+  those positions. The include-range is deliberately **not** reset — unlike the
+  weights it stays visible in its input box, so it can't go stale unnoticed.
 
 ## Adding a character effect
 

@@ -201,6 +201,11 @@ function App() {
       
       if (response.data.characters.length > 0) {
         setCharacters(response.data.characters.map((c, i) => ({ ...c, originalIndex: i })));
+        // Weights are keyed by position, so keeping them across a load would
+        // silently apply the old list's tuning to whoever now occupies those
+        // positions — including leaving a character off the wheel at weight 0.
+        // A load starts fresh.
+        setWeights({});
       } else {
         setLoadError(
           'No characters found. Only lines that start with a number — or items in a numbered list — count as characters.',
