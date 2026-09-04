@@ -112,6 +112,24 @@ def test_common_numbering_styles_are_stripped(line, expected):
     assert clean_character_name(line) == expected
 
 
+@pytest.mark.parametrize(
+    'line,expected',
+    [
+        ('10 - Frodo', 'Frodo'),
+        ('10 -Frodo', 'Frodo'),
+        ('10- Frodo', 'Frodo'),
+    ],
+)
+def test_a_dash_separator_does_not_survive_as_part_of_the_name(line, expected):
+    """"10 - Frodo" is an ordinary list style; the dash is a separator."""
+    assert clean_character_name(line) == expected
+
+
+def test_a_dash_glued_between_digits_is_part_of_the_name():
+    """The whitespace is the signal — "10-20" is a name, "10 - X" is numbered."""
+    assert clean_character_name('10-20 Squad') == '10-20 Squad'
+
+
 def test_hebrew_names_are_untouched():
     assert clean_character_name('דיבי') == 'דיבי'
     assert clean_character_name('3. דיבי הרשע') == 'דיבי הרשע'

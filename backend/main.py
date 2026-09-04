@@ -31,17 +31,22 @@ def extract_doc_id(url: str) -> Optional[str]:
 def clean_character_name(line: str) -> str:
     name = line.strip()
     
-    # 1. Smartly strip leading numbers: e.g. "1. Name", "1) Name", "1 Name"
-    # It ensures we don't accidentally strip a character named "11" or "1.5"
-    m = re.match(r"^\s*\d+([\.\)\-]\s*|\s+)(.*)$", name)
+    # 1. Smartly strip leading numbers: e.g. "1. Name", "1) Name", "1 Name",
+    # "1 - Name". It ensures we don't accidentally strip a character named
+    # "11" or "1.5".
+    m = re.match(r"^\s*\d+(\s*[\.\)\-]\s*|\s+)(.*)$", name)
     if m:
-        prefix = m.group(1)
+        separator = m.group(1)
         remainder = m.group(2).strip()
-        
-        # Prevent stripping decimal numbers like "1.5"
-        if prefix in ['.', ')', '-'] and remainder and remainder[0].isdigit():
-            pass # Keep it intact
-        elif remainder:
+
+        # Whitespace is what tells a decimal from a numbered entry. A separator
+        # captured with none around it is glued to its digits, so "1.5" and
+        # "10-20" are one name — whereas the space in "12. 1.5" means the 12 is
+        # a list number and the name really is "1.5".
+        is_part_of_the_number = (
+            separator in ('.', ')', '-') and remainder[:1].isdigit()
+        )
+        if remainder and not is_part_of_the_number:
             name = remainder
     
     # 2. For the format "Name (Source): Description...", 
