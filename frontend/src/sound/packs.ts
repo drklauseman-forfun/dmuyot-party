@@ -1,5 +1,5 @@
 import type { SoundPack } from './types';
-import { chord, noise, tone } from './voices';
+import { chord, noise, strike, tone } from './voices';
 import { GEMINI_PACKS } from './geminiPacks';
 
 /**
@@ -15,38 +15,52 @@ export const SOUND_PACKS: SoundPack[] = [
   {
     id: 'ratchet',
     label: 'Ratchet',
-    description: 'A real wheel’s flapper. Dry wooden clicks, bright landing.',
+    description: 'A flapper over wooden pegs. Dry, mechanical, physical.',
     tick(v, at, progress) {
-      // Lowpassed, not a bright band: the earlier version put all its energy
-      // above 1.5 kHz, which reads as electrical arcing rather than as wood.
-      noise(v, {
+      // A struck peg, not a filtered noise burst. The body rings for ~35ms at
+      // inharmonic ratios, which is what reads as wood rather than as a beep.
+      strike(v, {
         at,
-        duration: 0.014,
-        gain: 0.26 + progress * 0.12,
-        freq: 2200 + progress * 600,
-        filter: 'lowpass',
-        q: 0.9,
-      });
-      // The weight of the peg. Loud enough to be the body of the click rather
-      // than a hint under it, and pitched low enough to feel like mass.
-      tone(v, {
-        at,
-        freq: 210 + progress * 60,
-        endFreq: 95,
-        duration: 0.015,
-        gain: 0.42,
-        type: 'triangle',
+        freq: 780 - progress * 90,
+        ratios: [1, 2.64, 4.87],
+        decay: 0.035,
+        gain: 0.30 + progress * 0.10,
+        click: 0.55,
+        clickFreq: 2800,
+        // Each peg sits slightly differently. Without this, 126 identical
+        // ticks in a row sound like a loop rather than a mechanism.
+        detune: 0.05,
       });
     },
+    /**
+     * The mechanism itself: axle rumble and the air the wheel is moving,
+     * loudest while it is fast and gone by the time it stops.
+     *
+     * Without this the clicks happen in a vacuum — there is nothing between
+     * them, so the ear hears isolated events rather than one turning object.
+     */
+    bed(v, at, durationSeconds) {
+      noise(v, { at, duration: durationSeconds * 0.85, gain: 0.10, freq: 260, filter: 'lowpass' });
+      noise(v, { at, duration: durationSeconds * 0.7, gain: 0.035, freq: 1600, endFreq: 700, q: 0.7 });
+    },
     land(v, at) {
-      noise(v, { at, duration: 0.09, gain: 0.15, freq: 1400, endFreq: 400, filter: 'lowpass' });
-      tone(v, { at, freq: 190, endFreq: 80, duration: 0.22, gain: 0.20, type: 'triangle' });
-      chord(v, at + 0.012, [587.33, 880, 1174.66], {
-        duration: 0.8,
-        gain: 0.17,
-        type: 'triangle',
-        stagger: 0.014,
+      // A flapper does not stop dead — it settles over shrinking bounces that
+      // crowd together as they die. That settle is the wheel actually arriving,
+      // and it is the last thing the ear hears, so it carries the tail.
+      [0, 0.075, 0.135, 0.18, 0.213, 0.236].forEach((offset, i) => {
+        strike(v, {
+          at: at + offset,
+          freq: 720 - i * 32,
+          ratios: [1, 2.64, 4.87],
+          decay: 0.075,
+          gain: 0.36 / (1 + i * 0.85),
+          click: 0.45,
+          clickFreq: 2600,
+          detune: 0.03,
+        });
       });
+      // Warmth underneath, held long enough to ring out with the room.
+      tone(v, { at, freq: 150, endFreq: 68, duration: 0.75, gain: 0.24, type: 'triangle' });
     },
   },
 
@@ -80,19 +94,20 @@ export const SOUND_PACKS: SoundPack[] = [
   {
     id: 'chime',
     label: 'Chime',
-    description: 'Soft mallet taps and a warm bell. The quiet one.',
+    description: 'Struck glass over a soft bell. The gentle one.',
     // No noise transient here on purpose. Adding one to "sharpen" the tap
     // buried the rhythm in wash and cost this pack the thing it is for.
     tick(v, at, progress) {
-      // An octave down from the first attempt: 126 pure sine pings up at
-      // 900–1400 Hz is a hearing test, not a wheel.
-      tone(v, {
+      // Glass rings far longer and much more inharmonically than wood.
+      strike(v, {
         at,
-        freq: 450 + progress * 250,
-        endFreq: 300,
-        duration: 0.04,
-        gain: 0.13,
-        type: 'sine',
+        freq: 1180 - progress * 260,
+        ratios: [1, 3.41, 6.72],
+        decay: 0.10,
+        gain: 0.15,
+        click: 0.12,
+        clickFreq: 6000,
+        detune: 0.04,
       });
     },
     land(v, at) {

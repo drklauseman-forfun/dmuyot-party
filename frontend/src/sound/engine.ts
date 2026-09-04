@@ -27,6 +27,59 @@ const APPROXIMATE_TURNS = 10.5;
 
 type AudioContextCtor = typeof AudioContext;
 
+/**
+ * Build the output chain and return the node packs should connect to.
+ *
+ * Exported so an offline render can reproduce exactly what the app plays. It
+ * used to be rebuilt by hand wherever a render was needed, which meant the
+ * files being judged were not quite the files being shipped.
+ */
+export function buildOutputChain(ctx: BaseAudioContext, destination: AudioNode): AudioNode {
+  const bus = ctx.createGain();
+
+  // A limiter across everything: a dense spin can overlap dozens of ticks with
+  // the landing, which without this clips audibly.
+  const limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.value = -3;
+  limiter.ratio.value = 12;
+  limiter.attack.value = 0.002;
+  limiter.release.value = 0.15;
+
+  // A small room. Every earlier version was bone dry, which is most of why
+  // they sounded synthetic — a real wheel is an object somewhere, and even a
+  // little early reflection is the difference between a sample and a beep.
+  const room = ctx.createConvolver();
+  room.buffer = buildRoomImpulse(ctx, 0.9, 2.6);
+
+  const wet = ctx.createGain();
+  wet.gain.value = 0.30;
+  const dry = ctx.createGain();
+  dry.gain.value = 0.92;
+
+  bus.connect(dry).connect(limiter);
+  bus.connect(room).connect(wet).connect(limiter);
+
+  const master = ctx.createGain();
+  master.gain.value = 1.0;
+  limiter.connect(master);
+  master.connect(destination);
+
+  return bus;
+}
+
+/** Exponentially decaying noise — a plausible small room, built not sampled. */
+function buildRoomImpulse(ctx: BaseAudioContext, seconds: number, falloff: number): AudioBuffer {
+  const length = Math.floor(ctx.sampleRate * seconds);
+  const buffer = ctx.createBuffer(2, length, ctx.sampleRate);
+  for (let channel = 0; channel < 2; channel++) {
+    const data = buffer.getChannelData(channel);
+    for (let i = 0; i < length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, falloff);
+    }
+  }
+  return buffer;
+}
+
 function getVoice(): Voice | null {
   if (typeof window === 'undefined') return null;
 
@@ -43,20 +96,7 @@ function getVoice(): Voice | null {
       return null;
     }
 
-    // A limiter across everything: a dense spin can overlap dozens of ticks
-    // with the landing, which without this clips audibly.
-    const limiter = context.createDynamicsCompressor();
-    limiter.threshold.value = -3;
-    limiter.ratio.value = 12;
-    limiter.attack.value = 0.002;
-    limiter.release.value = 0.15;
-
-    const master = context.createGain();
-    master.gain.value = 1.0;
-
-    limiter.connect(master);
-    master.connect(context.destination);
-    output = limiter;
+    output = buildOutputChain(context, context.destination);
   }
 
   // Browsers start the context suspended until a gesture. Every entry point
@@ -90,6 +130,10 @@ export function playSpin(packId: string, durationSeconds: number, sliceCount: nu
   const pack = getSoundPack(packId);
   const start = voice.ctx.currentTime + LEAD_SECONDS;
   const ticks = tickCountFor(durationSeconds, sliceCount);
+
+  // The chassis under the clicks — axle rumble and air. Optional, because only
+  // the packs going for physical realism want it.
+  pack.bed?.(voice, start, durationSeconds);
 
   for (let i = 1; i <= ticks; i++) {
     const progress = i / ticks;

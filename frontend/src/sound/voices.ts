@@ -71,8 +71,11 @@ export function noise(v: Voice, o: NoiseOptions): void {
   const amp = v.ctx.createGain();
 
   src.buffer = v.noise;
+  // Looped so a layer longer than the shared buffer keeps sounding instead of
+  // stopping partway. Short bursts never reach the end, so this costs nothing.
+  src.loop = true;
   // Start somewhere random in the buffer so repeated ticks aren't bit-identical.
-  const offset = Math.random() * Math.max(v.noise.duration - o.duration - 0.01, 0);
+  const offset = Math.random() * Math.max(v.noise.duration - 0.01, 0);
 
   band.type = o.filter ?? 'bandpass';
   band.frequency.setValueAtTime(o.freq, o.at);
@@ -108,4 +111,69 @@ export function chord(
       type: o.type,
     });
   });
+}
+
+interface StrikeOptions {
+  at: number;
+  /** Fundamental of the struck body. */
+  freq: number;
+  /**
+   * Partials as ratios of `freq`. Deliberately inharmonic — a struck bar or
+   * peg rings at ratios that are not whole numbers, and that inharmonicity is
+   * most of what separates "wooden object" from "musical note".
+   */
+  ratios?: number[];
+  /** Seconds for the fundamental to die. Upper partials die faster, as they do. */
+  decay: number;
+  gain: number;
+  /** Contact noise level, as a fraction of gain. The sound of the hit itself. */
+  click?: number;
+  /** Highpass corner for that contact noise. */
+  clickFreq?: number;
+  /** Random pitch spread per strike, as a fraction of freq. */
+  detune?: number;
+}
+
+/**
+ * A struck body: a contact transient exciting several damped resonant modes.
+ *
+ * This is the piece the earlier passes were missing. A bandpassed noise burst
+ * plus a sine is an *impulse* with no body behind it, which is why it read as
+ * electrical rather than physical. Real objects ring, briefly and
+ * inharmonically, and that ring is what the ear identifies as material.
+ *
+ * `detune` matters more than it looks: 126 bit-identical ticks in a row is the
+ * machine-gun effect, and a few percent of scatter per strike is the
+ * difference between a mechanism and a loop.
+ */
+export function strike(v: Voice, o: StrikeOptions): void {
+  const ratios = o.ratios ?? [1, 2.71, 5.13];
+  const spread = 1 + (Math.random() - 0.5) * 2 * (o.detune ?? 0);
+  // Amplitude scatter, not just pitch. Measured against the noise-based ticks
+  // this replaced, pitch detune alone actually *reduced* variation between
+  // clicks — peak level is what the ear reads as "each hit is its own".
+  const level = 0.55 + Math.random() * 0.75;
+
+  ratios.forEach((ratio, i) => {
+    tone(v, {
+      at: o.at,
+      freq: o.freq * ratio * spread,
+      // Higher modes shed energy faster, which is what makes a decay sound
+      // like an object settling rather than a filter closing.
+      duration: Math.max(o.decay / (1 + i * 1.6), 0.006),
+      gain: (o.gain * level) / (1 + i * 1.9),
+      type: 'sine',
+      attack: 0.0008,
+    });
+  });
+
+  if (o.click !== undefined && o.click > 0) {
+    noise(v, {
+      at: o.at,
+      duration: 0.0035,
+      gain: o.gain * o.click * level,
+      freq: o.clickFreq ?? 3500,
+      filter: 'highpass',
+    });
+  }
 }

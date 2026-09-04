@@ -30,4 +30,10 @@ export interface SoundPack {
   tick(voice: Voice, at: number, progress: number): void;
   /** The result landing. Plays on instant spins too, where there are no ticks. */
   land(voice: Voice, at: number): void;
+  /**
+   * Optional continuous layer under the whole spin — the sound of the
+   * mechanism itself rather than of any one click. Scheduled once, covering
+   * `durationSeconds` from `at`.
+   */
+  bed?(voice: Voice, at: number, durationSeconds: number): void;
 }
