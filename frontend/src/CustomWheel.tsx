@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { SPIN_EASING_CSS } from './spinCurve';
 
 export interface WheelSlice {
   /** The character's 1-based number, as shown everywhere in the UI. */
@@ -187,7 +188,7 @@ const CustomWheel: React.FC<CustomWheelProps> = ({
         style={{
           width: '100%',
           height: '100%',
-          transition: isAnimating ? `transform ${spinDuration}s cubic-bezier(0.15, 0, 0.15, 1)` : 'none',
+          transition: isAnimating ? `transform ${spinDuration}s ${SPIN_EASING_CSS}` : 'none',
           transform: `rotate(${rotation}deg)`
         }}
       >

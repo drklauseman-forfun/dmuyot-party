@@ -1,9 +1,14 @@
+import { SOUND_PACKS } from '../sound/packs';
+import { playPreview } from '../sound/engine';
+
 interface SettingsModalProps {
   spinDuration: number;
   soundEnabled: boolean;
+  soundPack: string;
   /** Persisting the change is the caller's job; this only reports it. */
   onSpinDurationChange: (seconds: number) => void;
   onSoundEnabledChange: (enabled: boolean) => void;
+  onSoundPackChange: (id: string) => void;
   onClose: () => void;
 }
 
@@ -12,10 +17,19 @@ const DURATION_PRESETS = [0, 1, 2, 5, 10];
 function SettingsModal({
   spinDuration,
   soundEnabled,
+  soundPack,
   onSpinDurationChange,
   onSoundEnabledChange,
+  onSoundPackChange,
   onClose,
 }: SettingsModalProps) {
+  // Choosing a sound plays it. Picking one you cannot hear first would mean
+  // spinning the wheel to audition each, which is the slow way round.
+  const chooseAndPreview = (id: string) => {
+    onSoundPackChange(id);
+    playPreview(id);
+  };
+
   return (
     <div className="settings-overlay" onClick={onClose}>
       <div className="settings-modal" onClick={e => e.stopPropagation()}>
@@ -62,6 +76,29 @@ function SettingsModal({
             />
             Enable Spin Sound
           </label>
+
+          <div className="sound-packs" aria-disabled={!soundEnabled}>
+            {SOUND_PACKS.map((pack) => (
+              <button
+                key={pack.id}
+                type="button"
+                className={`sound-pack ${soundPack === pack.id ? 'is-selected' : ''}`}
+                onClick={() => chooseAndPreview(pack.id)}
+                disabled={!soundEnabled}
+              >
+                <span className="sound-pack-label">
+                  {pack.label}
+                  <span className="sound-pack-play" aria-hidden="true">▶</span>
+                </span>
+                <span className="sound-pack-description">{pack.description}</span>
+              </button>
+            ))}
+          </div>
+          <p className="sound-packs-hint">
+            {soundEnabled
+              ? 'Tap one to hear it.'
+              : 'Turn spin sound on to choose a sound.'}
+          </p>
         </div>
         <button onClick={onClose} style={{ width: '100%', marginTop: '1rem' }}>Close</button>
       </div>

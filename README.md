@@ -80,6 +80,13 @@ Consequences worth knowing:
   those positions. The include-range is deliberately **not** reset — unlike the
   weights it stays visible in its input box, so it can't go stale unnoticed.
 
+## Adding a spin sound
+
+Append an entry to `SOUND_PACKS` in `frontend/src/sound/packs.ts`. Settings
+builds its picker from that list, and the stored preference is validated
+against it, so a removed pack falls back rather than breaking. Sounds are
+synthesised at runtime — there are no audio assets to add.
+
 ## Adding a character effect
 
 Append an entry to `CHARACTER_EFFECTS` in

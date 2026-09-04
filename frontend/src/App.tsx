@@ -14,6 +14,8 @@ import type { EffectConfig } from './vfx/types';
 import { matchCharacterEffect, resolvePresentation } from './characters/registry';
 import { STORAGE_KEYS } from './storage';
 import { devLog } from './log';
+import { DEFAULT_SOUND_PACK_ID, isKnownSoundPackId } from './sound/packs';
+import { playLanding, playSpin } from './sound/engine';
 import {
   usePersistedBoolean,
   usePersistedJSON,
@@ -101,6 +103,13 @@ function App() {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [spinDuration, setSpinDuration] = usePersistedNumber(STORAGE_KEYS.duration, 0.4);
   const [soundEnabled, setSoundEnabled] = usePersistedBoolean(STORAGE_KEYS.sound, true);
+  const [soundPack, setSoundPack] = usePersistedString(
+    STORAGE_KEYS.soundPack,
+    DEFAULT_SOUND_PACK_ID,
+  );
+  // A pack removed from the registry between visits must not leave the user
+  // with a stored id nothing answers to.
+  const activeSoundPack = isKnownSoundPackId(soundPack) ? soundPack : DEFAULT_SOUND_PACK_ID;
 
   // Filter, Weight & History States
   const [rangeInput, setRangeInput] = usePersistedString(STORAGE_KEYS.ranges, '');
@@ -183,9 +192,18 @@ function App() {
     return isNaN(val) ? 1 : Math.min(1000, Math.max(1, val));
   };
 
-  const playSpinSound = (duration: number) => {
+  /** Ticks tracking the wheel's deceleration, then the landing. */
+  const playSpinSound = (duration: number, sliceCount: number) => {
     if (!soundEnabled) return;
-    devLog(`🔊 [SOUND] Playing spin sound for ${duration}s`);
+    devLog(`🔊 [SOUND] ${activeSoundPack} spin, ${duration}s, ${sliceCount} slices`);
+    playSpin(activeSoundPack, duration, sliceCount);
+  };
+
+  /** For results that resolve with no wheel to tick along with. */
+  const playResultSound = () => {
+    if (!soundEnabled) return;
+    devLog(`🔊 [SOUND] ${activeSoundPack} landing`);
+    playLanding(activeSoundPack);
   };
 
   const handleExtract = async () => {
@@ -308,6 +326,8 @@ function App() {
         checkEffect(newWinners);
         setShowModal(true);
         addToHistory(newWinners);
+        // No wheel to tick along with on this path, so just the landing.
+        playResultSound();
       } else {
         const newPrizeNumber = pickRandomIndex(wheelCharacters);
         if (newPrizeNumber === -1) {
@@ -319,13 +339,14 @@ function App() {
           checkEffect([voidWinner]);
           setShowModal(true);
           addToHistory([voidWinner]);
+          playResultSound();
           return;
         }
         setPrizeNumber(newPrizeNumber);
         setMustSpin(true);
         setSelectedIndex(null);
         setWinners([]);
-        playSpinSound(spinDuration);
+        playSpinSound(spinDuration, wheelCharacters.length);
       }
     }
   };
@@ -484,6 +505,8 @@ function App() {
         <SettingsModal
           spinDuration={spinDuration}
           soundEnabled={soundEnabled}
+          soundPack={activeSoundPack}
+          onSoundPackChange={setSoundPack}
           onSpinDurationChange={setSpinDuration}
           onSoundEnabledChange={setSoundEnabled}
           onClose={() => setShowSettings(false)}

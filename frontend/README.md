@@ -44,8 +44,16 @@ elapsed time rather than reading the canvas clock, and every module's React key
 includes the effect's run id. Both exist because the canvas outlives any single
 effect; removing either brings back a bug that has already been fixed once.
 
-**The Settings sound toggle does nothing.** `playSpinSound` only logs. The
-control persists a preference that controls no audio.
+**The spin sounds are synthesised, not sampled.** `src/sound/` builds them
+from oscillators and filtered noise at runtime — there are no audio files. Add
+a sound by appending to `SOUND_PACKS` in `src/sound/packs.ts`; Settings builds
+its picker from that list.
+
+**The ticks are derived from the wheel's easing curve.** `src/spinCurve.ts`
+owns the cubic-bezier the CSS transition uses *and* the inverse the scheduler
+needs to ask "when does the wheel reach this much rotation?". They have to stay
+the same curve or the clicks drift out of step with the wheel. A whole spin is
+scheduled up front on the AudioContext clock, never from setTimeout.
 
 **Three.js is in the initial bundle.** `EffectCanvas` is imported statically,
 so roughly 900 kB of three.js and postprocessing load on first paint even

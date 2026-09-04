@@ -285,6 +285,11 @@ h1 {
   text-align: center;
   position: relative;
   z-index: 1100;
+  /* Neither modal has a bounded height of its own: Settings grew with the
+     sound picker, and Results can list a thousand winners. Without this the
+     content runs past the viewport and takes the close button with it. */
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 .settings-modal {
@@ -476,4 +481,80 @@ h1 {
   font-size: 0.9rem;
   line-height: 1.5;
   text-align: left;
+}
+
+/* Sound pack picker in Settings. Each button is a label plus a one-line
+   description, and clicking it previews the sound as well as selecting it. */
+.sound-packs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 1rem;
+}
+
+.sound-pack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #2c2c2c;
+  color: #ccc;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.sound-pack:hover:not(:disabled) {
+  border-color: #646cff;
+  background: #333;
+}
+
+.sound-pack.is-selected {
+  border-color: #646cff;
+  background: rgba(100, 108, 255, 0.15);
+  color: #fff;
+}
+
+.sound-pack:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sound-pack-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.sound-pack-play {
+  font-size: 0.6rem;
+  color: #646cff;
+}
+
+.sound-pack.is-selected .sound-pack-play {
+  color: #9aa0ff;
+}
+
+.sound-pack-description {
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: #888;
+  font-weight: 400;
+}
+
+.sound-packs-hint {
+  margin: 0.6rem 0 0;
+  font-size: 0.7rem;
+  color: #666;
+}
+
+@media (max-width: 480px) {
+  .sound-packs {
+    grid-template-columns: 1fr;
+  }
 }

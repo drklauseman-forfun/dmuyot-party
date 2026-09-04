@@ -13,6 +13,7 @@ export const STORAGE_KEYS = {
   input: 'dmuyot_party_input',
   duration: 'dmuyot_party_duration',
   sound: 'dmuyot_party_sound',
+  soundPack: 'dmuyot_party_sound_pack',
   ranges: 'dmuyot_party_ranges',
   weights: 'dmuyot_party_weights',
   history: 'dmuyot_party_history',
