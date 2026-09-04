@@ -157,40 +157,49 @@ def parse_characters_plain(text: str, is_manual_input: bool = False) -> List[Dic
                 
     return characters
 
+# Google is normally fast; anything slower than this is a hang, and without a
+# ceiling a single one of those ties up a worker for as long as it takes.
+EXPORT_TIMEOUT_SECONDS = 15
+
+
+def fetch_export(doc_id: str, fmt: str) -> str:
+    """Fetch one Google Docs export. Raises requests.RequestException on failure."""
+    url = f"https://docs.google.com/document/d/{doc_id}/export?format={fmt}"
+    response = requests.get(url, timeout=EXPORT_TIMEOUT_SECONDS)
+    response.raise_for_status()
+    return response.content.decode('utf-8-sig', errors='replace')
+
+
+def fetch_characters_from_doc(doc_id: str) -> List[Dict[str, str]]:
+    """Read a document, preferring the HTML export because it carries colours."""
+    html_error = None
+    try:
+        characters = parse_characters_html(fetch_export(doc_id, 'html'))
+        if characters:
+            return characters
+    except requests.RequestException as e:
+        html_error = e
+
+    # The HTML export either failed or held nothing we recognised as a
+    # character. The plain-text export is a second chance at the former.
+    try:
+        return parse_characters_plain(fetch_export(doc_id, 'txt'), is_manual_input=False)
+    except requests.RequestException as txt_error:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to fetch document: {html_error or txt_error}",
+        )
+
+
+# Deliberately sync: `requests` blocks, so an `async def` here would stall the
+# event loop for every other request. FastAPI runs a plain `def` in a threadpool.
 @app.post("/api/extract", response_model=ExtractionResponse)
-async def extract_characters(request: ExtractionRequest):
-    characters = []
-    
+def extract_characters(request: ExtractionRequest):
     if request.url:
         doc_id = extract_doc_id(request.url)
         if not doc_id:
             raise HTTPException(status_code=400, detail="Invalid Google Docs URL")
-        
-        # Try HTML first for colors
-        export_url_html = f"https://docs.google.com/document/d/{doc_id}/export?format=html"
-        try:
-            response = requests.get(export_url_html)
-            response.raise_for_status()
-            html_content = response.content.decode('utf-8-sig', errors='replace')
-            characters = parse_characters_html(html_content)
-            
-            # Fallback to TXT if HTML is empty (though parse_characters_html is robust now)
-            if not characters:
-                export_url_txt = f"https://docs.google.com/document/d/{doc_id}/export?format=txt"
-                txt_response = requests.get(export_url_txt)
-                txt_response.raise_for_status()
-                txt_content = txt_response.content.decode('utf-8-sig', errors='replace')
-                characters = parse_characters_plain(txt_content, is_manual_input=False)
-                
-        except requests.RequestException as e:
-            try:
-                export_url_txt = f"https://docs.google.com/document/d/{doc_id}/export?format=txt"
-                txt_response = requests.get(export_url_txt)
-                txt_response.raise_for_status()
-                txt_content = txt_response.content.decode('utf-8-sig', errors='replace')
-                characters = parse_characters_plain(txt_content, is_manual_input=False)
-            except Exception:
-                raise HTTPException(status_code=400, detail=f"Failed to fetch document: {str(e)}")
+        characters = fetch_characters_from_doc(doc_id)
     elif request.text:
         characters = parse_characters_plain(request.text, is_manual_input=True)
     else:

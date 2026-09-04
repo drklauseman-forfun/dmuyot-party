@@ -6,7 +6,10 @@ needs updating.
 """
 
 import pytest
+import requests
+from fastapi import HTTPException
 
+import main
 from main import clean_character_name, parse_characters_html, parse_characters_plain
 
 
@@ -178,3 +181,92 @@ def test_document_order_is_preserved():
     """originalIndex is assigned from this order and is the app's identity."""
     html = '<p>1. A</p><p>2. B</p><p>3. C</p>'
     assert names(html) == ['A', 'B', 'C']
+
+
+# --- Document fetching: which export wins, and what happens when one fails ---
+
+
+class _Boom(requests.RequestException):
+    def __str__(self):
+        return 'boom'
+
+
+def _stub_exports(monkeypatch, **bodies):
+    """Replace the network with a {format: body-or-exception} lookup."""
+    calls = []
+
+    def fake(doc_id, fmt):
+        calls.append(fmt)
+        body = bodies[fmt]
+        if isinstance(body, Exception):
+            raise body
+        return body
+
+    monkeypatch.setattr(main, 'fetch_export', fake)
+    return calls
+
+
+def test_html_export_is_preferred_and_short_circuits_the_txt_fallback(monkeypatch):
+    calls = _stub_exports(monkeypatch, html='<p>1. Aragorn</p>', txt='1. Wrong')
+    result = main.fetch_characters_from_doc('doc')
+    assert [c['name'] for c in result] == ['Aragorn']
+    assert calls == ['html']
+
+
+def test_txt_export_is_used_when_the_html_export_fails(monkeypatch):
+    calls = _stub_exports(monkeypatch, html=_Boom(), txt='1. Aragorn')
+    result = main.fetch_characters_from_doc('doc')
+    assert [c['name'] for c in result] == ['Aragorn']
+    assert calls == ['html', 'txt']
+
+
+def test_txt_export_is_used_when_the_html_export_yields_nothing(monkeypatch):
+    calls = _stub_exports(monkeypatch, html='<p>no characters here</p>', txt='1. Aragorn')
+    result = main.fetch_characters_from_doc('doc')
+    assert [c['name'] for c in result] == ['Aragorn']
+    assert calls == ['html', 'txt']
+
+
+def test_an_inaccessible_document_raises_a_400(monkeypatch):
+    """Google answers 404 for both private and nonexistent docs."""
+    _stub_exports(monkeypatch, html=_Boom(), txt=_Boom())
+    with pytest.raises(HTTPException) as excinfo:
+        main.fetch_characters_from_doc('doc')
+    assert excinfo.value.status_code == 400
+    assert 'boom' in excinfo.value.detail
+
+
+def test_both_exports_empty_is_an_empty_list_not_an_error(monkeypatch):
+    _stub_exports(monkeypatch, html='<p>nothing</p>', txt='nothing')
+    assert main.fetch_characters_from_doc('doc') == []
+
+
+def test_outbound_requests_carry_a_timeout(monkeypatch):
+    """Without one, a hung Google response holds a worker indefinitely."""
+    seen = {}
+
+    class _Response:
+        content = b'<p>1. Aragorn</p>'
+
+        def raise_for_status(self):
+            pass
+
+    def fake_get(url, **kwargs):
+        seen.update(kwargs)
+        return _Response()
+
+    monkeypatch.setattr(main.requests, 'get', fake_get)
+    main.fetch_export('doc', 'html')
+    assert seen.get('timeout')
+
+
+# --- URL parsing ------------------------------------------------------------
+
+
+def test_document_id_is_extracted_from_a_share_url():
+    url = 'https://docs.google.com/document/d/1AbC-dEf_123/edit?tab=t.0'
+    assert main.extract_doc_id(url) == '1AbC-dEf_123'
+
+
+def test_a_url_without_a_document_id_is_rejected():
+    assert main.extract_doc_id('https://example.com/nope') is None
