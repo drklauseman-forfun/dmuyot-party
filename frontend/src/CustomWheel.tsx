@@ -66,39 +66,55 @@ const CustomWheel: React.FC<CustomWheelProps> = ({
     return `M 100 100 L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
   }
 
+  // A spin must start on the mustSpin false→true edge and nothing else. The
+  // parent passes an inline onStopSpinning, whose identity changes on every
+  // parent render, so depending on it directly would restart the spin
+  // mid-flight. Everything the spin reads is taken from here instead.
+  const latest = useRef({ slices, prizeIndex, spinDuration, onStopSpinning });
   useEffect(() => {
-    if (mustSpin && !isAnimating) {
-      startSpin();
-    }
-  }, [mustSpin]);
+    latest.current = { slices, prizeIndex, spinDuration, onStopSpinning };
+  });
 
-  const startSpin = () => {
-    setIsAnimating(true);
-    
-    // 1. Calculate target rotation
+  useEffect(() => {
+    if (!mustSpin) return;
+
+    const { slices, prizeIndex, spinDuration, onStopSpinning } = latest.current;
+
+    // Nothing to land on. Throwing here would take the page down, so hand
+    // control back and leave the app usable instead.
     const targetSlice = slices[prizeIndex];
-    const extraRotations = 10 * 360; // More rotations for better feel
-    
-    // Calculate the precise angle needed to put the target slice at the top (0 deg)
-    // currentRotation % 360 is where we are now.
-    // (360 - targetSlice.midAngle) is where we WANT the 0-point to be.
-    const currentInternalAngle = rotation % 360;
-    const targetAngle = (360 - (targetSlice.midAngle % 360)) % 360;
-    
-    // Distance to travel to reach the target angle from current position
-    let distance = targetAngle - currentInternalAngle;
-    if (distance <= 0) distance += 360; // Ensure we always rotate forward
-    
-    const newRotation = rotation + extraRotations + distance;
-    
-    setRotation(newRotation);
+    if (!targetSlice) {
+      console.warn(`[wheel] No slice at index ${prizeIndex} of ${slices.length}`);
+      onStopSpinning();
+      return;
+    }
 
-    // 2. Wait for transition to finish
-    setTimeout(() => {
+    setIsAnimating(true);
+
+    const extraRotations = 10 * 360; // More rotations for better feel
+
+    // Calculate the precise angle needed to put the target slice at the top
+    // (0 deg). Updated from the previous rotation rather than a captured one,
+    // so the wheel always carries on from where it actually stopped.
+    setRotation((current) => {
+      const currentInternalAngle = current % 360;
+      const targetAngle = (360 - (targetSlice.midAngle % 360)) % 360;
+
+      // Distance to travel to reach the target angle from current position
+      let distance = targetAngle - currentInternalAngle;
+      if (distance <= 0) distance += 360; // Ensure we always rotate forward
+
+      return current + extraRotations + distance;
+    });
+
+    // Wait for the transition to finish. Cleared on unmount so a wheel that
+    // goes away mid-spin doesn't report a winner from a dead component.
+    const timer = setTimeout(() => {
       setIsAnimating(false);
       onStopSpinning();
     }, spinDuration * 1000);
-  };
+    return () => clearTimeout(timer);
+  }, [mustSpin]);
 
   return (
     <div className="custom-wheel-container" style={{ position: 'relative', width: '400px', height: '400px' }}>
