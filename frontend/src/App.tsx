@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import CustomWheel from './CustomWheel';
 import './index.css';
@@ -59,7 +59,7 @@ function isHistory(value: unknown): value is HistoryEntry[] {
 }
 
 function App() {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(() => readString(STORAGE_KEYS.input) ?? '');
   const [characters, setCharacters] = useState<CharacterData[]>([]);
   const [mustSpin, setMustSpin] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(0);
@@ -72,34 +72,29 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [spinDuration, setSpinDuration] = useState(0.4);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [spinDuration, setSpinDuration] = useState(
+    () => readNumber(STORAGE_KEYS.duration, 0.4),
+  );
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    const saved = readString(STORAGE_KEYS.sound);
+    return saved === null ? true : saved === 'true';
+  });
 
   // Filter, Weight & History States
-  const [rangeInput, setRangeInput] = useState('');
+  const [rangeInput, setRangeInput] = useState(
+    () => readString(STORAGE_KEYS.ranges) ?? '',
+  );
   const [listSearch, setListSearch] = useState('');
-  const [weights, setWeights] = useState<WeightMap>({});
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [weights, setWeights] = useState<WeightMap>(
+    () => readJSON(STORAGE_KEYS.weights, {}, isWeightMap),
+  );
+  const [history, setHistory] = useState<HistoryEntry[]>(
+    () => readJSON(STORAGE_KEYS.history, [], isHistory),
+  );
   
   // Special Visuals State. Effect definitions live in characters/registry.ts.
   const [activeEffect, setActiveEffect] = useState<CharacterEffect | null>(null);
   const [vfxConfig, setVfxConfig] = useState<EffectConfig | null>(null);
-
-  useEffect(() => {
-    const savedInput = readString(STORAGE_KEYS.input);
-    if (savedInput) setInput(savedInput);
-
-    setSpinDuration(readNumber(STORAGE_KEYS.duration, 0.4));
-
-    const savedSound = readString(STORAGE_KEYS.sound);
-    if (savedSound !== null) setSoundEnabled(savedSound === 'true');
-
-    const savedRanges = readString(STORAGE_KEYS.ranges);
-    if (savedRanges) setRangeInput(savedRanges);
-
-    setWeights(readJSON(STORAGE_KEYS.weights, {}, isWeightMap));
-    setHistory(readJSON(STORAGE_KEYS.history, [], isHistory));
-  }, []);
 
   const handleInputChange = (value: string) => {
     setInput(value);
@@ -242,11 +237,11 @@ function App() {
     );
   }, [filteredCharacters, listSearch]);
 
-  const getWeight = (originalIndex: number) => {
+  const getWeight = useCallback((originalIndex: number) => {
     const w = weights[originalIndex];
     if (w === undefined || w === '') return 1;
     return Number(w);
-  };
+  }, [weights]);
 
   const pickRandomIndex = (list: CharacterData[]) => {
     const totalWeight = list.reduce((acc, c) => acc + getWeight(c.originalIndex), 0);
@@ -263,7 +258,7 @@ function App() {
 
   const wheelCharacters = useMemo(() => {
     return filteredCharacters.filter(char => getWeight(char.originalIndex) > 0);
-  }, [filteredCharacters, weights]);
+  }, [filteredCharacters, getWeight]);
 
   const handleSpinClick = () => {
     if (!mustSpin && filteredCharacters.length > 0) {
@@ -310,10 +305,6 @@ function App() {
     }
   };
 
-  const scrollToWinner = (_originalIndex: number) => {
-    // Disabled auto-scroll as requested
-  };
-
   const resetWeights = () => {
     if (window.confirm('Reset all weights to 1?')) {
       setWeights({});
@@ -339,7 +330,7 @@ function App() {
         weight: weight
       };
     });
-  }, [wheelCharacters, weights]);
+  }, [wheelCharacters, getWeight]);
 
   // Concrete modal styling for the current winner — either the matched effect's
   // presentation, or a neutral one tinted with the character's own colour.
@@ -420,7 +411,6 @@ function App() {
                   setWinners([winnerObj]);
                   checkEffect([winnerObj]);
                   setShowModal(true);
-                  scrollToWinner(winner.originalIndex);
                   addToHistory([winnerObj]);
                 }}
               />

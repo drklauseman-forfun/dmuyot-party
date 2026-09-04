@@ -22,24 +22,28 @@ const CustomWheel: React.FC<CustomWheelProps> = ({
   // Calculate slice geometry
   const slices = useMemo(() => {
     const totalWeight = data.reduce((acc, item) => acc + item.weight, 0);
+    const result = [];
     let cumulativeAngle = 0;
 
-    return data.map((item) => {
+    // A plain loop rather than a mutating map callback: the accumulator is
+    // only ever touched here, where the order of the walk is obvious.
+    for (const item of data) {
       const angle = (item.weight / totalWeight) * 360;
       const startAngle = cumulativeAngle;
       const endAngle = cumulativeAngle + angle;
-      const midAngle = startAngle + angle / 2;
       cumulativeAngle = endAngle;
 
-      return {
+      result.push({
         ...item,
         startAngle,
         endAngle,
-        midAngle,
+        midAngle: startAngle + angle / 2,
         // SVG path calculations
         path: getSlicePath(startAngle, endAngle)
-      };
-    });
+      });
+    }
+
+    return result;
   }, [data]);
 
   function getSlicePath(startAngle: number, endAngle: number) {

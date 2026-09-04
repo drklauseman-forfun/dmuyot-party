@@ -31,8 +31,14 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
 
   useEffect(() => {
     if (config) {
+      // These two setStates are the point of the effect, not an accident of
+      // it. `visible` has to flip in a commit *after* the canvas mounts, or
+      // the CSS opacity transition has nothing to animate from and the
+      // fade-in is lost.
+      /* eslint-disable react-hooks/set-state-in-effect */
       setDisplayConfig(config);
       setVisible(true);
+      /* eslint-enable react-hooks/set-state-in-effect */
       console.log("🎨 [VFX] Rendering Canvas for effect:", config.effectId);
 
       // Auto-cleanup once the longest-lived module has finished. A module's
@@ -144,6 +150,7 @@ const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], runId: numbe
                 direction={mod.direction}
                 gravity={mod.gravity}
                 noise={mod.noise}
+                seed={runId + index}
                 fadeInDuration={mod.fadeInDuration}
                 duration={mod.duration}
                 fadeDuration={mod.fadeDuration}
