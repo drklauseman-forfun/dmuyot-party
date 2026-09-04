@@ -12,7 +12,10 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    # A wildcard origin and credentials are not a legal combination — browsers
+    # reject credentialed requests made against one. Nothing here sends
+    # credentials, so the wildcard is the half worth keeping.
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -21,8 +24,13 @@ class ExtractionRequest(BaseModel):
     text: Optional[str] = None
     url: Optional[str] = None
 
+class Character(BaseModel):
+    name: str
+    #: Hex or rgb(), already normalised for the dark theme.
+    color: str
+
 class ExtractionResponse(BaseModel):
-    characters: List[Dict[str, str]]
+    characters: List[Character]
 
 def extract_doc_id(url: str) -> Optional[str]:
     match = re.search(r"/document/d/([a-zA-Z0-9-_]+)", url)

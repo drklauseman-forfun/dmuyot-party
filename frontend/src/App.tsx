@@ -58,6 +58,36 @@ function isHistory(value: unknown): value is HistoryEntry[] {
   );
 }
 
+/**
+ * Turn a failed extraction into something the user can act on.
+ *
+ * Google answers 404 for a document that is private *and* for one that does
+ * not exist, so the actionable advice for both is the same: check the link and
+ * check the sharing.
+ */
+function describeExtractionFailure(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    if (error.code === 'ERR_NETWORK') {
+      return "Couldn't reach the server. If you're running this locally, check that the backend is up.";
+    }
+
+    const detail: unknown = error.response?.data?.detail;
+    if (typeof detail === 'string') {
+      if (detail.includes('404')) {
+        return `Couldn't open that document. Check the link, and make sure it is shared as "Anyone with the link".`;
+      }
+      if (detail.includes('Invalid Google Docs URL')) {
+        return "That doesn't look like a Google Docs link. Paste the document URL, or paste your list in as plain text.";
+      }
+      if (detail.includes('timed out') || detail.includes('Timeout')) {
+        return 'Google took too long to answer. Try again in a moment.';
+      }
+      return detail;
+    }
+  }
+  return 'Something went wrong loading that list. Please try again.';
+}
+
 function App() {
   const [input, setInput] = useState(() => readString(STORAGE_KEYS.input) ?? '');
   const [characters, setCharacters] = useState<CharacterData[]>([]);
@@ -65,6 +95,7 @@ function App() {
   const [prizeNumber, setPrizeNumber] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   
   // Settings & Core Logic
   const [spinCount, setSpinCount] = useState<number | string>(1);
@@ -173,6 +204,7 @@ function App() {
 
   const handleExtract = async () => {
     setLoading(true);
+    setLoadError(null);
     setSelectedIndex(null);
     setWinners([]);
     try {
@@ -184,11 +216,13 @@ function App() {
       if (response.data.characters.length > 0) {
         setCharacters(response.data.characters.map((c, i) => ({ ...c, originalIndex: i })));
       } else {
-        alert('No characters found!');
+        setLoadError(
+          'No characters found. Only lines that start with a number — or items in a numbered list — count as characters.',
+        );
       }
     } catch (error) {
       console.error('Extraction failed', error);
-      alert('Failed to extract characters.');
+      setLoadError(describeExtractionFailure(error));
     } finally {
       setLoading(false);
     }
@@ -373,6 +407,11 @@ function App() {
         <button onClick={handleExtract} disabled={loading || !input.trim() || mustSpin}>
           {loading ? 'Processing...' : 'Load Characters'}
         </button>
+        {loadError && (
+          <div className="load-error" role="alert">
+            {loadError}
+          </div>
+        )}
       </section>
 
       {filteredCharacters.length > 0 && (
