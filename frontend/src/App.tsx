@@ -5,6 +5,15 @@ import './index.css';
 import EffectCanvas from './vfx/EffectCanvas';
 import type { EffectConfig } from './vfx/types';
 import { matchCharacterEffect, resolvePresentation } from './characters/registry';
+import {
+  STORAGE_KEYS,
+  readString,
+  readNumber,
+  readJSON,
+  writeString,
+  writeJSON,
+  remove as removeStored,
+} from './storage';
 import type { CharacterEffect } from './characters/types';
 
 interface CharacterData {
@@ -17,8 +26,37 @@ interface ExtractionResponse {
   characters: { name: string; color: string }[];
 }
 
+interface HistoryEntry {
+  name: string;
+  index: number;
+  timestamp: string;
+}
+
+/** Keyed by originalIndex. A string value is an in-progress edit of the field. */
+type WeightMap = Record<number, number | string>;
+
 /** Placeholder winner used when every candidate has been weighted to zero. */
 const VOID_NAME = 'VOID';
+
+function isWeightMap(value: unknown): value is WeightMap {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
+  return Object.values(value).every(
+    (v) => typeof v === 'number' || typeof v === 'string',
+  );
+}
+
+function isHistory(value: unknown): value is HistoryEntry[] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (entry) =>
+        typeof entry === 'object' &&
+        entry !== null &&
+        typeof entry.name === 'string' &&
+        typeof entry.index === 'number',
+    )
+  );
+}
 
 function App() {
   const [input, setInput] = useState('');
@@ -40,41 +78,37 @@ function App() {
   // Filter, Weight & History States
   const [rangeInput, setRangeInput] = useState('');
   const [listSearch, setListSearch] = useState('');
-  const [weights, setWeights] = useState<Record<number, number | string>>({});
-  const [history, setHistory] = useState<{ name: string; index: number; timestamp: string }[]>([]);
+  const [weights, setWeights] = useState<WeightMap>({});
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   
   // Special Visuals State. Effect definitions live in characters/registry.ts.
   const [activeEffect, setActiveEffect] = useState<CharacterEffect | null>(null);
   const [vfxConfig, setVfxConfig] = useState<EffectConfig | null>(null);
 
   useEffect(() => {
-    const savedInput = localStorage.getItem('dmuyot_party_input');
+    const savedInput = readString(STORAGE_KEYS.input);
     if (savedInput) setInput(savedInput);
-    
-    const savedDuration = localStorage.getItem('dmuyot_party_duration');
-    if (savedDuration) setSpinDuration(parseFloat(savedDuration));
-    
-    const savedSound = localStorage.getItem('dmuyot_party_sound');
+
+    setSpinDuration(readNumber(STORAGE_KEYS.duration, 0.4));
+
+    const savedSound = readString(STORAGE_KEYS.sound);
     if (savedSound !== null) setSoundEnabled(savedSound === 'true');
 
-    const savedRanges = localStorage.getItem('dmuyot_party_ranges');
+    const savedRanges = readString(STORAGE_KEYS.ranges);
     if (savedRanges) setRangeInput(savedRanges);
 
-    const savedWeights = localStorage.getItem('dmuyot_party_weights');
-    if (savedWeights) setWeights(JSON.parse(savedWeights));
-
-    const savedHistory = localStorage.getItem('dmuyot_party_history');
-    if (savedHistory) setHistory(JSON.parse(savedHistory));
+    setWeights(readJSON(STORAGE_KEYS.weights, {}, isWeightMap));
+    setHistory(readJSON(STORAGE_KEYS.history, [], isHistory));
   }, []);
 
   const handleInputChange = (value: string) => {
     setInput(value);
-    localStorage.setItem('dmuyot_party_input', value);
+    writeString(STORAGE_KEYS.input, value);
   };
 
   const handleRangeChange = (value: string) => {
     setRangeInput(value);
-    localStorage.setItem('dmuyot_party_ranges', value);
+    writeString(STORAGE_KEYS.ranges, value);
     setSelectedIndex(null);
     setWinners([]);
   };
@@ -88,14 +122,14 @@ function App() {
       newWeights[originalIndex] = isNaN(num) ? 1 : Math.max(0, Math.min(9999, num));
     }
     setWeights(newWeights);
-    localStorage.setItem('dmuyot_party_weights', JSON.stringify(newWeights));
+    writeJSON(STORAGE_KEYS.weights, newWeights);
   };
 
   const addToHistory = (newWinners: { name: string; index: number }[]) => {
     const timestamp = new Date().toLocaleTimeString();
     const historyEntries = newWinners.map(w => ({ ...w, timestamp }));
     setHistory(historyEntries);
-    localStorage.setItem('dmuyot_party_history', JSON.stringify(historyEntries));
+    writeJSON(STORAGE_KEYS.history, historyEntries);
   };
 
   /** Fires the registry effect for the first winner, if one matches. */
@@ -127,7 +161,7 @@ function App() {
   const clearHistory = () => {
     if (window.confirm('Clear last result?')) {
       setHistory([]);
-      localStorage.removeItem('dmuyot_party_history');
+      removeStored(STORAGE_KEYS.history);
       setShowHistoryModal(false);
     }
   };
@@ -280,7 +314,7 @@ function App() {
   const resetWeights = () => {
     if (window.confirm('Reset all weights to 1?')) {
       setWeights({});
-      localStorage.removeItem('dmuyot_party_weights');
+      removeStored(STORAGE_KEYS.weights);
     }
   };
 
@@ -488,19 +522,19 @@ function App() {
               <label>Spin Duration (Seconds)</label>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
                 {[0, 1, 2, 5, 10].map(s => (
-                  <button key={s} onClick={() => { setSpinDuration(s); localStorage.setItem('dmuyot_party_duration', s.toString()); }} style={{ flex: '1 0 30%', fontSize: '0.8rem', background: spinDuration === s ? '#646cff' : '#333', padding: '0.5rem' }}>
+                  <button key={s} onClick={() => { setSpinDuration(s); writeString(STORAGE_KEYS.duration, s.toString()); }} style={{ flex: '1 0 30%', fontSize: '0.8rem', background: spinDuration === s ? '#646cff' : '#333', padding: '0.5rem' }}>
                     {s === 0 ? '0s (Instant)' : `${s}s`}
                   </button>
                 ))}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <input type="number" min="0" max="10" step="0.1" className="spin-input" style={{ width: '100px' }} value={spinDuration} onChange={(e) => { const val = parseFloat(e.target.value); const safeVal = isNaN(val) ? 0 : Math.min(10, Math.max(0, val)); setSpinDuration(safeVal); localStorage.setItem('dmuyot_party_duration', safeVal.toString()); }} />
+                <input type="number" min="0" max="10" step="0.1" className="spin-input" style={{ width: '100px' }} value={spinDuration} onChange={(e) => { const val = parseFloat(e.target.value); const safeVal = isNaN(val) ? 0 : Math.min(10, Math.max(0, val)); setSpinDuration(safeVal); writeString(STORAGE_KEYS.duration, safeVal.toString()); }} />
                 <span style={{ color: '#666', fontSize: '0.8rem' }}>Custom (Max 10s)</span>
               </div>
             </div>
             <div className="settings-row">
               <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: '#888' }}>
-                <input type="checkbox" checked={soundEnabled} onChange={(e) => { setSoundEnabled(e.target.checked); localStorage.setItem('dmuyot_party_sound', e.target.checked.toString()); }} />
+                <input type="checkbox" checked={soundEnabled} onChange={(e) => { setSoundEnabled(e.target.checked); writeString(STORAGE_KEYS.sound, e.target.checked.toString()); }} />
                 Enable Spin Sound
               </label>
             </div>

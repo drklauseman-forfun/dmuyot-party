@@ -422,3 +422,43 @@ h1 {
   color: #666;
   font-size: 0.8rem;
 }
+
+/* Error boundary — the fallback when a render throws. Deliberately plain: it
+   has to render correctly even when the rest of the app's state is unusable. */
+.error-boundary {
+  max-width: 520px;
+  margin: 4rem auto;
+  padding: 2rem;
+  border: 1px solid #444;
+  border-radius: 12px;
+  background: #1e1e1e;
+  text-align: left;
+}
+
+.error-boundary h2 {
+  margin-top: 0;
+  color: #ff6b6b;
+}
+
+.error-boundary p {
+  color: #aaa;
+  line-height: 1.6;
+}
+
+.error-boundary pre {
+  padding: 0.8rem;
+  border-radius: 6px;
+  background: #121212;
+  color: #888;
+  font-size: 0.8rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.error-boundary-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
