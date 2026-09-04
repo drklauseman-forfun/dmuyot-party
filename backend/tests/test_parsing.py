@@ -47,6 +47,16 @@ def test_bulleted_list_is_excluded_even_when_nested_in_an_ordered_list():
     assert 'Minion' not in names(html)
 
 
+def test_numbered_item_inside_an_ordered_list_is_not_counted_twice():
+    """Docs emits <ol><li><p>…</p></li>; a typed number must not double it up.
+
+    The <li> qualifies as a numbered item and its inner <p> starts with a
+    digit, so a naive walk counts the same character twice — inflating its
+    odds and shifting every subsequent 1-based index the UI shows.
+    """
+    assert names('<ol><li><p>3. Gandalf</p></li></ol>') == ['Gandalf']
+
+
 def test_empty_lines_are_skipped():
     assert names('<p></p><p>   </p><p>1. Real</p>') == ['Real']
 

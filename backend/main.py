@@ -86,6 +86,14 @@ def parse_characters_html(html: str) -> List[Dict[str, str]]:
         if is_in_bullet_list:
             continue
 
+        # 2b. Docs wraps list text as <ol><li><p>…</p></li>. The <li> already
+        # stands for this character, so counting the inner <p> as well would
+        # duplicate anyone who typed the number themselves on top of the
+        # automatic numbering — doubling their odds and shifting every
+        # 1-based index shown after them.
+        if item.name == 'p' and item.find_parent('li'):
+            continue
+
         # 3. Check for starting digit or explicitly numbered list item
         starts_with_digit = bool(re.match(r'^\d', line))
         is_numbered_li = (item.name == 'li') # We already excluded ul items above
