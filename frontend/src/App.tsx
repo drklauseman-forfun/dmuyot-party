@@ -128,6 +128,12 @@ function App() {
 
   useEffect(() => {
     void import('./vfx/EffectCanvas');
+    // Fetch and decode the spin sounds now rather than on the first spin.
+    // Decoding takes long enough that a spin starting alongside it schedules
+    // nothing at all, which made the first spin of every session silent.
+    // Creating the AudioContext here leaves it suspended until a gesture,
+    // which is fine — decoding does not need a running context.
+    void preloadSamples();
   }, []);
 
   const handleRangeChange = (value: string) => {
@@ -206,6 +212,7 @@ function App() {
   /** For results that resolve with no wheel to tick along with. */
   const playResultSound = () => {
     if (!soundEnabled) return;
+    void preloadSamples();
     devLog(`🔊 [SOUND] ${activeSoundPack} landing`);
     playLanding(activeSoundPack);
   };
