@@ -1,6 +1,7 @@
 import type { SoundPack } from './types';
 import { chord, noise, strike, tone } from './voices';
 import { GEMINI_PACKS } from './geminiPacks';
+import { SAMPLE_PACKS } from './samples';
 
 /**
  * Every selectable spin sound.
@@ -165,6 +166,11 @@ export const SOUND_PACK_GROUPS: { title: string; note: string; packs: SoundPack[
     title: 'Gemini',
     note: 'Written by Gemini from the same primitives, unedited.',
     packs: GEMINI_PACKS,
+  },
+  {
+    title: 'Recorded',
+    note: 'Real recordings. Silent until the files are added — see public/sounds/README.md.',
+    packs: SAMPLE_PACKS,
   },
 ];
 

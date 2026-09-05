@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { SOUND_PACK_GROUPS } from '../sound/packs';
 import { playPreview } from '../sound/engine';
+import { isSamplePackLoaded, isSamplePackReady } from '../sound/samples';
 
 interface SettingsModalProps {
   spinDuration: number;
@@ -23,11 +25,19 @@ function SettingsModal({
   onSoundPackChange,
   onClose,
 }: SettingsModalProps) {
+  // A recorded pack whose files are missing. Tracked so the button can say so
+  // rather than appearing to work and producing silence.
+  const [emptyPacks, setEmptyPacks] = useState<string[]>([]);
+
   // Choosing a sound plays it. Picking one you cannot hear first would mean
   // spinning the wheel to audition each, which is the slow way round.
   const chooseAndPreview = (id: string) => {
     onSoundPackChange(id);
-    playPreview(id);
+    void playPreview(id).then(() => {
+      if (isSamplePackLoaded(id) && !isSamplePackReady(id)) {
+        setEmptyPacks((current) => (current.includes(id) ? current : [...current, id]));
+      }
+    });
   };
 
   return (
@@ -96,7 +106,9 @@ function SettingsModal({
                       {pack.label}
                       <span className="sound-pack-play" aria-hidden="true">▶</span>
                     </span>
-                    <span className="sound-pack-description">{pack.description}</span>
+                    <span className="sound-pack-description">
+                      {emptyPacks.includes(pack.id) ? 'No sound files added yet.' : pack.description}
+                    </span>
                   </button>
                 ))}
               </div>

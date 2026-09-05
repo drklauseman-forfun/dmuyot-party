@@ -1,5 +1,6 @@
 import { timeAtProgress } from '../spinCurve';
 import { getSoundPack } from './packs';
+import { SAMPLE_PACK_SPECS, preloadSamplePack } from './samples';
 import type { Voice } from './types';
 
 /**
@@ -151,9 +152,26 @@ export function playLanding(packId: string): void {
 }
 
 /**
+ * Fetch and decode every sample pack.
+ *
+ * Called once the user has interacted, because creating the AudioContext
+ * before a gesture leaves it suspended. Missing files resolve quietly — a pack
+ * with nothing behind it simply plays nothing.
+ */
+export function preloadSamples(): Promise<void> {
+  const voice = getVoice();
+  if (!voice) return Promise.resolve();
+  return Promise.all(
+    SAMPLE_PACK_SPECS.map((spec) => preloadSamplePack(voice.ctx, spec)),
+  ).then(() => undefined);
+}
+
+/**
  * A short spin for auditioning a pack in Settings. Deliberately a spin rather
  * than a lone landing — the ticks are most of a pack's character.
  */
-export function playPreview(packId: string): void {
-  playSpin(packId, 1.1, 6);
+export function playPreview(packId: string): Promise<void> {
+  // Recorded packs cannot play until their files are decoded. For synthesised
+  // ones, and for recorded ones already loaded, this resolves immediately.
+  return preloadSamples().then(() => playSpin(packId, 1.1, 6));
 }

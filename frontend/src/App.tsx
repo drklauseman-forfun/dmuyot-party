@@ -15,7 +15,7 @@ import { matchCharacterEffect, resolvePresentation } from './characters/registry
 import { STORAGE_KEYS } from './storage';
 import { devLog } from './log';
 import { DEFAULT_SOUND_PACK_ID, isKnownSoundPackId } from './sound/packs';
-import { playLanding, playSpin } from './sound/engine';
+import { playLanding, playSpin, preloadSamples } from './sound/engine';
 import {
   usePersistedBoolean,
   usePersistedJSON,
@@ -195,6 +195,10 @@ function App() {
   /** Ticks tracking the wheel's deceleration, then the landing. */
   const playSpinSound = (duration: number, sliceCount: number) => {
     if (!soundEnabled) return;
+    // Recorded packs need their files decoded before they can play. Kicking
+    // this off here rather than on mount keeps it inside a user gesture, which
+    // is what lets the AudioContext start in the first place.
+    void preloadSamples();
     devLog(`🔊 [SOUND] ${activeSoundPack} spin, ${duration}s, ${sliceCount} slices`);
     playSpin(activeSoundPack, duration, sliceCount);
   };
