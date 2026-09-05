@@ -33,6 +33,24 @@ The frontend calls `http://localhost:8000` unless `VITE_API_URL` says
 otherwise. **That variable has to be set in the Vercel project**, or a
 production build will call localhost and every load will fail.
 
+## Deploying
+
+The frontend is on Vercel, built from `frontend/`. The API is described by
+`render.yaml` at the repository root — Render reads it and creates the service,
+so the configuration lives in the repo rather than in a dashboard. That file
+carries the step-by-step setup.
+
+Two things have to line up afterwards:
+
+- `VITE_API_URL` in Vercel points at the Render URL.
+- `ALLOWED_ORIGINS` on Render points back at the Vercel URL, once known. It
+  defaults to `*`, which works but lets any site use the API.
+
+Render's free plan sleeps the service after about 15 minutes idle and takes
+roughly a minute to wake. Only the first request pays that — loading a list —
+after which spinning is entirely client-side. The frontend shows a "waking up
+the server" note rather than appearing to hang, and gives up after 90 seconds.
+
 ## Checks
 
 ```bash

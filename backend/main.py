@@ -1,17 +1,26 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import os
 import requests
 import re
 from typing import Optional, List, Dict
 from bs4 import BeautifulSoup
 
-app = FastAPI()
+app = FastAPI(title="Dmuyot Party API")
+
+# Comma-separated origins, or "*" for any. Set ALLOWED_ORIGINS to the deployed
+# frontend's URL to lock this down; the default keeps local development and a
+# freshly deployed frontend working before anyone has configured anything.
+_origins = os.environ.get("ALLOWED_ORIGINS", "*")
+ALLOWED_ORIGINS = ["*"] if _origins.strip() == "*" else [
+    o.strip() for o in _origins.split(",") if o.strip()
+]
 
 # Allow CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     # A wildcard origin and credentials are not a legal combination — browsers
     # reject credentialed requests made against one. Nothing here sends
     # credentials, so the wildcard is the half worth keeping.
@@ -228,6 +237,16 @@ def extract_characters(request: ExtractionRequest):
 
     return ExtractionResponse(characters=characters)
 
+@app.get("/health")
+def health():
+    """Liveness check.
+
+    The host pings this to know the service is up, and it doubles as the
+    quickest way to tell whether a deployment worked at all.
+    """
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))

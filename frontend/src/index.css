@@ -567,3 +567,12 @@ h1 {
   }
 }
 
+
+/* Shown while a request is slow enough to look stuck — a sleeping free-tier
+   backend waking up. Quieter than an error, because nothing is wrong yet. */
+.load-hint {
+  margin: 0.8rem 0 0;
+  font-size: 0.8rem;
+  color: #888;
+  text-align: left;
+}

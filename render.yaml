@@ -1,0 +1,40 @@
+# Render blueprint for the API.
+#
+# Render reads this from the repository, so the service is defined here rather
+# than clicked together in a dashboard — redeploying or recreating it does not
+# depend on anyone remembering the settings.
+#
+# The frontend is not here: it stays on Vercel, which builds from `frontend/`.
+#
+# Setup, once:
+#   1. render.com → New → Blueprint → connect this repository
+#   2. Render reads this file and creates the service
+#   3. Copy the resulting URL (https://<name>.onrender.com)
+#   4. In Vercel, set VITE_API_URL to that URL and redeploy the frontend
+#   5. Optionally set ALLOWED_ORIGINS here to the Vercel URL, to stop other
+#      sites using this API
+#
+# Free plan note: the service sleeps after about 15 minutes idle and takes
+# roughly a minute to wake. Only the first request pays it — loading a list —
+# after which spinning is entirely client-side. The frontend says so while it
+# waits rather than looking hung.
+services:
+  - type: web
+    name: dmuyot-party-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    region: frankfurt
+    buildCommand: pip install -r requirements.txt
+    # $PORT is assigned by Render; binding anything else fails to start.
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      # Set this to the deployed frontend's origin once it is known, e.g.
+      # https://dmuyot-party.vercel.app — a comma-separated list is accepted.
+      # Left as "*" the API answers any site, which is a working default but
+      # not the one to settle on.
+      - key: ALLOWED_ORIGINS
+        value: "*"

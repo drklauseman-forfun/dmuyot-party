@@ -1,5 +1,7 @@
-fastapi
-uvicorn
-requests
-python-multipart
-beautifulsoup4
+# Pinned so a redeploy installs what was tested, not whatever released since.
+# python-multipart is deliberately absent: FastAPI only needs it for form and
+# file uploads, and this API takes JSON.
+fastapi==0.136.3
+uvicorn==0.48.0
+requests==2.34.2
+beautifulsoup4==4.14.3

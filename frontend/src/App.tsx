@@ -68,6 +68,9 @@ function describeExtractionFailure(error: unknown): string {
     if (error.code === 'ERR_NETWORK') {
       return "Couldn't reach the server. If you're running this locally, check that the backend is up.";
     }
+    if (error.code === 'ECONNABORTED') {
+      return 'The server took too long to answer. It may be waking up — try again in a moment.';
+    }
 
     const detail: unknown = error.response?.data?.detail;
     if (typeof detail === 'string') {
@@ -94,6 +97,8 @@ function App() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  // A request taking long enough to look broken. See handleExtract.
+  const [loadingSlow, setLoadingSlow] = useState(false);
   
   // Settings & Core Logic
   const [spinCount, setSpinCount] = useState<number | string>(1);
@@ -220,13 +225,24 @@ function App() {
   const handleExtract = async () => {
     setLoading(true);
     setLoadError(null);
+    setLoadingSlow(false);
     setSelectedIndex(null);
     setWinners([]);
+
+    // Free hosting tiers sleep when idle and take up to a minute to wake, and
+    // the request that pays for it is this one. Without a word of explanation
+    // the button just sits on "Processing..." and reads as broken.
+    const slowTimer = setTimeout(() => setLoadingSlow(true), 4000);
+
     try {
       const isUrl = input.trim().startsWith('http');
       const payload = isUrl ? { url: input.trim() } : { text: input };
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      const response = await axios.post<ExtractionResponse>(`${apiUrl}/api/extract`, payload);
+      const response = await axios.post<ExtractionResponse>(`${apiUrl}/api/extract`, payload, {
+        // Long enough to sit through a cold start, short enough that a truly
+        // dead server eventually says so instead of hanging forever.
+        timeout: 90_000,
+      });
       
       if (response.data.characters.length > 0) {
         setCharacters(response.data.characters.map((c, i) => ({ ...c, originalIndex: i })));
@@ -244,6 +260,8 @@ function App() {
       console.error('Extraction failed', error);
       setLoadError(describeExtractionFailure(error));
     } finally {
+      clearTimeout(slowTimer);
+      setLoadingSlow(false);
       setLoading(false);
     }
   };
@@ -427,6 +445,11 @@ function App() {
         <button onClick={handleExtract} disabled={loading || !input.trim() || mustSpin}>
           {loading ? 'Processing...' : 'Load Characters'}
         </button>
+        {loadingSlow && (
+          <p className="load-hint">
+            Waking up the server — this can take up to a minute the first time.
+          </p>
+        )}
         {loadError && (
           <div className="load-error" role="alert">
             {loadError}
