@@ -22,6 +22,26 @@ npm run lint     # expected to pass with zero problems
 | `src/storage.ts`     | Guarded `localStorage` access and the canonical key names.           |
 | `src/usePersistedState.ts` | `useState` that reads and writes through those guards.         |
 
+## Installing it on a phone
+
+The app is a PWA: `public/manifest.webmanifest`, an icon set generated from
+`public/icon.svg`, and `public/sw.js`. On a phone, "Add to Home Screen" gives
+an icon that opens it fullscreen with no browser chrome.
+
+The service worker caches the shell and the static assets so the app opens
+instantly and survives a bad connection. It does **not** make the app work
+offline — loading a list needs the backend. Offline you get the interface and
+the "couldn't reach the server" message. It never caches API responses: only
+same-origin GETs are touched.
+
+It is registered in production builds only. In dev it would sit in front of
+Vite's module server and hand back stale modules during HMR.
+
+The icons are PNGs rasterised from `icon.svg`. To change the icon, edit the
+SVG and re-render at 192, 512, 180 (apple-touch) and a padded 512 maskable —
+maskable icons get cropped to a circle, so their artwork needs the extra
+margin.
+
 ## Things that will bite you
 
 **`originalIndex` is identity, and it is positional.** Weights, ranges and
