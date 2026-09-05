@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SOUND_PACK_GROUPS } from '../sound/packs';
+import { SOUND_PACKS } from '../sound/packs';
 import { playPreview } from '../sound/engine';
 import { isSamplePackLoaded, isSamplePackReady } from '../sound/samples';
 
@@ -87,33 +87,25 @@ function SettingsModal({
             Enable Spin Sound
           </label>
 
-          {SOUND_PACK_GROUPS.map((group) => (
-            <div key={group.title} className="sound-group">
-              <div className="sound-group-heading">
-                <span className="sound-group-title">{group.title}</span>
-                <span className="sound-group-note">{group.note}</span>
-              </div>
-              <div className="sound-packs" aria-disabled={!soundEnabled}>
-                {group.packs.map((pack) => (
-                  <button
-                    key={pack.id}
-                    type="button"
-                    className={`sound-pack ${soundPack === pack.id ? 'is-selected' : ''}`}
-                    onClick={() => chooseAndPreview(pack.id)}
-                    disabled={!soundEnabled}
-                  >
-                    <span className="sound-pack-label">
-                      {pack.label}
-                      <span className="sound-pack-play" aria-hidden="true">▶</span>
-                    </span>
-                    <span className="sound-pack-description">
-                      {emptyPacks.includes(pack.id) ? 'No sound files added yet.' : pack.description}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
+          <div className="sound-packs" aria-disabled={!soundEnabled}>
+            {SOUND_PACKS.map((pack) => (
+              <button
+                key={pack.id}
+                type="button"
+                className={`sound-pack ${soundPack === pack.id ? 'is-selected' : ''}`}
+                onClick={() => chooseAndPreview(pack.id)}
+                disabled={!soundEnabled}
+              >
+                <span className="sound-pack-label">
+                  {pack.label}
+                  <span className="sound-pack-play" aria-hidden="true">▶</span>
+                </span>
+                <span className="sound-pack-description">
+                  {emptyPacks.includes(pack.id) ? 'No sound files added yet.' : pack.description}
+                </span>
+              </button>
+            ))}
+          </div>
           <p className="sound-packs-hint">
             {soundEnabled
               ? 'Tap one to hear it.'

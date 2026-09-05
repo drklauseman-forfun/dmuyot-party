@@ -14,7 +14,6 @@ import type { Voice } from './types';
 
 let context: AudioContext | null = null;
 let output: AudioNode | null = null;
-let noiseBuffer: AudioBuffer | null = null;
 
 /** Scheduling lead, so the first tick is never already in the past. */
 const LEAD_SECONDS = 0.02;
@@ -104,14 +103,7 @@ function getVoice(): Voice | null {
   // here is inside a click handler, so this is the moment it can be resumed.
   if (context.state === 'suspended') void context.resume();
 
-  if (!noiseBuffer || noiseBuffer.sampleRate !== context.sampleRate) {
-    const length = Math.floor(context.sampleRate * 0.4);
-    noiseBuffer = context.createBuffer(1, length, context.sampleRate);
-    const data = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
-  }
-
-  return { ctx: context, dest: output!, noise: noiseBuffer };
+  return { ctx: context, dest: output! };
 }
 
 function tickCountFor(durationSeconds: number, sliceCount: number): number {
@@ -132,13 +124,9 @@ export function playSpin(packId: string, durationSeconds: number, sliceCount: nu
   const start = voice.ctx.currentTime + LEAD_SECONDS;
   const ticks = tickCountFor(durationSeconds, sliceCount);
 
-  // The chassis under the clicks — axle rumble and air. Optional, because only
-  // the packs going for physical realism want it.
-  pack.bed?.(voice, start, durationSeconds);
-
   for (let i = 1; i <= ticks; i++) {
     const progress = i / ticks;
-    pack.tick(voice, start + durationSeconds * timeAtProgress(progress), progress);
+    pack.tick(voice, start + durationSeconds * timeAtProgress(progress));
   }
 
   pack.land(voice, start + durationSeconds);

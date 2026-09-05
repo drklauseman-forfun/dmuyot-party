@@ -44,23 +44,14 @@ elapsed time rather than reading the canvas clock, and every module's React key
 includes the effect's run id. Both exist because the canvas outlives any single
 effect; removing either brings back a bug that has already been fixed once.
 
-**Recorded packs load their audio from `public/sounds/`**, fetched at runtime
-rather than bundled. A pack with no files stays silent and says so in Settings.
+**All spin sounds are recordings**, loaded from `public/sounds/` at runtime
+rather than bundled. Three rounds of synthesised packs were built and rejected
+before this; they are in the git history, but no code calls them. A pack with
+no files stays silent and says so in Settings.
+
 Several tick recordings per pack matters: the engine picks between them and
 varies rate and level per click, which is what stops a 200-click spin sounding
-like a loop. See `public/sounds/README.md`.
-
-**Two sets of synthesised packs are shipping side by side** while it is decided
-which to keep: the hand-written ones in `src/sound/packs.ts` and Gemini's in
-`src/sound/geminiPacks.ts`, kept verbatim so the comparison stays honest.
-Settings renders them from `SOUND_PACK_GROUPS`; dropping a set is deleting one
-entry there and its file. Note Gemini's peak quieter (0.26-0.47 against
-0.41-0.76), which is its own level choice, not a bug.
-
-**The spin sounds are synthesised, not sampled.** `src/sound/` builds them
-from oscillators and filtered noise at runtime — there are no audio files. Add
-a sound by appending to `SOUND_PACKS` in `src/sound/packs.ts`; Settings builds
-its picker from that list.
+like a loop. `tools/slice-ticks.py` cuts a single recording into that set.
 
 **The ticks are derived from the wheel's easing curve.** `src/spinCurve.ts`
 owns the cubic-bezier the CSS transition uses *and* the inverse the scheduler

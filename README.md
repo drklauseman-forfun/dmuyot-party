@@ -82,17 +82,14 @@ Consequences worth knowing:
 
 ## Adding a spin sound
 
-Recorded packs are the preferred route. Drop audio into
-`frontend/public/sounds/<pack id>/` — that folder's README says what each pack
-expects, and nothing is committed by default, so a fresh clone has silent
-recorded packs until files are added.
+Put the audio in `frontend/public/sounds/<pack id>/` and append a spec to
+`SAMPLE_PACK_SPECS` in `frontend/src/sound/samples.ts`. Settings, persistence
+and preloading all read from that list, so nothing else changes.
 
-For a synthesised pack instead:
-
-Append an entry to `SOUND_PACKS` in `frontend/src/sound/packs.ts`. Settings
-builds its picker from that list, and the stored preference is validated
-against it, so a removed pack falls back rather than breaking. Sounds are
-synthesised at runtime — there are no audio assets to add.
+Every sound is a recording. `tools/slice-ticks.py` turns one recording of
+repeated clicks into the several short tick files a pack wants. Only use audio
+whose licence permits redistribution — `frontend/public/sounds/README.md` has
+the details and a table recording where each pack came from.
 
 ## Adding a character effect
 
