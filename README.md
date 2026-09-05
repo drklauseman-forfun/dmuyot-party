@@ -82,6 +82,13 @@ Consequences worth knowing:
 
 ## Adding a spin sound
 
+Recorded packs are the preferred route. Drop audio into
+`frontend/public/sounds/<pack id>/` — that folder's README says what each pack
+expects, and nothing is committed by default, so a fresh clone has silent
+recorded packs until files are added.
+
+For a synthesised pack instead:
+
 Append an entry to `SOUND_PACKS` in `frontend/src/sound/packs.ts`. Settings
 builds its picker from that list, and the stored preference is validated
 against it, so a removed pack falls back rather than breaking. Sounds are

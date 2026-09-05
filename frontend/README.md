@@ -44,7 +44,13 @@ elapsed time rather than reading the canvas clock, and every module's React key
 includes the effect's run id. Both exist because the canvas outlives any single
 effect; removing either brings back a bug that has already been fixed once.
 
-**Two sets of sound packs are shipping side by side** while it is decided
+**Recorded packs load their audio from `public/sounds/`**, fetched at runtime
+rather than bundled. A pack with no files stays silent and says so in Settings.
+Several tick recordings per pack matters: the engine picks between them and
+varies rate and level per click, which is what stops a 200-click spin sounding
+like a loop. See `public/sounds/README.md`.
+
+**Two sets of synthesised packs are shipping side by side** while it is decided
 which to keep: the hand-written ones in `src/sound/packs.ts` and Gemini's in
 `src/sound/geminiPacks.ts`, kept verbatim so the comparison stays honest.
 Settings renders them from `SOUND_PACK_GROUPS`; dropping a set is deleting one
