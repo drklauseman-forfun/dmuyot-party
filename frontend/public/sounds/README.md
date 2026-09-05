@@ -20,6 +20,20 @@ For the `Wheel` pack, in `public/sounds/wheel/`:
 (`src/sound/samples.ts`) to match. `.wav` is the safest choice for very short
 clicks, where compression artefacts are most audible.
 
+## Slicing a recording into ticks
+
+Most usable source material is one recording containing many clicks — a
+combination lock being turned, a clock running — rather than the separate short
+files this expects. `tools/slice-ticks.py` finds the individual hits, picks ones
+spread across the recording so they differ from each other, trims and levels
+them, and writes them straight here. Standard library only:
+
+    python tools/slice-ticks.py vault-lock.wav --out frontend/public/sounds/wheel
+    python tools/slice-ticks.py vault-lock.wav --out frontend/public/sounds/wheel --land --name land
+
+`--count` changes how many ticks to write, `--peak` the output level, and
+`--max-ms` the longest tick to keep.
+
 ## Why four ticks and not one
 
 A 2.5-second spin fires up to 200 clicks. One recording repeated that many
