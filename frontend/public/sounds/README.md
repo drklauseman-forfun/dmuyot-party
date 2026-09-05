@@ -4,8 +4,9 @@ Recorded spin sounds. These are **not** bundled into the JavaScript — they are
 served from here and fetched at runtime, so they stay off the critical path and
 the browser caches them normally.
 
-Nothing here is committed by default. A pack with no files simply stays silent,
-and Settings labels it "No sound files added yet."
+A pack with no files simply stays silent, and Settings labels it "No sound
+files added yet." Only files whose licence permits redistribution belong here —
+see the table at the bottom.
 
 ## What to add
 
@@ -65,4 +66,9 @@ recordings — and note the source below.
 
 | Pack | Source | Licence |
 | --- | --- | --- |
-| wheel | _(not yet added)_ | |
+| wheel | ["Wheel Spin Click Slow Down" by pooky1](https://freesound.org/s/398235/) | CC0 (public domain) |
+
+The `wheel` files were cut from that single recording with
+`tools/slice-ticks.py` — six clicks taken from across it, plus the final click
+and its tail as the landing. CC0 means no attribution is required; it is
+recorded here so the provenance is not lost.

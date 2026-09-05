@@ -16,6 +16,7 @@ Options worth knowing:
     --peak 0.5       normalise each output to this peak, 0-1
     --max-ms 120     longest tick to keep
     --land           write one trimmed, levelled file instead of slicing
+    --start / --end  crop the source first, in seconds
 """
 
 import argparse
@@ -27,21 +28,39 @@ from pathlib import Path
 
 
 def read_mono(path):
-    """Read a wav as a list of floats in [-1, 1], mixing channels down."""
+    """Read a wav as a list of floats in [-1, 1], mixing channels down.
+
+    Handles 16- and 24-bit, which is what sound libraries actually publish.
+    Reading 24-bit as 16-bit does not fail loudly — it silently produces
+    nonsense — so the width is checked rather than assumed.
+    """
     with wave.open(str(path), "rb") as w:
-        if w.getsampwidth() != 2:
-            sys.exit(f"{path}: only 16-bit wav is supported, got {w.getsampwidth() * 8}-bit")
-        channels, rate, frames = w.getnchannels(), w.getframerate(), w.getnframes()
+        width, channels = w.getsampwidth(), w.getnchannels()
+        rate, frames = w.getframerate(), w.getnframes()
         raw = w.readframes(frames)
 
-    samples = struct.unpack("<%dh" % (len(raw) // 2), raw)
+    if width == 2:
+        samples = struct.unpack("<%dh" % (len(raw) // 2), raw)
+        scale = 32768.0
+    elif width == 3:
+        # No struct format for 24-bit; assemble little-endian and sign-extend.
+        samples = []
+        for i in range(0, len(raw) - 2, 3):
+            value = raw[i] | (raw[i + 1] << 8) | (raw[i + 2] << 16)
+            if value & 0x800000:
+                value -= 0x1000000
+            samples.append(value)
+        scale = 8388608.0
+    else:
+        sys.exit(f"{path}: need 16- or 24-bit wav, got {width * 8}-bit")
+
     if channels == 1:
-        return [s / 32768.0 for s in samples], rate
+        return [s / scale for s in samples], rate
 
     mixed = []
-    for i in range(0, len(samples), channels):
+    for i in range(0, len(samples) - channels + 1, channels):
         frame = samples[i : i + channels]
-        mixed.append(sum(frame) / (len(frame) * 32768.0))
+        mixed.append(sum(frame) / (len(frame) * scale))
     return mixed, rate
 
 
@@ -142,6 +161,8 @@ def main():
     ap.add_argument("--max-ms", type=float, default=120.0)
     ap.add_argument("--name", default="tick")
     ap.add_argument("--land", action="store_true", help="write one trimmed file, do not slice")
+    ap.add_argument("--start", type=float, default=0.0, help="ignore audio before this second")
+    ap.add_argument("--end", type=float, default=None, help="ignore audio after this second")
     args = ap.parse_args()
 
     if not args.source.exists():
@@ -150,6 +171,12 @@ def main():
 
     data, rate = read_mono(args.source)
     print(f"read {args.source.name}: {len(data) / rate:.2f}s at {rate} Hz")
+
+    if args.start or args.end is not None:
+        lo = int(args.start * rate)
+        hi = int(args.end * rate) if args.end is not None else len(data)
+        data = data[lo:hi]
+        print(f"cropped to {args.start:.2f}-{(args.end if args.end is not None else len(data) / rate + args.start):.2f}s")
 
     if args.land:
         # Trim leading silence only; the tail is the point of a landing.

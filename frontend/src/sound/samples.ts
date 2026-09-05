@@ -33,12 +33,24 @@ export const SAMPLE_PACK_SPECS: SamplePackSpec[] = [
   {
     id: 'wheel',
     label: 'Wheel',
-    description: 'Recorded prize-wheel flapper.',
-    tickFiles: ['tick-1.wav', 'tick-2.wav', 'tick-3.wav', 'tick-4.wav'],
+    description: 'A real prize wheel, recorded. Metallic and mechanical.',
+    // Six clicks lifted from across one recording of a wheel slowing down, so
+    // they carry the differences the real pegs had.
+    tickFiles: [
+      'tick-1.wav',
+      'tick-2.wav',
+      'tick-3.wav',
+      'tick-4.wav',
+      'tick-5.wav',
+      'tick-6.wav',
+    ],
     landFile: 'land.wav',
     gain: 0.9,
     rateSpread: 0.07,
-    maxTickSeconds: 0.12,
+    // The source clicks run about 60ms, and at full speed the engine fires one
+    // every 16ms. Trimming keeps the overlap to a ratchet buzz rather than a
+    // smear, without shortening the slow clicks at the end of a spin.
+    maxTickSeconds: 0.055,
   },
 ];
 
