@@ -559,3 +559,12 @@ h1 {
   }
 }
 
+
+/* Points at the sound setting, which is otherwise only discoverable by opening
+   Settings and looking. Deliberately quiet — it sits under the subtitle and
+   should read as a note, not a banner. */
+.sound-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: #6f6f8a;
+}
