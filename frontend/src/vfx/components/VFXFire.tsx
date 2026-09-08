@@ -3,6 +3,7 @@ import React, { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import gsap from 'gsap';
+import type { FireParams } from '../types';
 
 const vertexShader = `
   varying vec2 vUv;
@@ -35,13 +36,7 @@ const fragmentShader = `
   }
 `;
 
-interface VFXFireProps {
-  color?: string;
-  position?: [number, number, number];
-  scale?: number | [number, number, number];
-  fadeInDuration?: number;
-  duration?: number;
-  fadeDuration?: number;
+interface VFXFireProps extends FireParams {
   active?: boolean;
 }
 

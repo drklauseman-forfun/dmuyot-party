@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import gsap from 'gsap';
+import type { BeamsParams } from '../types';
 
 const vertexShader = `
   varying vec2 vUv;
@@ -31,11 +32,7 @@ const fragmentShader = `
   }
 `;
 
-interface SubtleTopBeamsProps {
-  color?: string;
-  fadeInDuration?: number;
-  duration?: number;
-  fadeDuration?: number;
+interface SubtleTopBeamsProps extends BeamsParams {
   active?: boolean;
 }
 

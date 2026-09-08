@@ -3,13 +3,9 @@ import React, { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import gsap from 'gsap';
+import type { GlowParams } from '../types';
 
-interface VFXGlowProps {
-  color?: string;
-  intensity?: number;
-  fadeInDuration?: number;
-  duration?: number;
-  fadeDuration?: number;
+interface VFXGlowProps extends GlowParams {
   active?: boolean;
 }
 

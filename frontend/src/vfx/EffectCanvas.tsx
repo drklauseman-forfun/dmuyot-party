@@ -1,12 +1,9 @@
 
-import React, { Suspense, useState, useEffect, useRef } from 'react';
+import React, { Fragment, Suspense, useState, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import type { EffectConfig, VFXModuleConfig } from './types';
-import VFXGlow from './components/VFXGlow';
-import VFXSparkles from './components/VFXSparkles';
-import VFXFire from './components/VFXFire';
-import SubtleTopBeams from './components/SubtleTopBeams';
+import { renderVFXModule } from './modules';
 import { devLog } from '../log';
 
 interface EffectCanvasProps {
@@ -120,72 +117,18 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
  * this React would reuse an instance whenever the next effect happened to put
  * the same module type at the same index — leaving its GSAP timeline and
  * animation clock mid-flight instead of restarting them.
+ *
+ * Which component each module maps to lives in modules.tsx, so adding a module
+ * does not mean editing this file.
  */
 const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], runId: number, active: boolean }> = ({ modules, runId, active }) => {
   return (
     <group>
-      {modules.map((mod, index) => {
-        const key = `${runId}-${index}`;
-        switch (mod.type) {
-          case 'glow':
-            return (
-              <VFXGlow
-                key={key}
-                color={mod.color} 
-                intensity={mod.intensity} 
-                fadeInDuration={mod.fadeInDuration}
-                duration={mod.duration}
-                fadeDuration={mod.fadeDuration}
-                active={active} 
-              />
-            );
-          case 'sparkles':
-            return (
-              <VFXSparkles 
-                key={key}
-                color={mod.color} 
-                count={mod.count} 
-                size={mod.size} 
-                speed={mod.speed} 
-                scale={mod.scale} 
-                direction={mod.direction}
-                gravity={mod.gravity}
-                noise={mod.noise}
-                seed={runId + index}
-                fadeInDuration={mod.fadeInDuration}
-                duration={mod.duration}
-                fadeDuration={mod.fadeDuration}
-                active={active} 
-              />
-            );
-          case 'fire':
-            return (
-              <VFXFire 
-                key={key}
-                color={mod.color} 
-                scale={mod.scale} 
-                position={mod.position} 
-                fadeInDuration={mod.fadeInDuration}
-                duration={mod.duration}
-                fadeDuration={mod.fadeDuration}
-                active={active} 
-              />
-            );
-          case 'beams':
-            return (
-              <SubtleTopBeams 
-                key={key}
-                color={mod.color} 
-                fadeInDuration={mod.fadeInDuration}
-                duration={mod.duration}
-                fadeDuration={mod.fadeDuration}
-                active={active} 
-              />
-            );
-          default:
-            return null;
-        }
-      })}
+      {modules.map((mod, index) => (
+        <Fragment key={`${runId}-${index}`}>
+          {renderVFXModule(mod, { active, seed: runId + index })}
+        </Fragment>
+      ))}
     </group>
   );
 };

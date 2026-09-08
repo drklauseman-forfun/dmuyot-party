@@ -3,19 +3,9 @@ import React, { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import gsap from 'gsap';
+import type { SparklesParams } from '../types';
 
-interface VFXSparklesProps {
-  color?: string;
-  count?: number;
-  scale?: number | [number, number, number];
-  size?: number;
-  speed?: number;
-  direction?: 'up' | 'down' | 'left' | 'right' | 'random';
-  gravity?: number;
-  noise?: number;
-  fadeInDuration?: number;
-  duration?: number;
-  fadeDuration?: number;
+interface VFXSparklesProps extends SparklesParams {
   active?: boolean;
   /**
    * Varies the particle layout between runs. Rendering has to be pure, so the
