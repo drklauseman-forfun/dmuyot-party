@@ -73,9 +73,9 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
   },
   {
     id: 'purple-wraith',
-    // Prefix, not contains: the document holds a second "הסגולה" character
-    // (הרוח הסגולה) that a looser match would fire on as well.
-    triggers: [{ pattern: "אשת הנרץ' הסגולה", match: 'prefix' }],
+    // Exactly this name and nothing else. Not 'prefix' — that would also fire
+    // on anything merely starting with it.
+    triggers: [{ pattern: "אשת הנרץ' הסגולה", match: 'name' }],
     presentation: {
       title: "🔮 אשת הנרץ' הסגולה 🔮",
       accentColor: '#c77dff',
@@ -108,6 +108,17 @@ const DEFAULT_ACCENT = '#646cff';
 
 const DEFAULT_TITLE = '🎊 The Results are In! 🎊';
 
+/**
+ * A name without its trailing parenthesised source.
+ *
+ * "אשת הנרץ' הסגולה (מגהברס 1)" becomes "אשת הנרץ' הסגולה". Only a
+ * trailing group is removed, so a name with brackets in the middle keeps
+ * them.
+ */
+function withoutSource(name: string): string {
+  return name.replace(/\s*\([^)]*\)\s*$/, '').trim();
+}
+
 function triggerMatches(name: string, trigger: EffectTrigger): boolean {
   if (trigger.match === 'regex') {
     try {
@@ -124,6 +135,8 @@ function triggerMatches(name: string, trigger: EffectTrigger): boolean {
   switch (trigger.match) {
     case 'exact':
       return subject === pattern;
+    case 'name':
+      return withoutSource(subject) === withoutSource(pattern);
     case 'prefix':
       return subject.startsWith(pattern);
     case 'contains':

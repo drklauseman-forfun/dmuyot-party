@@ -2,10 +2,15 @@ import type { VFXModuleConfig } from '../vfx/types';
 
 /**
  * How a character's name is compared against a trigger pattern.
- * Use 'exact' unless you specifically need looser matching — 'prefix' will
- * happily match "אלפרד" against "אלף".
+ *
+ * Prefer 'name'. It is exact, except that it ignores a trailing "(Source)" —
+ * which the extractor keeps on the end of every name, so a plain 'exact' on
+ * the name as written would never match.
+ *
+ * The looser modes match more than they look like they do: 'prefix' will
+ * happily fire "אלף" on "אלפרד".
  */
-export type TriggerMatch = 'exact' | 'prefix' | 'contains' | 'regex';
+export type TriggerMatch = 'exact' | 'name' | 'prefix' | 'contains' | 'regex';
 
 export interface EffectTrigger {
   pattern: string;
