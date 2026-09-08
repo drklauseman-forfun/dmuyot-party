@@ -234,12 +234,6 @@ h1 {
   -webkit-text-fill-color: transparent;
 }
 
-.subtitle {
-  color: #888;
-  margin-top: 0.2rem;
-  font-size: 0.9rem;
-}
-
 .spin-controls {
   display: flex;
   gap: 1rem;
@@ -561,8 +555,8 @@ h1 {
 
 
 /* Points at the sound setting, which is otherwise only discoverable by opening
-   Settings and looking. Deliberately quiet — it sits under the subtitle and
-   should read as a note, not a banner. */
+   Settings and looking. Deliberately quiet — it should read as a note rather
+   than a banner. */
 .sound-note {
   margin: 0.35rem 0 0;
   font-size: 0.75rem;

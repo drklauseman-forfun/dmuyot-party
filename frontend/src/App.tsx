@@ -398,7 +398,6 @@ function App() {
       )}
       <header>
         <h1>Dmuyot Party</h1>
-        <p className="subtitle">Random character selector for your next big adventure</p>
         <p className="sound-note">🔊 Spin sounds are on — turn them off in Settings ⚙️</p>
         <div style={{ position: 'absolute', right: 0, top: 0, display: 'flex', gap: '5px' }}>
           {history.length > 0 && (
