@@ -1,3 +1,9 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -15,8 +21,6 @@
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -70,31 +74,6 @@ header {
   gap: 2rem;
   width: 100%;
   margin-top: 1rem;
-}
-
-@media (max-width: 768px) {
-  .main-content {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .wheel-section {
-    min-width: unset;
-    width: 100%;
-    transform: scale(0.8);
-    margin: -3rem 0;
-  }
-  
-  .list-section {
-    width: 100%;
-    max-width: unset;
-    height: 300px;
-    order: 2; /* Move list below wheel on mobile */
-  }
-
-  .settings-btn {
-    font-size: 1.5rem;
-  }
 }
 
 .input-section {
@@ -248,6 +227,33 @@ h1 {
   border: 1px solid #333;
   background: #1e1e1e;
   color: white;
+}
+
+/* Phone layout. Must stay below the desktop rules it overrides — these have
+   the same specificity, so the later block wins. */
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .wheel-section {
+    min-width: unset;
+    width: 100%;
+    transform: scale(0.8);
+    margin: -3rem 0;
+  }
+  
+  .list-section {
+    width: 100%;
+    max-width: unset;
+    height: 300px;
+    order: 2; /* Move list below wheel on mobile */
+  }
+
+  .settings-btn {
+    font-size: 1.5rem;
+  }
 }
 
 .results-overlay, .settings-overlay {
@@ -552,7 +558,6 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
-
 
 /* Points at the sound setting, which is otherwise only discoverable by opening
    Settings and looking. Deliberately quiet — it should read as a note rather
