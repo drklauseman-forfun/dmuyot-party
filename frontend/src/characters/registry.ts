@@ -35,43 +35,6 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
     ],
   },
   {
-    id: 'elf',
-    triggers: [{ pattern: 'אלף', match: 'prefix' }],
-    presentation: {
-      title: '🧝 ANCIENT SUMMON 🧝',
-      accentColor: '#00ff88',
-      backgroundColor: 'rgba(0, 20, 10, 0.95)',
-      glow: '0 0 50px #00ff88, 0 0 80px rgba(0, 255, 136, 0.3)',
-      buttonTextColor: '#000000',
-      fontFamily: "'Trebuchet MS', sans-serif",
-      textShadow: '0 0 10px #00ff44',
-    },
-    modules: [
-      { type: 'fire', color: '#00ff88', scale: 3, position: [0, -2, 0], duration: 5, fadeDuration: 2 },
-      { type: 'sparkles', color: '#00ff88', count: 150, size: 1, speed: 0.5, scale: 10, duration: 5, fadeDuration: 2 },
-    ],
-  },
-  {
-    id: 'legendary',
-    triggers: [{ pattern: 'לגנדרי', match: 'prefix' }],
-    presentation: {
-      title: '✨ LEGENDARY HERO ✨',
-      accentColor: '#ffd700',
-      backgroundColor: 'rgba(25, 25, 0, 0.95)',
-      glow: '0 0 60px #ffd700, 0 0 120px rgba(255, 215, 0, 0.4)',
-      buttonTextColor: '#000000',
-      fontFamily: "'Palatino', serif",
-      letterSpacing: '2px',
-      textShadow: '0 0 15px #ffffff',
-    },
-    modules: [
-      { type: 'beams', color: '#fff2b2', duration: 6, fadeDuration: 2 },
-      { type: 'glow', color: '#d4af37', intensity: 0.4, duration: 6, fadeDuration: 2 },
-      { type: 'sparkles', color: '#ffd700', count: 200, size: 1.5, speed: 1, scale: 12, duration: 5, fadeDuration: 2 },
-      { type: 'fire', color: '#ffd700', scale: 2, position: [0, -2, 0], duration: 4, fadeDuration: 2 },
-    ],
-  },
-  {
     id: 'purple-wraith',
     // Matched from the start of the name. The pattern has to be long enough to
     // be unique on its own — see the note on TriggerMatch.
