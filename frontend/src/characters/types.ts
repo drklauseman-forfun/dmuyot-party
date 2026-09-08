@@ -3,14 +3,15 @@ import type { VFXModuleConfig } from '../vfx/types';
 /**
  * How a character's name is compared against a trigger pattern.
  *
- * Prefer 'name'. It is exact, except that it ignores a trailing "(Source)" —
- * which the extractor keeps on the end of every name, so a plain 'exact' on
- * the name as written would never match.
+ * 'prefix' is the one to reach for. Names are stored with their source
+ * attached — "אשת הנרץ' הסגולה (מגהברס 1)" — so matching from the start lets a
+ * trigger name the character without repeating the whole entry.
  *
- * The looser modes match more than they look like they do: 'prefix' will
- * happily fire "אלף" on "אלפרד".
+ * The pattern carries the burden of being unambiguous: it must be long enough
+ * that nothing else in the list begins with it. "אלף" would also fire on
+ * "אלפרד".
  */
-export type TriggerMatch = 'exact' | 'name' | 'prefix' | 'contains' | 'regex';
+export type TriggerMatch = 'exact' | 'prefix' | 'contains' | 'regex';
 
 export interface EffectTrigger {
   pattern: string;
