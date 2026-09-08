@@ -71,6 +71,33 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       { type: 'fire', color: '#ffd700', scale: 2, position: [0, -2, 0], duration: 4, fadeDuration: 2 },
     ],
   },
+  {
+    id: 'purple-wraith',
+    // Prefix, not contains: the document holds a second "הסגולה" character
+    // (הרוח הסגולה) that a looser match would fire on as well.
+    triggers: [{ pattern: "אשת הנרץ' הסגולה", match: 'prefix' }],
+    presentation: {
+      title: "🔮 אשת הנרץ' הסגולה 🔮",
+      accentColor: '#c77dff',
+      backgroundColor: 'rgba(18, 4, 32, 0.95)',
+      glow: '0 0 50px #a322ff, 0 0 100px rgba(163, 34, 255, 0.35)',
+      fontFamily: "'Palatino', serif",
+      letterSpacing: '1px',
+      textShadow: '0 0 12px #c77dff',
+    },
+    modules: [
+      // Deep violet welling up from below, pale light settling from above. Two
+      // edges rather than one flat wash, so the frame reads as lit from both
+      // ends instead of tinted.
+      { type: 'edgeGlow', edge: 'bottom', color: '#3d0a6b', intensity: 0.85, spread: 0.55, duration: 5, fadeDuration: 2 },
+      { type: 'edgeGlow', edge: 'top', color: '#c77dff', intensity: 0.5, spread: 0.42, duration: 5, fadeDuration: 2 },
+      // Crossing streams. The two directions are deliberately not mirror
+      // images — different speeds and counts keep them from reading as one
+      // symmetrical pattern.
+      { type: 'sparkles', direction: 'left', color: '#a322ff', count: 260, size: 1.4, speed: 3.2, scale: [12, 8, 5], noise: 0.4, duration: 5, fadeDuration: 2 },
+      { type: 'sparkles', direction: 'right', color: '#e0aaff', count: 200, size: 1.1, speed: 2.4, scale: [12, 8, 5], noise: 0.6, duration: 5, fadeDuration: 2 },
+    ],
+  },
 ];
 
 /** Game effects plus the developer sandbox. Game effects match first. */

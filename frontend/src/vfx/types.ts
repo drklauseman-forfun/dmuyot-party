@@ -47,6 +47,16 @@ export interface FireParams extends VFXTiming {
   position?: [number, number, number];
 }
 
+/** Light bleeding in from one edge, fading with distance from it. */
+export interface EdgeGlowParams extends VFXTiming {
+  color?: string;
+  /** Peak brightness at the edge, 0–1. */
+  intensity?: number;
+  edge?: 'top' | 'bottom' | 'left' | 'right';
+  /** How far across the frame it reaches, 0–1. */
+  spread?: number;
+}
+
 /** Soft vertical shafts of light across the top of the frame. */
 export interface BeamsParams extends VFXTiming {
   color?: string;
@@ -64,7 +74,8 @@ export type VFXModuleConfig =
   | ({ type: 'glow' } & GlowParams)
   | ({ type: 'sparkles' } & SparklesParams)
   | ({ type: 'fire' } & FireParams)
-  | ({ type: 'beams' } & BeamsParams);
+  | ({ type: 'beams' } & BeamsParams)
+  | ({ type: 'edgeGlow' } & EdgeGlowParams);
 
 export type VFXModuleType = VFXModuleConfig['type'];
 
