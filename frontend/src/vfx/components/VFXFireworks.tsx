@@ -152,12 +152,12 @@ interface VFXFireworksProps extends FireworksParams {
 
 const VFXFireworks: React.FC<VFXFireworksProps> = ({
   colors = DEFAULT_COLORS,
-  bursts = 9,
+  bursts = 14,
   sparksPerBurst = 55,
   spread = 1.6,
   gravity = 1.5,
   size = 1.2,
-  interval = 0.5,
+  interval = 0.28,
   riseTime = 0.55,
   life = 1.7,
   maxPixelSize = 42,

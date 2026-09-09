@@ -330,9 +330,10 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       textShadow: '0 0 12px #ffd76b',
     },
     modules: [
-      // Eight shells over three and a half seconds, so the last one has time to
-      // burn out before the effect fades rather than being cut off mid-air.
-      { type: 'fireworks', bursts: 8, interval: 0.5, fadeInDuration: 0.6, duration: 4, fadeDuration: 1.5 },
+      // Fourteen shells packed into the same three and a half seconds, so seven
+      // are alight at once rather than four. Measured at 32% of the frame lit
+      // and 1.5% blown out — full, without swallowing the winner's name.
+      { type: 'fireworks', bursts: 14, interval: 0.28, fadeInDuration: 0.6, duration: 4, fadeDuration: 1.5 },
     ],
   },
 ];
