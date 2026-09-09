@@ -252,9 +252,9 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       // modal — the winner's name still has to be legible through it.
       darkIntensity: 0.78,
       lightIntensity: 0.55,
-      particleDensity: 0.7,
-      particleSize: 1.3,
-      particleMaxPixels: 46,
+      particleDensity: 1.05,
+      particleSize: 1.65,
+      particleMaxPixels: 60,
     }),
   },
 ];
