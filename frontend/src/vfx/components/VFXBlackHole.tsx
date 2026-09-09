@@ -34,6 +34,7 @@ const fragmentShader = `
   uniform float radius;
   uniform float spin;
   uniform vec2 center;
+  uniform float density;
   uniform vec3 diskColor;
 
   float hash(vec2 p) {
@@ -49,7 +50,9 @@ const fragmentShader = `
       for (int x = -1; x <= 1; x++) {
         vec2 g = vec2(float(x), float(y));
         vec2 offset = vec2(hash(cell + g), hash(cell + g + 41.0));
-        float present = step(0.86, hash(cell + g + 13.0));
+        // Fewer cells hold a star as density falls. At 1 this is roughly one
+        // cell in seven, which is what the effect was first tuned against.
+        float present = step(1.0 - 0.14 * density, hash(cell + g + 13.0));
         float d = length(g + offset - f);
         total += present * smoothstep(0.13, 0.0, d);
       }
@@ -105,6 +108,7 @@ const VFXBlackHole: React.FC<VFXBlackHoleProps> = ({
   radius = 0.16,
   spin = 1,
   intensity = 1,
+  strands = 1,
   center = [0.5, 0.5],
   fadeInDuration = 1,
   duration = 3,
@@ -128,8 +132,9 @@ const VFXBlackHole: React.FC<VFXBlackHoleProps> = ({
       spin: { value: spin },
       diskColor: { value: new THREE.Color(color) },
       center: { value: new THREE.Vector2(centerX, centerY) },
+      density: { value: strands },
     }),
-    [color, radius, spin, centerX, centerY],
+    [color, radius, spin, centerX, centerY, strands],
   );
 
   useEffect(() => {

@@ -105,6 +105,11 @@ export interface BlackHoleParams extends VFXTiming {
   /** Peak opacity, 0-1. Below 1 the interface shows through the core. */
   intensity?: number;
   /**
+   * How much light there is to be pulled in, and so how many strands wrap the
+   * hole. 1 is sparse; past about 4 they start to merge into a sheet.
+   */
+  strands?: number;
+  /**
    * Where it sits, in fractions of the frame from the top left. Centred by
    * default, which puts the core over the middle of the results modal — move
    * it if the winner's name has to stay readable through the effect.

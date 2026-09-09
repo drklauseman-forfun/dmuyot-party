@@ -77,11 +77,11 @@ export const TEST_EFFECTS: CharacterEffect[] = [
 
   // --- BLACK HOLE ---
   sandbox('blackhole', '#b9c0d4', [
-    { type: 'blackHole', color: '#454b55', radius: 0.17, spin: 1, fadeInDuration: 1.2, duration: 4, fadeDuration: 2.5 },
+    { type: 'blackHole', color: '#454b55', radius: 0.17, spin: 1, strands: 2.4, fadeInDuration: 0.3, duration: 4, fadeDuration: 1 },
   ]),
   // Off-centre and spinning the other way, which is also how to keep the core
   // clear of the winner's name.
   sandbox('blackholeblue', '#7fd4ff', [
-    { type: 'blackHole', color: '#7fd4ff', radius: 0.22, spin: -1.6, center: [0.5, 0.26], fadeInDuration: 1.2, duration: 4, fadeDuration: 2.5 },
+    { type: 'blackHole', color: '#7fd4ff', radius: 0.22, spin: -1.6, center: [0.5, 0.26], strands: 4, fadeInDuration: 0.3, duration: 4, fadeDuration: 1 },
   ]),
 ];
