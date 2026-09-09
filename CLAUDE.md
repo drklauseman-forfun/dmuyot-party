@@ -71,7 +71,7 @@ offers exactly the parameters that module understands. Each component's props
 extend the same declarations, so the two cannot drift apart.
 
 Modules today: `glow`, `edgeGlow`, `sparkles`, `fire`, `beams`, `blackHole`,
-`clock`.
+`clock`, `fireworks`.
 `fire` and `beams` have no game effect using them but are kept — the developer
 sandbox in `testEffects.ts` uses them and they are building blocks.
 

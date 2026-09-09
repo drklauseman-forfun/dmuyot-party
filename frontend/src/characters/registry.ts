@@ -314,6 +314,27 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       },
     ],
   },
+  {
+    id: 'fireworks-man',
+    // A long, distinctive name, so the name alone is unambiguous — unlike סאם
+    // and סאלין, which needed their source in the pattern too.
+    triggers: [{ pattern: 'איש הזיקוקים', match: 'prefix' }],
+    presentation: {
+      title: '🎆 איש הזיקוקים 🎆',
+      accentColor: '#ffd76b',
+      // Night sky, so the bursts have something to go off against.
+      backgroundColor: 'rgba(10, 8, 20, 0.95)',
+      glow: '0 0 50px #ffd76b, 0 0 100px #ff5f6d59',
+      fontFamily: "'Palatino', serif",
+      letterSpacing: '1px',
+      textShadow: '0 0 12px #ffd76b',
+    },
+    modules: [
+      // Eight shells over three and a half seconds, so the last one has time to
+      // burn out before the effect fades rather than being cut off mid-air.
+      { type: 'fireworks', bursts: 8, interval: 0.5, fadeInDuration: 0.6, duration: 4, fadeDuration: 1.5 },
+    ],
+  },
 ];
 
 /** Game effects plus the developer sandbox. Game effects match first. */

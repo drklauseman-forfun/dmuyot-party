@@ -158,6 +158,28 @@ export interface ClockParams extends VFXTiming {
   intensity?: number;
 }
 
+/** Shells that rise, burst, and rain sparks. */
+export interface FireworksParams extends VFXTiming {
+  /** Up to four, one picked per burst. */
+  colors?: string[];
+  /** How many shells go up over the effect. */
+  bursts?: number;
+  sparksPerBurst?: number;
+  /** How far a burst throws its sparks. */
+  spread?: number;
+  /** How hard they are pulled back down. */
+  gravity?: number;
+  size?: number;
+  /** Seconds between one shell and the next. */
+  interval?: number;
+  /** Seconds a shell spends climbing before it opens. */
+  riseTime?: number;
+  /** Seconds a spark burns for after the burst. */
+  life?: number;
+  /** Ceiling on a spark's on-screen size, in pixels. See SparklesParams. */
+  maxPixelSize?: number;
+}
+
 /**
  * One module in an effect.
  *
@@ -173,7 +195,8 @@ export type VFXModuleConfig =
   | ({ type: 'beams' } & BeamsParams)
   | ({ type: 'edgeGlow' } & EdgeGlowParams)
   | ({ type: 'blackHole' } & BlackHoleParams)
-  | ({ type: 'clock' } & ClockParams);
+  | ({ type: 'clock' } & ClockParams)
+  | ({ type: 'fireworks' } & FireworksParams);
 
 export type VFXModuleType = VFXModuleConfig['type'];
 

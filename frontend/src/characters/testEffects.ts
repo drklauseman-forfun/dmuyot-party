@@ -75,6 +75,15 @@ export const TEST_EFFECTS: CharacterEffect[] = [
     { type: 'beams', color: '#00ccff', duration: 5, fadeDuration: 2 },
   ]),
 
+  // --- FIREWORKS ---
+  sandbox('fireworks', '#ffd76b', [
+    { type: 'fireworks', fadeInDuration: 0.5, duration: 4, fadeDuration: 1.5 },
+  ]),
+  // One slow shell, for watching a single burst rise and open.
+  sandbox('fireworksone', '#ff5f6d', [
+    { type: 'fireworks', bursts: 1, sparksPerBurst: 160, interval: 1, riseTime: 1, life: 2.6, fadeInDuration: 0.4, duration: 5, fadeDuration: 1.5 },
+  ]),
+
   // --- CLOCK ---
   sandbox('clockgreen', '#5dff9b', [
     { type: 'clock', color: '#7dffb0', radius: 0.28, marks: 12, hands: [{ rate: -2, length: 0.78, width: 0.028 }, { rate: 0.75, length: 0.5, width: 0.05 }, { rate: 5, length: 0.9, width: 0.016 }], fadeInDuration: 0.7, duration: 3, fadeDuration: 1.2 },
