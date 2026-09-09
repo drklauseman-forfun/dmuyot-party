@@ -295,7 +295,7 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       textShadow: '0 0 12px #5dff9b',
     },
     modules: [
-      { type: 'edgeGlow', edge: 'bottom', color: '#5dff9b', intensity: 0.75, spread: 0.55, fadeInDuration: 0.7, duration: 4.5, fadeDuration: 1.2 },
+      { type: 'edgeGlow', edge: 'bottom', color: '#5dff9b', intensity: 0.75, spread: 0.55, fadeInDuration: 0.7, duration: 3, fadeDuration: 1.2 },
       // Three hands at odds with each other: the long one running backwards,
       // the other two forwards at different rates, so no two ever line up.
       {
@@ -309,7 +309,7 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
           { rate: 5, length: 0.9, width: 0.016 },
         ],
         fadeInDuration: 0.7,
-        duration: 4.5,
+        duration: 3,
         fadeDuration: 1.2,
       },
     ],

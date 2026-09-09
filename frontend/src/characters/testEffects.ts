@@ -77,7 +77,7 @@ export const TEST_EFFECTS: CharacterEffect[] = [
 
   // --- CLOCK ---
   sandbox('clockgreen', '#5dff9b', [
-    { type: 'clock', color: '#7dffb0', radius: 0.28, marks: 12, hands: [{ rate: -2, length: 0.78, width: 0.028 }, { rate: 0.75, length: 0.5, width: 0.05 }, { rate: 5, length: 0.9, width: 0.016 }], fadeInDuration: 0.7, duration: 4.5, fadeDuration: 1.2 },
+    { type: 'clock', color: '#7dffb0', radius: 0.28, marks: 12, hands: [{ rate: -2, length: 0.78, width: 0.028 }, { rate: 0.75, length: 0.5, width: 0.05 }, { rate: 5, length: 0.9, width: 0.016 }], fadeInDuration: 0.7, duration: 3, fadeDuration: 1.2 },
   ]),
   // Fast, finely divided, and running the other way — the pair covers both
   // directions.
