@@ -111,6 +111,8 @@ const VFXClock: React.FC<VFXClockProps> = ({
 
   const meshRef = useRef<THREE.Mesh>(null);
   const strength = useRef({ value: 0 });
+  const timeline = useRef<gsap.core.Timeline | null>(null);
+  const started = useRef(false);
 
   const uniforms = useMemo(
     () => ({
@@ -126,15 +128,27 @@ const VFXClock: React.FC<VFXClockProps> = ({
     [color, radius, centerX, centerY, marks, tickRate],
   );
 
+  // Built paused and started from the first frame the canvas actually draws.
+  // Mounting stalls for as long as it takes to create the WebGL context and
+  // compile the shaders, which happens on every effect — the canvas is torn
+  // down between them. A timeline started on mount spends its fade-in during
+  // that stall, so the first frame anyone sees is already at full brightness:
+  // the effect appears instead of fading, while the fade-out, running seconds
+  // later on a warm canvas, works perfectly.
   useEffect(() => {
     if (active) {
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({ paused: true });
       // Gentle at both ends. 'power2.out' front-loads — it is the right curve
       // for something arriving with a snap, and the wrong one for a fade.
       tl.to(strength.current, { value: intensity, duration: fadeInDuration, ease: 'power1.inOut' });
       tl.to({}, { duration });
       tl.to(strength.current, { value: 0, duration: fadeDuration, ease: 'power2.inOut' });
-      return () => { tl.kill(); };
+      timeline.current = tl;
+      return () => {
+        tl.kill();
+        timeline.current = null;
+        started.current = false;
+      };
     }
   }, [active, intensity, fadeInDuration, duration, fadeDuration]);
 
@@ -144,6 +158,10 @@ const VFXClock: React.FC<VFXClockProps> = ({
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;
+    if (timeline.current && !started.current) {
+      started.current = true;
+      timeline.current.play();
+    }
     elapsed.current += delta;
     const material = meshRef.current.material as THREE.ShaderMaterial;
     material.uniforms.time.value = elapsed.current;
