@@ -25,6 +25,7 @@ import {
 import type { CharacterEffect } from './characters/types';
 import type { CharacterData, HistoryEntry, WeightMap, Winner } from './types';
 import CharacterList from './components/CharacterList';
+import HelpModal from './components/HelpModal';
 import HistoryModal from './components/HistoryModal';
 import ResultsModal from './components/ResultsModal';
 import SettingsModal from './components/SettingsModal';
@@ -100,6 +101,7 @@ function App() {
   const [winners, setWinners] = useState<Winner[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [spinDuration, setSpinDuration] = usePersistedNumber(STORAGE_KEYS.duration, 0.4);
   const [soundEnabled, setSoundEnabled] = usePersistedBoolean(STORAGE_KEYS.sound, true);
@@ -410,6 +412,14 @@ function App() {
         </Suspense>
       )}
       <header>
+        <button
+          className="help-btn"
+          onClick={() => setShowHelp(true)}
+          title="How this works"
+          aria-label="How this works"
+        >
+          ℹ️
+        </button>
         <h1>Dmuyot Party</h1>
         <p className="sound-note">🔊 Spin sounds are on — turn them off in Settings ⚙️</p>
         <div style={{ position: 'absolute', right: 0, top: 0, display: 'flex', gap: '5px' }}>
@@ -516,6 +526,8 @@ function App() {
           />
         </main>
       )}
+
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
 
       {showHistoryModal && (
         <HistoryModal

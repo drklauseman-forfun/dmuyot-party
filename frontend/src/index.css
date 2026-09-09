@@ -50,6 +50,28 @@ header {
   margin-bottom: 1rem;
 }
 
+/* Information, at the top left. Deliberately not `.settings-btn`: that one
+   spins on hover, which is right for a cog and odd for anything else. */
+.help-btn {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: none;
+  border: none;
+  font-size: 1.7rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: #646cff;
+  transition: opacity 0.2s ease;
+  opacity: 0.85;
+}
+
+.help-btn:hover {
+  background: none;
+  opacity: 1;
+}
+
 .settings-btn {
   position: absolute;
   right: 0;
@@ -251,7 +273,8 @@ h1 {
     order: 2; /* Move list below wheel on mobile */
   }
 
-  .settings-btn {
+  .settings-btn,
+  .help-btn {
     font-size: 1.5rem;
   }
 }
@@ -545,6 +568,34 @@ h1 {
   line-height: 1.35;
   color: #888;
   font-weight: 400;
+}
+
+/* The how-it-works panel. It is prose sharing a shell with the settings
+   controls, so it needs its own spacing and a readable measure. */
+.help-modal {
+  max-width: 560px;
+}
+
+.help-modal h3 {
+  margin: 1.5rem 0 0.4rem;
+  font-size: 0.95rem;
+  color: #c9ccf5;
+}
+
+.help-modal p {
+  margin: 0 0 0.7rem;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: #a8a8b4;
+}
+
+.help-modal code {
+  background: #2c2c2c;
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 0.78rem;
+  color: #d6d6e2;
+  white-space: nowrap;
 }
 
 /* Explanatory line under a settings toggle. */
