@@ -71,6 +71,14 @@ export interface EdgeGlowParams extends VFXTiming {
   edge?: 'top' | 'bottom' | 'left' | 'right';
   /** How far across the frame it reaches, 0–1. */
   spread?: number;
+  /**
+   * 'add' brightens the frame — light coming in from an edge.
+   *
+   * 'normal' paints over it instead, so a black colour reads as darkness
+   * closing in rather than as nothing at all. Adding black to a frame changes
+   * nothing, so it is the only way to make an edge go dark.
+   */
+  blend?: 'add' | 'normal';
 }
 
 /** Soft vertical shafts of light across the top of the frame. */

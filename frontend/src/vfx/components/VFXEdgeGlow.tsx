@@ -62,6 +62,7 @@ const VFXEdgeGlow: React.FC<VFXEdgeGlowProps> = ({
   duration = 3,
   fadeDuration = 2,
   active = true,
+  blend = 'add',
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const strength = useRef({ value: 0 });
@@ -109,7 +110,7 @@ const VFXEdgeGlow: React.FC<VFXEdgeGlowProps> = ({
         fragmentShader={fragmentShader}
         uniforms={uniforms}
         transparent
-        blending={THREE.AdditiveBlending}
+        blending={blend === 'normal' ? THREE.NormalBlending : THREE.AdditiveBlending}
         depthTest={false}
         depthWrite={false}
       />

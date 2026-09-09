@@ -42,6 +42,8 @@ interface WraithPalette {
   particleSize?: number;
   /** Caps how large a particle can grow as it nears the camera. */
   particleMaxPixels?: number;
+  /** 'normal' for glows meant to darken the frame rather than light it. */
+  glowBlend?: 'add' | 'normal';
 }
 
 function wraithModules({
@@ -56,6 +58,7 @@ function wraithModules({
   particleDensity = 1,
   particleSize = 1,
   particleMaxPixels,
+  glowBlend = 'add',
 }: WraithPalette): VFXModuleConfig[] {
   const blend = particleBlend;
   const n = (count: number) => Math.round(count * particleDensity);
@@ -83,8 +86,8 @@ function wraithModules({
   };
 
   return [
-    { type: 'edgeGlow', edge: 'bottom', color: dark, intensity: darkIntensity, spread: 0.55, ...WRAITH_TIMING },
-    { type: 'edgeGlow', edge: 'top', color: light, intensity: lightIntensity, spread: 0.42, ...WRAITH_TIMING },
+    { type: 'edgeGlow', edge: 'bottom', color: dark, intensity: darkIntensity, spread: 0.55, blend: glowBlend, ...WRAITH_TIMING },
+    { type: 'edgeGlow', edge: 'top', color: light, intensity: lightIntensity, spread: 0.42, blend: glowBlend, ...WRAITH_TIMING },
     ...particles[field],
   ];
 }
@@ -227,29 +230,31 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
   {
     id: 'wraith-black',
     triggers: [{ pattern: "איש הנרץ' השחור", match: 'prefix' }],
-    // The character's own colour is #080808, which cannot glow: the layer is
-    // added to the frame, so black adds nothing at all. A charcoal with a
-    // violet cast below and silver above keeps it dark without being invisible.
+    // Silver on the modal itself — the text has to stay readable while the
+    // frame around it goes dark.
     presentation: wraithPresentation(
       "🎵 איש הנרץ' השחור 🎶",
       '#b9c0d4',
       'rgba(10, 10, 14, 0.96)',
     ),
     modules: wraithModules({
-      dark: '#241f33',
-      light: '#d5dae8',
+      // The only wraith whose light goes the other way: black added to a frame
+      // changes nothing, so these paint over it instead and the edges go dark
+      // rather than bright. Both edges close in; the particles are black on
+      // top of that, visible where they cross the lit interface beneath.
+      dark: '#000000',
+      light: '#000000',
       particle: '#000000',
       particleAccent: '#050508',
+      glowBlend: 'normal',
       particleBlend: 'normal',
-      lightIntensity: 0.95,
-      // Sparse on purpose: these are silhouettes, and they only read as black
-      // while there is still lit frame showing between them.
-      // Sparse, small, and capped in size. A dark particle paints over the
-      // frame instead of adding to it, so without all three it stops being a
-      // speck of black and becomes a black screen.
+      // Strong enough to read as darkness closing in, short of swallowing the
+      // modal — the winner's name still has to be legible through it.
+      darkIntensity: 0.78,
+      lightIntensity: 0.55,
       particleDensity: 0.7,
-      particleSize: 0.5,
-      particleMaxPixels: 14,
+      particleSize: 1.3,
+      particleMaxPixels: 46,
     }),
   },
 ];
