@@ -574,6 +574,62 @@ h1 {
    controls, so it needs its own spacing and a readable measure. */
 .help-modal {
   max-width: 560px;
+  /* `start`, not `left`: .settings-modal pins it left, which would leave the
+     Hebrew ragged down the wrong edge once dir flips. */
+  text-align: start;
+}
+
+.help-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.help-header h2 {
+  flex: 1;
+  min-width: 0;
+}
+
+.help-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.help-close:hover {
+  background: none;
+  color: #ccc;
+}
+
+.help-lang {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.help-lang button {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #2c2c2c;
+  color: #aaa;
+}
+
+.help-lang button:hover {
+  background: #383838;
+}
+
+.help-lang button.is-selected {
+  border-color: #646cff;
+  background: rgba(100, 108, 255, 0.15);
+  color: #fff;
 }
 
 .help-modal h3 {
@@ -596,6 +652,10 @@ h1 {
   font-size: 0.78rem;
   color: #d6d6e2;
   white-space: nowrap;
+  /* These are literals a user types or reads off a button, so they run
+     left-to-right even when the sentence around them does not. */
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 /* Explanatory line under a settings toggle. */

@@ -50,9 +50,10 @@ Product decisions, not accidents. Changing one is a regression.
   one without a migration loses user data.
 
 Every one of these rules is also **explained to the user** in
-`components/HelpModal.tsx`, behind the information button. It is prose, so
-nothing catches it drifting out of date — change a rule above and that file is
-wrong until someone edits it too.
+`components/HelpModal.tsx`, behind the information button, in English and in
+Hebrew. It is prose, so nothing catches it drifting out of date — change a rule
+above and that file is wrong until someone edits it, in **both** languages. The
+content is data rather than markup so the two stay the same shape.
 
 ## The three registries
 
