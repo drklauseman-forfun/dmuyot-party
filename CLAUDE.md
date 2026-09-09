@@ -189,16 +189,44 @@ recorded sound worked, before the PWA work.
 
 ## Open questions
 
-**The backend is not deployed anywhere.** There is no hosting configuration on
-`main`, and the frontend falls back to `http://localhost:8000`. Whether
-`VITE_API_URL` is set in the Vercel project was asked several times and never
-confirmed — if it is not, the deployed site cannot load a list at all. Establish
-this before assuming a production problem is new.
+**The backend is deployed, and `VITE_API_URL` is set.** It runs at
+`https://dmuyot-party.onrender.com`, and the Vercel build has that URL compiled
+into it. This sat here as an open question for several sessions, phrased as
+though the opposite were likely. It is not: production loads lists fine. Settle
+it from the built bundle rather than by asking —
+`curl -s <site>/assets/index-*.js | grep -o 'https://[^"]*api/extract'`.
 
-**Home-screen widgets are deferred.** They need a native app, and no widget on
-either platform can animate — iOS renders static snapshots, Android uses
-RemoteViews. So a widget could only ever show a result as text, never the wheel.
-A Scriptable script is the only route to a real widget without a native app.
+**Waking that backend takes about half a minute.** Render's free tier spins an
+idle instance down. A measured cold request took 32.4s; the next was instant. So
+the first list-load after a quiet spell is very slow, and anything calling the
+API on demand — a widget, a script — cannot assume it is awake. Moving the one
+endpoint onto Vercel's Python runtime beside the frontend would cut that to well
+under a second and remove the second host entirely; a keep-alive ping every ten
+minutes is the cheap version, but Render's 750 free instance-hours a month
+barely cover one always-on service.
+
+**Home-screen widgets need a native app and can never show the wheel.**
+Researched properly rather than assumed:
+
+- Android widgets are `RemoteViews`, which supports a fixed set of view types.
+  `WebView` is not among them and cannot be — the tree is serialised and drawn
+  by the launcher's process. No web page can appear in an Android widget.
+- iOS widgets are WidgetKit/SwiftUI, rendered as static snapshots on a
+  timeline. No WebView, and no animation loop even inside a native app.
+- The `widgets` member of the web app manifest is Microsoft's and targets the
+  Windows 11 Widgets Board. It does nothing on either phone.
+- Both platforms do allow an interactive button — an `AppIntent` on iOS 17+, a
+  `PendingIntent` on Android — so a widget can spin and show a name.
+
+Distribution is lopsided: an Android APK can be sideloaded to friends for free,
+while every iOS route needs the $99/year membership.
+
+The design settled on, for whoever picks this up: configure once with the
+document link, fetch the list through `/api/extract` and keep it in
+`SharedPreferences`, pick locally so the cold start never bites, and let tapping
+the widget open the app for the real thing. Screenshotting the page into the
+widget was considered and rejected — WebGL generally will not render in an
+offscreen `WebView`, so the effects are precisely what would come out blank.
 
 **The sound picker has one entry.** The machinery takes several; adding a pack
 is files plus a spec. The Settings toggle and the preference both work.
