@@ -113,6 +113,7 @@ const VFXBlackHole: React.FC<VFXBlackHoleProps> = ({
   spin = 1,
   intensity = 1,
   strands = 1,
+  windUp = 18,
   center = [0.5, 0.5],
   fadeInDuration = 1,
   duration = 3,
@@ -151,9 +152,10 @@ const VFXBlackHole: React.FC<VFXBlackHoleProps> = ({
     }
   }, [active, intensity, fadeInDuration, duration, fadeDuration]);
 
-  // Local elapsed time so each run starts at t=0 — the canvas clock keeps
-  // running between effects. Same pattern as the other modules.
-  const elapsed = useRef(0);
+  // Local elapsed time, so each run starts from the same place rather than
+  // from wherever the canvas clock happens to be — the same pattern as the
+  // other modules, except that this one starts wound up rather than at zero.
+  const elapsed = useRef(windUp);
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;

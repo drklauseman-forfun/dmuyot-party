@@ -277,7 +277,7 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
     // One module is the whole effect: the black hole darkens the frame around
     // itself, so it needs no edge glow underneath it.
     modules: [
-      { type: 'blackHole', color: '#454b55', radius: 0.17, spin: 1, strands: 2.4, fadeInDuration: 0.3, duration: 4.5, fadeDuration: 1 },
+      { type: 'blackHole', color: '#454b55', radius: 0.17, spin: 1, strands: 2.4, windUp: 18, fadeInDuration: 0.3, duration: 4.5, fadeDuration: 1 },
     ],
   },
 ];

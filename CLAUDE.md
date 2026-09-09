@@ -88,6 +88,24 @@ camera, so a particle drifting close becomes hundreds of pixels wide. Added to
 the frame that is the soft bloom the bright effects rely on. Painted over it, it
 is a disc that swallows the picture. `maxPixelSize` caps it, uncapped by default.
 
+**The black hole looks different depending on how long it has been running.**
+Its strands are specks that the swirl stretches into long arcs over about
+twenty seconds. An effect that lives for six never gets there on its own, which
+is what `windUp` is for — it starts the field part-way in. This cost a whole
+round of "it looks worse on my phone": the verification screenshots had been
+taken with `duration` temporarily stretched to 30s so the capture could catch
+them, so they showed a wound-up state the shipped five-second effect could not
+reach. **Never judge it from a capture taken with a stretched duration.**
+
+**Screenshots of an effect are usually mistimed.** A capture takes several
+seconds and the effects last about six, so most land after the thing has gone
+and show an empty frame. Do not conclude it is broken. Two techniques work:
+stretch `duration` temporarily (and put it back), or — better — pull the
+fragment shader out of the built bundle, compile it in a scratch WebGL canvas
+at a chosen size, and either read pixels back for a measurement or draw it into
+the page as a still, which screenshots reliably. That is how the phone-versus-
+desktop sizing was settled.
+
 **`edgeGlow` renders at `renderOrder={-1}`.** It is a backdrop. Drawn after the
 particles it adds light back over them, which additive particles do not notice
 and a dark one disappears under.

@@ -110,6 +110,15 @@ export interface BlackHoleParams extends VFXTiming {
    */
   strands?: number;
   /**
+   * Seconds of swirl the field already has when the effect starts.
+   *
+   * The strands are stretched by the swirl, so they grow from specks into long
+   * arcs over roughly twenty seconds. An effect that lives for five would
+   * otherwise never leave the specks behind. Starting part-way in gives the
+   * wound-up look immediately without having to spin it faster.
+   */
+  windUp?: number;
+  /**
    * Where it sits, in fractions of the frame from the top left. Centred by
    * default, which puts the core over the middle of the results modal — move
    * it if the winner's name has to stay readable through the effect.
