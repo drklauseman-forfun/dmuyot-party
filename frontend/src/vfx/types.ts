@@ -87,6 +87,32 @@ export interface BeamsParams extends VFXTiming {
 }
 
 /**
+ * A black hole at the centre of the frame: dark core, accretion ring, and a
+ * starfield falling into it.
+ *
+ * What bends is a field the shader draws for itself. The canvas sits above the
+ * interface and cannot read the page behind it, so there is no lensing the
+ * actual wheel — what sells it is that the light it does draw is visibly being
+ * pulled in.
+ */
+export interface BlackHoleParams extends VFXTiming {
+  /** The accretion ring. The core is always black. */
+  color?: string;
+  /** Event horizon, as a fraction of the frame's height. */
+  radius?: number;
+  /** How fast the field winds around it. Negative reverses the rotation. */
+  spin?: number;
+  /** Peak opacity, 0-1. Below 1 the interface shows through the core. */
+  intensity?: number;
+  /**
+   * Where it sits, in fractions of the frame from the top left. Centred by
+   * default, which puts the core over the middle of the results modal — move
+   * it if the winner's name has to stay readable through the effect.
+   */
+  center?: [number, number];
+}
+
+/**
  * One module in an effect.
  *
  * A discriminated union rather than one interface with every field optional:
@@ -99,7 +125,8 @@ export type VFXModuleConfig =
   | ({ type: 'sparkles' } & SparklesParams)
   | ({ type: 'fire' } & FireParams)
   | ({ type: 'beams' } & BeamsParams)
-  | ({ type: 'edgeGlow' } & EdgeGlowParams);
+  | ({ type: 'edgeGlow' } & EdgeGlowParams)
+  | ({ type: 'blackHole' } & BlackHoleParams);
 
 export type VFXModuleType = VFXModuleConfig['type'];
 

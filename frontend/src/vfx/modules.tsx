@@ -4,6 +4,7 @@ import VFXSparkles from './components/VFXSparkles';
 import VFXFire from './components/VFXFire';
 import SubtleTopBeams from './components/SubtleTopBeams';
 import VFXEdgeGlow from './components/VFXEdgeGlow';
+import VFXBlackHole from './components/VFXBlackHole';
 import type { VFXModuleConfig, VFXModuleType } from './types';
 
 /**
@@ -52,6 +53,7 @@ const RENDERERS: ModuleRenderers = {
   fire: (params, { active }) => <VFXFire {...params} active={active} />,
   beams: (params, { active }) => <SubtleTopBeams {...params} active={active} />,
   edgeGlow: (params, { active }) => <VFXEdgeGlow {...params} active={active} />,
+  blackHole: (params, { active }) => <VFXBlackHole {...params} active={active} />,
 };
 
 /**
