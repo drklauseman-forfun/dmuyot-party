@@ -1,9 +1,81 @@
 import type {
   CharacterEffect,
+  EffectPresentation,
   EffectTrigger,
   ResolvedPresentation,
 } from './types';
+import type { VFXModuleConfig } from '../vfx/types';
 import { TEST_EFFECTS } from './testEffects';
+
+/*
+ * The הנרץ' family share one design: dark light welling up from below, pale
+ * light settling from above, and a field of particles. Only the palette and
+ * the particle behaviour differ, so the two builders below take those as
+ * parameters rather than the entries repeating the same twenty lines seven
+ * times over. An effect that wants something else simply does not use them.
+ */
+
+/** How a wraith's particles move. */
+type ParticleField = 'crossing' | 'rain' | 'ambient';
+
+const WRAITH_TIMING = { duration: 5, fadeDuration: 2 } as const;
+
+interface WraithPalette {
+  /** Deep tone rising from the bottom edge. */
+  dark: string;
+  /** Pale tone settling from the top edge. */
+  light: string;
+  particle: string;
+  particleAccent: string;
+  field?: ParticleField;
+}
+
+function wraithModules({
+  dark,
+  light,
+  particle,
+  particleAccent,
+  field = 'crossing',
+}: WraithPalette): VFXModuleConfig[] {
+  const particles: Record<ParticleField, VFXModuleConfig[]> = {
+    // Two crossing streams, deliberately not mirror images — different speeds
+    // and counts stop them reading as one symmetrical pattern.
+    crossing: [
+      { type: 'sparkles', direction: 'left', color: particle, count: 260, size: 1.4, speed: 3.2, scale: [12, 8, 5], noise: 0.4, ...WRAITH_TIMING },
+      { type: 'sparkles', direction: 'right', color: particleAccent, count: 200, size: 1.1, speed: 2.4, scale: [12, 8, 5], noise: 0.6, ...WRAITH_TIMING },
+    ],
+    // Falling. Two layers at different speeds give it depth rather than one
+    // flat sheet moving together.
+    rain: [
+      { type: 'sparkles', direction: 'down', gravity: 4, color: particle, count: 320, size: 1.1, speed: 3, scale: [13, 10, 5], ...WRAITH_TIMING },
+      { type: 'sparkles', direction: 'down', gravity: 2, color: particleAccent, count: 210, size: 0.8, speed: 2, scale: [13, 10, 5], noise: 0.3, ...WRAITH_TIMING },
+    ],
+    // No travel direction, so the shader drifts them in place — sparkles
+    // spread over the whole frame rather than crossing it.
+    ambient: [
+      { type: 'sparkles', color: particle, count: 340, size: 1.5, speed: 0.7, scale: [14, 10, 6], ...WRAITH_TIMING },
+      { type: 'sparkles', color: particleAccent, count: 220, size: 1.0, speed: 0.4, scale: [9, 7, 4], ...WRAITH_TIMING },
+    ],
+  };
+
+  return [
+    { type: 'edgeGlow', edge: 'bottom', color: dark, intensity: 0.85, spread: 0.55, ...WRAITH_TIMING },
+    { type: 'edgeGlow', edge: 'top', color: light, intensity: 0.5, spread: 0.42, ...WRAITH_TIMING },
+    ...particles[field],
+  ];
+}
+
+function wraithPresentation(title: string, accent: string, background: string): EffectPresentation {
+  return {
+    title,
+    accentColor: accent,
+    backgroundColor: background,
+    glow: `0 0 50px ${accent}, 0 0 100px ${accent}59`,
+    fontFamily: "'Palatino', serif",
+    letterSpacing: '1px',
+    textShadow: `0 0 12px ${accent}`,
+  };
+}
 
 /**
  * Every custom character effect in the game.
@@ -35,31 +107,116 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
     ],
   },
   {
-    id: 'purple-wraith',
-    // Matched from the start of the name. The pattern has to be long enough to
-    // be unique on its own — see the note on TriggerMatch.
+    id: 'wraith-purple',
     triggers: [{ pattern: "אשת הנרץ' הסגולה", match: 'prefix' }],
-    presentation: {
-      title: "🔮 אשת הנרץ' הסגולה 🔮",
-      accentColor: '#c77dff',
-      backgroundColor: 'rgba(18, 4, 32, 0.95)',
-      glow: '0 0 50px #a322ff, 0 0 100px rgba(163, 34, 255, 0.35)',
-      fontFamily: "'Palatino', serif",
-      letterSpacing: '1px',
-      textShadow: '0 0 12px #c77dff',
-    },
-    modules: [
-      // Deep violet welling up from below, pale light settling from above. Two
-      // edges rather than one flat wash, so the frame reads as lit from both
-      // ends instead of tinted.
-      { type: 'edgeGlow', edge: 'bottom', color: '#3d0a6b', intensity: 0.85, spread: 0.55, duration: 5, fadeDuration: 2 },
-      { type: 'edgeGlow', edge: 'top', color: '#c77dff', intensity: 0.5, spread: 0.42, duration: 5, fadeDuration: 2 },
-      // Crossing streams. The two directions are deliberately not mirror
-      // images — different speeds and counts keep them from reading as one
-      // symmetrical pattern.
-      { type: 'sparkles', direction: 'left', color: '#a322ff', count: 260, size: 1.4, speed: 3.2, scale: [12, 8, 5], noise: 0.4, duration: 5, fadeDuration: 2 },
-      { type: 'sparkles', direction: 'right', color: '#e0aaff', count: 200, size: 1.1, speed: 2.4, scale: [12, 8, 5], noise: 0.6, duration: 5, fadeDuration: 2 },
-    ],
+    presentation: wraithPresentation(
+      "אשת הנרץ' הסגולה",
+      '#c77dff',
+      'rgba(18, 4, 32, 0.95)',
+    ),
+    modules: wraithModules({
+      dark: '#3d0a6b',
+      light: '#c77dff',
+      particle: '#a322ff',
+      particleAccent: '#e0aaff',
+    }),
+  },
+  {
+    id: 'wraith-white',
+    triggers: [{ pattern: "איש הנרץ' הלבן- לוטוס", match: 'prefix' }],
+    presentation: wraithPresentation(
+      "💮 איש הנרץ' הלבן- לוטוס 💮",
+      '#e8e8f2',
+      'rgba(20, 20, 25, 0.95)',
+    ),
+    modules: wraithModules({
+      dark: '#3a3a4a',
+      light: '#ffffff',
+      particle: '#ffffff',
+      particleAccent: '#d8d8e6',
+    }),
+  },
+  {
+    id: 'wraith-red',
+    triggers: [{ pattern: "איש הנרץ' האדום", match: 'prefix' }],
+    // Deeper and less orange than the document's own #ff1f1f — asked for
+    // something closer to blood than to a warning light.
+    presentation: wraithPresentation(
+      "איש הנרץ' האדום",
+      '#d92626',
+      'rgba(26, 3, 4, 0.95)',
+    ),
+    modules: wraithModules({
+      dark: '#3d0203',
+      light: '#a81111',
+      particle: '#c41818',
+      particleAccent: '#7a0d0d',
+    }),
+  },
+  {
+    id: 'wraith-yellow',
+    triggers: [{ pattern: "איש הנרץ' הצהוב", match: 'prefix' }],
+    presentation: wraithPresentation(
+      "👑 איש הנרץ' הצהוב 📖",
+      '#ffe95c',
+      'rgba(26, 22, 3, 0.95)',
+    ),
+    modules: wraithModules({
+      dark: '#4a3a05',
+      light: '#ffe95c',
+      particle: '#ffe95c',
+      particleAccent: '#ffd000',
+      field: 'ambient',
+    }),
+  },
+  {
+    id: 'wraith-blue',
+    triggers: [{ pattern: "אשת הנרץ' הכחולה- לנה", match: 'prefix' }],
+    presentation: wraithPresentation(
+      "אשת הנרץ' הכחולה- לנה",
+      '#8fbaff',
+      'rgba(5, 12, 28, 0.95)',
+    ),
+    modules: wraithModules({
+      dark: '#08183a',
+      light: '#8fbaff',
+      particle: '#8fbaff',
+      particleAccent: '#4a86e8',
+      field: 'rain',
+    }),
+  },
+  {
+    id: 'wraith-green',
+    triggers: [{ pattern: "איש הנרץ' הירוק", match: 'prefix' }],
+    presentation: wraithPresentation(
+      "💰 איש הנרץ' הירוק ⚔️",
+      '#5cff5c',
+      'rgba(3, 22, 8, 0.95)',
+    ),
+    modules: wraithModules({
+      dark: '#043410',
+      light: '#6dff6d',
+      particle: '#46ff46',
+      particleAccent: '#0bc10b',
+    }),
+  },
+  {
+    id: 'wraith-black',
+    triggers: [{ pattern: "איש הנרץ' השחור", match: 'prefix' }],
+    // The character's own colour is #080808, which cannot glow: the layer is
+    // added to the frame, so black adds nothing at all. A charcoal with a
+    // violet cast below and silver above keeps it dark without being invisible.
+    presentation: wraithPresentation(
+      "🎵 איש הנרץ' השחור 🎶",
+      '#b9c0d4',
+      'rgba(10, 10, 14, 0.96)',
+    ),
+    modules: wraithModules({
+      dark: '#241f33',
+      light: '#9aa0b5',
+      particle: '#c9cede',
+      particleAccent: '#6e7488',
+    }),
   },
 ];
 
