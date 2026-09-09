@@ -35,6 +35,7 @@ const vertexShader = `
   uniform float noise;
   uniform float size;
   uniform vec3 bounds;
+  uniform float maxPixelSize;
   attribute float sizeRandomness;
   attribute vec3 customOffset;
   varying float vOpacity;
@@ -68,7 +69,7 @@ const vertexShader = `
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
     // Scale particle size based on variable and depth
-    gl_PointSize = size * sizeRandomness * (300.0 / -mvPosition.z);
+    gl_PointSize = min(size * sizeRandomness * (300.0 / -mvPosition.z), maxPixelSize);
     gl_Position = projectionMatrix * mvPosition;
     vOpacity = 1.0;
   }
@@ -100,7 +101,11 @@ const VFXSparkles: React.FC<VFXSparklesProps> = ({
   duration = 3,
   fadeDuration = 2,
   active = true,
-  seed = 1
+  seed = 1,
+  blend = 'add',
+  // Effectively no ceiling by default, so existing effects keep the large soft
+  // blooms they get from particles drifting near the camera.
+  maxPixelSize = 4096
 }) => {
   const pointsRef = useRef<THREE.Points>(null);
   const opacityState = useRef({ value: 0 });
@@ -151,8 +156,9 @@ const VFXSparkles: React.FC<VFXSparklesProps> = ({
     gravity: { value: gravity },
     noise: { value: noise },
     size: { value: size },
-    bounds: { value: halfExtent }
-  }), [color, speed, directionVec, gravity, noise, size, halfExtent]);
+    bounds: { value: halfExtent },
+    maxPixelSize: { value: maxPixelSize }
+  }), [color, speed, directionVec, gravity, noise, size, halfExtent, maxPixelSize]);
 
   useEffect(() => {
     if (active) {
@@ -200,7 +206,7 @@ const VFXSparkles: React.FC<VFXSparklesProps> = ({
         uniforms={uniforms}
         transparent
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={blend === 'normal' ? THREE.NormalBlending : THREE.AdditiveBlending}
       />
     </points>
   );

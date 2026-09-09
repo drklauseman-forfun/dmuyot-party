@@ -94,7 +94,10 @@ const VFXEdgeGlow: React.FC<VFXEdgeGlowProps> = ({
   });
 
   return (
-    <mesh ref={meshRef} position={[0, 0, 0]}>
+    // renderOrder -1: this is a backdrop. Drawn after the particles it would
+    // add light back over them, which additive particles do not care about but
+    // makes a normally-blended dark particle disappear again.
+    <mesh ref={meshRef} position={[0, 0, 0]} renderOrder={-1}>
       {/*
         The vertex shader writes gl_Position straight from `position`, so these
         vertices are already in clip space and must span [-1, 1] to fill the

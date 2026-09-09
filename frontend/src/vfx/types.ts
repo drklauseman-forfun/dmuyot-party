@@ -38,6 +38,22 @@ export interface SparklesParams extends VFXTiming {
   gravity?: number;
   /** Sideways turbulence. */
   noise?: number;
+  /**
+   * 'add' brightens whatever is behind it, which is what makes particles read
+   * as light — but it cannot draw anything darker than the frame, so black
+   * added to the scene is simply invisible. 'normal' paints over instead, so a
+   * dark particle shows as a silhouette against a lit background.
+   */
+  blend?: 'add' | 'normal';
+  /**
+   * Ceiling on a particle's on-screen size, in pixels.
+   *
+   * Size scales with nearness to the camera, without bound — a particle that
+   * drifts close becomes vast. Added to the frame that reads as a soft bloom
+   * and is left alone by default, but a dark particle blending normally
+   * becomes a disc that swallows the picture.
+   */
+  maxPixelSize?: number;
 }
 
 /** A shader flame on a plane. */

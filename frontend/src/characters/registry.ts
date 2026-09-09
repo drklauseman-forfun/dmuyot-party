@@ -28,6 +28,20 @@ interface WraithPalette {
   particle: string;
   particleAccent: string;
   field?: ParticleField;
+  /** 'normal' for particles meant to read as dark rather than as light. */
+  particleBlend?: 'add' | 'normal';
+  darkIntensity?: number;
+  lightIntensity?: number;
+  /**
+   * Scales how many particles there are. Dark particles paint over the frame
+   * rather than adding to it, so at the usual density they cover the glow they
+   * are supposed to be seen against and the whole picture goes black.
+   */
+  particleDensity?: number;
+  /** Scales particle size, for the same reason as particleDensity. */
+  particleSize?: number;
+  /** Caps how large a particle can grow as it nears the camera. */
+  particleMaxPixels?: number;
 }
 
 function wraithModules({
@@ -36,31 +50,41 @@ function wraithModules({
   particle,
   particleAccent,
   field = 'crossing',
+  particleBlend = 'add',
+  darkIntensity = 0.85,
+  lightIntensity = 0.5,
+  particleDensity = 1,
+  particleSize = 1,
+  particleMaxPixels,
 }: WraithPalette): VFXModuleConfig[] {
+  const blend = particleBlend;
+  const n = (count: number) => Math.round(count * particleDensity);
+  const z = (size: number) => +(size * particleSize).toFixed(2);
+  const cap = particleMaxPixels === undefined ? {} : { maxPixelSize: particleMaxPixels };
   const particles: Record<ParticleField, VFXModuleConfig[]> = {
     // Two crossing streams, deliberately not mirror images — different speeds
     // and counts stop them reading as one symmetrical pattern.
     crossing: [
-      { type: 'sparkles', direction: 'left', color: particle, count: 260, size: 1.4, speed: 3.2, scale: [12, 8, 5], noise: 0.4, ...WRAITH_TIMING },
-      { type: 'sparkles', direction: 'right', color: particleAccent, count: 200, size: 1.1, speed: 2.4, scale: [12, 8, 5], noise: 0.6, ...WRAITH_TIMING },
+      { type: 'sparkles', direction: 'left', color: particle, count: n(260), size: z(1.4), speed: 3.2, scale: [12, 8, 5], noise: 0.4, blend, ...cap, ...WRAITH_TIMING },
+      { type: 'sparkles', direction: 'right', color: particleAccent, count: n(200), size: z(1.1), speed: 2.4, scale: [12, 8, 5], noise: 0.6, blend, ...cap, ...WRAITH_TIMING },
     ],
     // Falling. Two layers at different speeds give it depth rather than one
     // flat sheet moving together.
     rain: [
-      { type: 'sparkles', direction: 'down', gravity: 4, color: particle, count: 320, size: 1.1, speed: 3, scale: [13, 10, 5], ...WRAITH_TIMING },
-      { type: 'sparkles', direction: 'down', gravity: 2, color: particleAccent, count: 210, size: 0.8, speed: 2, scale: [13, 10, 5], noise: 0.3, ...WRAITH_TIMING },
+      { type: 'sparkles', direction: 'down', gravity: 4, color: particle, count: n(320), size: z(1.1), speed: 3, scale: [13, 10, 5], blend, ...cap, ...WRAITH_TIMING },
+      { type: 'sparkles', direction: 'down', gravity: 2, color: particleAccent, count: n(210), size: z(0.8), speed: 2, scale: [13, 10, 5], noise: 0.3, blend, ...cap, ...WRAITH_TIMING },
     ],
     // No travel direction, so the shader drifts them in place — sparkles
     // spread over the whole frame rather than crossing it.
     ambient: [
-      { type: 'sparkles', color: particle, count: 340, size: 1.5, speed: 0.7, scale: [14, 10, 6], ...WRAITH_TIMING },
-      { type: 'sparkles', color: particleAccent, count: 220, size: 1.0, speed: 0.4, scale: [9, 7, 4], ...WRAITH_TIMING },
+      { type: 'sparkles', color: particle, count: n(340), size: z(1.5), speed: 0.7, scale: [14, 10, 6], blend, ...cap, ...WRAITH_TIMING },
+      { type: 'sparkles', color: particleAccent, count: n(220), size: z(1.0), speed: 0.4, scale: [9, 7, 4], blend, ...cap, ...WRAITH_TIMING },
     ],
   };
 
   return [
-    { type: 'edgeGlow', edge: 'bottom', color: dark, intensity: 0.85, spread: 0.55, ...WRAITH_TIMING },
-    { type: 'edgeGlow', edge: 'top', color: light, intensity: 0.5, spread: 0.42, ...WRAITH_TIMING },
+    { type: 'edgeGlow', edge: 'bottom', color: dark, intensity: darkIntensity, spread: 0.55, ...WRAITH_TIMING },
+    { type: 'edgeGlow', edge: 'top', color: light, intensity: lightIntensity, spread: 0.42, ...WRAITH_TIMING },
     ...particles[field],
   ];
 }
@@ -130,10 +154,10 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       'rgba(20, 20, 25, 0.95)',
     ),
     modules: wraithModules({
-      dark: '#3a3a4a',
+      dark: '#4f4f63',
       light: '#ffffff',
       particle: '#ffffff',
-      particleAccent: '#d8d8e6',
+      particleAccent: '#f2f2fa',
     }),
   },
   {
@@ -213,9 +237,19 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
     ),
     modules: wraithModules({
       dark: '#241f33',
-      light: '#9aa0b5',
-      particle: '#c9cede',
-      particleAccent: '#6e7488',
+      light: '#d5dae8',
+      particle: '#000000',
+      particleAccent: '#050508',
+      particleBlend: 'normal',
+      lightIntensity: 0.95,
+      // Sparse on purpose: these are silhouettes, and they only read as black
+      // while there is still lit frame showing between them.
+      // Sparse, small, and capped in size. A dark particle paints over the
+      // frame instead of adding to it, so without all three it stops being a
+      // speck of black and becomes a black screen.
+      particleDensity: 0.7,
+      particleSize: 0.5,
+      particleMaxPixels: 14,
     }),
   },
 ];
