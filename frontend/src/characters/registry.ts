@@ -296,8 +296,22 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
     },
     modules: [
       { type: 'edgeGlow', edge: 'bottom', color: '#5dff9b', intensity: 0.75, spread: 0.55, fadeInDuration: 0.7, duration: 4.5, fadeDuration: 1.2 },
-      // Anticlockwise: time running backwards rather than forwards.
-      { type: 'clock', color: '#7dffb0', radius: 0.28, marks: 12, tickRate: -2, fadeInDuration: 0.7, duration: 4.5, fadeDuration: 1.2 },
+      // Three hands at odds with each other: the long one running backwards,
+      // the other two forwards at different rates, so no two ever line up.
+      {
+        type: 'clock',
+        color: '#7dffb0',
+        radius: 0.28,
+        marks: 12,
+        hands: [
+          { rate: -2, length: 0.78, width: 0.028 },
+          { rate: 0.75, length: 0.5, width: 0.05 },
+          { rate: 5, length: 0.9, width: 0.016 },
+        ],
+        fadeInDuration: 0.7,
+        duration: 4.5,
+        fadeDuration: 1.2,
+      },
     ],
   },
 ];

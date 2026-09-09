@@ -126,8 +126,23 @@ export interface BlackHoleParams extends VFXTiming {
   center?: [number, number];
 }
 
+/** One hand on a clock face. */
+export interface ClockHand {
+  /**
+   * Steps per second. The hand holds still between them rather than sweeping
+   * — a smooth rotation reads as a radar, only the jump reads as ticking.
+   *
+   * Negative runs it anticlockwise, the same way the black hole's `spin` does.
+   */
+  rate: number;
+  /** How far it reaches, as a fraction of the face radius. */
+  length: number;
+  /** Width at the hub, as a fraction of the radius. It tapers to a point. */
+  width?: number;
+}
+
 /**
- * A clock face drawn in light, with a hand that jumps between marks.
+ * A clock face drawn in light, with hands that jump between marks.
  */
 export interface ClockParams extends VFXTiming {
   color?: string;
@@ -137,13 +152,8 @@ export interface ClockParams extends VFXTiming {
   center?: [number, number];
   /** Marks around the face, and so the steps in one full revolution. */
   marks?: number;
-  /**
-   * Steps per second. The hand holds still between them rather than sweeping
-   * — a smooth rotation reads as a radar, only the jump reads as ticking.
-   *
-   * Negative runs it anticlockwise, the same way the black hole's `spin` does.
-   */
-  tickRate?: number;
+  /** Up to four hands. Defaults to a single one stepping twice a second. */
+  hands?: ClockHand[];
   /** Peak brightness. */
   intensity?: number;
 }

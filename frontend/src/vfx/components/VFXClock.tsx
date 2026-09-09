@@ -2,18 +2,26 @@ import React, { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import gsap from 'gsap';
-import type { ClockParams } from '../types';
+import type { ClockHand, ClockParams } from '../types';
 
 /**
- * A clock face drawn in light: a rim, marks around it, and a hand that jumps
+ * A clock face drawn in light: a rim, marks around it, and hands that jump
  * from one mark to the next.
  *
- * The hand steps rather than sweeps, which is the whole point — a smoothly
+ * The hands step rather than sweep, which is the whole point — a smoothly
  * rotating line reads as a radar, and only the discrete jump reads as ticking.
  *
  * Additive, so it is light laid over the interface rather than something
- * painted on top of it: the winner's name stays readable through the hand.
+ * painted on top of it: the winner's name stays readable through the hands.
  */
+
+/** The shader declares fixed-length arrays, so the count has a ceiling. */
+const MAX_HANDS = 4;
+
+const DEFAULT_HAND_WIDTH = 0.03;
+
+/** Module scope, so the default prop is the same array on every render. */
+const DEFAULT_HANDS: ClockHand[] = [{ rate: 2, length: 0.74 }];
 
 const vertexShader = `
   varying vec2 vUv;
@@ -32,16 +40,19 @@ const fragmentShader = `
   uniform vec2 center;
   uniform vec3 color;
   uniform float marks;
-  uniform float tickRate;
+  uniform float handRate[${MAX_HANDS}];
+  uniform float handLength[${MAX_HANDS}];
+  uniform float handWidth[${MAX_HANDS}];
+  uniform float handCount;
 
   const float PI = 3.14159265359;
 
-  /** Distance from p to the segment ab. */
-  float segment(vec2 p, vec2 a, vec2 b) {
+  /** Distance from p to the segment ab, and how far along it the foot fell. */
+  vec2 segmentInfo(vec2 p, vec2 a, vec2 b) {
     vec2 pa = p - a;
     vec2 ba = b - a;
     float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
-    return length(pa - ba * h);
+    return vec2(length(pa - ba * h), h);
   }
 
   void main() {
@@ -66,14 +77,24 @@ const fragmentShader = `
                * (1.0 - smoothstep(radius * 0.95, radius * 0.99, r));
     glow += smoothstep(slice * 0.07, 0.0, toMark) * band * 0.85;
 
-    // The hand. Quantised to whole steps, so it holds still and then jumps.
-    // Counted from the magnitude and signed afterwards: taking floor() of a
-    // negative rate directly would step off twelve immediately instead of
-    // holding there for the first beat like the forward direction does.
-    float steps = floor(time * abs(tickRate));
-    float handAngle = steps * slice * (tickRate < 0.0 ? -1.0 : 1.0);
-    vec2 tip = vec2(sin(handAngle), cos(handAngle)) * radius * 0.74;
-    glow += smoothstep(radius * 0.03, 0.0, segment(p, vec2(0.0), tip));
+    // The hands, each tapering from the hub to a point at the tip.
+    for (int i = 0; i < ${MAX_HANDS}; i++) {
+      if (float(i) >= handCount) break;
+
+      float rate = handRate[i];
+      // Counted from the magnitude and signed afterwards: taking floor() of a
+      // negative rate directly would step off twelve immediately instead of
+      // holding there for the first beat like the forward direction does.
+      float steps = floor(time * abs(rate));
+      float ang = steps * slice * (rate < 0.0 ? -1.0 : 1.0);
+      vec2 tip = vec2(sin(ang), cos(ang)) * radius * handLength[i];
+
+      vec2 info = segmentInfo(p, vec2(0.0), tip);
+      // Width falls away along the length, so it reads as a hand rather than a
+      // bar. Floored just above zero: the tip still has to be drawable.
+      float w = max(radius * handWidth[i] * (1.0 - 0.92 * info.y), radius * 0.0025);
+      glow += smoothstep(w, 0.0, info.x);
+    }
 
     // Hub, and a soft wash so the face sits in light rather than being a
     // wireframe floating on the interface.
@@ -98,7 +119,7 @@ const VFXClock: React.FC<VFXClockProps> = ({
   radius = 0.28,
   center = [0.5, 0.5],
   marks = 12,
-  tickRate = 2,
+  hands = DEFAULT_HANDS,
   intensity = 1,
   fadeInDuration = 1,
   duration = 3,
@@ -123,9 +144,14 @@ const VFXClock: React.FC<VFXClockProps> = ({
       center: { value: new THREE.Vector2(centerX, centerY) },
       color: { value: new THREE.Color(color) },
       marks: { value: marks },
-      tickRate: { value: tickRate },
+      // Filled per frame rather than here, so an inline `hands` array does not
+      // rebuild the whole uniform block on every render.
+      handRate: { value: new Array<number>(MAX_HANDS).fill(0) },
+      handLength: { value: new Array<number>(MAX_HANDS).fill(0) },
+      handWidth: { value: new Array<number>(MAX_HANDS).fill(0) },
+      handCount: { value: 0 },
     }),
-    [color, radius, centerX, centerY, marks, tickRate],
+    [color, radius, centerX, centerY, marks],
   );
 
   // Built paused and started from the first frame the canvas actually draws.
@@ -152,8 +178,8 @@ const VFXClock: React.FC<VFXClockProps> = ({
     }
   }, [active, intensity, fadeInDuration, duration, fadeDuration]);
 
-  // Starts at zero, unlike the black hole: the hand should begin at twelve and
-  // be seen to tick from there.
+  // Starts at zero, unlike the black hole: the hands should begin at twelve
+  // and be seen to tick from there.
   const elapsed = useRef(0);
 
   useFrame((state, delta) => {
@@ -162,12 +188,22 @@ const VFXClock: React.FC<VFXClockProps> = ({
       started.current = true;
       timeline.current.play();
     }
+
     elapsed.current += delta;
     const material = meshRef.current.material as THREE.ShaderMaterial;
     material.uniforms.time.value = elapsed.current;
     material.uniforms.intensity.value = strength.current.value;
+
     const { width, height } = state.size;
     material.uniforms.aspect.value = height > 0 ? width / height : 1;
+
+    for (let i = 0; i < MAX_HANDS; i++) {
+      const hand = hands[i];
+      material.uniforms.handRate.value[i] = hand ? hand.rate : 0;
+      material.uniforms.handLength.value[i] = hand ? hand.length : 0;
+      material.uniforms.handWidth.value[i] = hand ? hand.width ?? DEFAULT_HAND_WIDTH : 0;
+    }
+    material.uniforms.handCount.value = Math.min(hands.length, MAX_HANDS);
   });
 
   return (
