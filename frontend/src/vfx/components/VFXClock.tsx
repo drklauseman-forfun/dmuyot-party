@@ -81,7 +81,11 @@ const fragmentShader = `
     glow += smoothstep(radius * 1.6, 0.0, r) * 0.13;
 
     float g = clamp(glow, 0.0, 1.0);
-    gl_FragColor = vec4(color * g * 1.5 * intensity, g * intensity);
+    // Additive blending multiplies colour by alpha on its way into the frame,
+    // so intensity belongs in one of them, not both. In both it ramps as the
+    // square: nearly all of the brightness arrives in the first third of the
+    // fade and the rest crawls, which reads as appearing rather than fading.
+    gl_FragColor = vec4(color * g * 1.5, g * intensity);
   }
 `;
 
@@ -125,7 +129,9 @@ const VFXClock: React.FC<VFXClockProps> = ({
   useEffect(() => {
     if (active) {
       const tl = gsap.timeline();
-      tl.to(strength.current, { value: intensity, duration: fadeInDuration, ease: 'power2.out' });
+      // Gentle at both ends. 'power2.out' front-loads — it is the right curve
+      // for something arriving with a snap, and the wrong one for a fade.
+      tl.to(strength.current, { value: intensity, duration: fadeInDuration, ease: 'power1.inOut' });
       tl.to({}, { duration });
       tl.to(strength.current, { value: 0, duration: fadeDuration, ease: 'power2.inOut' });
       return () => { tl.kill(); };

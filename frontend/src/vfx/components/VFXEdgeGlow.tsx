@@ -36,8 +36,11 @@ const fragmentShader = `
     // visible top, where this keeps the brightness against the edge and lets
     // the far end disappear.
     float falloff = 1.0 - smoothstep(0.0, max(spread, 0.001), depth);
-    float strength = pow(falloff, 1.7) * intensity;
-    gl_FragColor = vec4(color * strength, strength);
+    float falloffShaped = pow(falloff, 1.7);
+    // Intensity goes into alpha alone. Additive blending multiplies colour by
+    // alpha anyway, so putting it in both ramped the brightness as its square
+    // — full brightness looked the same, but the fade arrived in a rush.
+    gl_FragColor = vec4(color * falloffShaped, falloffShaped * intensity);
   }
 `;
 
@@ -81,7 +84,9 @@ const VFXEdgeGlow: React.FC<VFXEdgeGlowProps> = ({
   useEffect(() => {
     if (active) {
       const tl = gsap.timeline();
-      tl.to(strength.current, { value: intensity, duration: fadeInDuration, ease: 'power2.out' });
+      // Gentle at both ends rather than front-loaded, so a long fadeInDuration
+      // is actually seen as a fade.
+      tl.to(strength.current, { value: intensity, duration: fadeInDuration, ease: 'power1.inOut' });
       tl.to({}, { duration });
       tl.to(strength.current, { value: 0, duration: fadeDuration, ease: 'power2.inOut' });
       return () => { tl.kill(); };
