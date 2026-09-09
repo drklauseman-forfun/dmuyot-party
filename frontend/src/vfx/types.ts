@@ -127,6 +127,26 @@ export interface BlackHoleParams extends VFXTiming {
 }
 
 /**
+ * A clock face drawn in light, with a hand that jumps between marks.
+ */
+export interface ClockParams extends VFXTiming {
+  color?: string;
+  /** Face radius, as a fraction of the frame's shorter side. */
+  radius?: number;
+  /** Where it sits, in fractions of the frame from the top left. */
+  center?: [number, number];
+  /** Marks around the face, and so the steps in one full revolution. */
+  marks?: number;
+  /**
+   * Steps per second. The hand holds still between them rather than sweeping
+   * — a smooth rotation reads as a radar, only the jump reads as ticking.
+   */
+  tickRate?: number;
+  /** Peak brightness. */
+  intensity?: number;
+}
+
+/**
  * One module in an effect.
  *
  * A discriminated union rather than one interface with every field optional:
@@ -140,7 +160,8 @@ export type VFXModuleConfig =
   | ({ type: 'fire' } & FireParams)
   | ({ type: 'beams' } & BeamsParams)
   | ({ type: 'edgeGlow' } & EdgeGlowParams)
-  | ({ type: 'blackHole' } & BlackHoleParams);
+  | ({ type: 'blackHole' } & BlackHoleParams)
+  | ({ type: 'clock' } & ClockParams);
 
 export type VFXModuleType = VFXModuleConfig['type'];
 

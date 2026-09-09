@@ -75,6 +75,15 @@ export const TEST_EFFECTS: CharacterEffect[] = [
     { type: 'beams', color: '#00ccff', duration: 5, fadeDuration: 2 },
   ]),
 
+  // --- CLOCK ---
+  sandbox('clockgreen', '#5dff9b', [
+    { type: 'clock', color: '#7dffb0', radius: 0.28, marks: 12, tickRate: 2, fadeInDuration: 0.4, duration: 4.5, fadeDuration: 1.2 },
+  ]),
+  // Fast and finely divided, for checking the hand really steps.
+  sandbox('clockfast', '#ffd76b', [
+    { type: 'clock', color: '#ffd76b', radius: 0.34, marks: 24, tickRate: 6, fadeInDuration: 0.4, duration: 4.5, fadeDuration: 1.2 },
+  ]),
+
   // --- BLACK HOLE ---
   sandbox('blackhole', '#b9c0d4', [
     { type: 'blackHole', color: '#454b55', radius: 0.17, spin: 1, strands: 2.4, fadeInDuration: 0.3, duration: 4, fadeDuration: 1 },

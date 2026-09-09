@@ -280,6 +280,25 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       { type: 'blackHole', color: '#454b55', radius: 0.17, spin: 1, strands: 2.4, windUp: 18, fadeInDuration: 0.3, duration: 4.5, fadeDuration: 1 },
     ],
   },
+  {
+    id: 'clock-salin',
+    // The source is in the pattern for the same reason as סאם's: the name on
+    // its own is short enough to catch anything else beginning with it.
+    triggers: [{ pattern: 'סאלין (הכל)', match: 'prefix' }],
+    presentation: {
+      title: '🕰️ סאלין 🕰️',
+      accentColor: '#5dff9b',
+      backgroundColor: 'rgba(4, 20, 11, 0.95)',
+      glow: '0 0 50px #5dff9b, 0 0 100px #5dff9b59',
+      fontFamily: "'Palatino', serif",
+      letterSpacing: '1px',
+      textShadow: '0 0 12px #5dff9b',
+    },
+    modules: [
+      { type: 'edgeGlow', edge: 'bottom', color: '#5dff9b', intensity: 0.75, spread: 0.55, fadeInDuration: 0.4, duration: 4.5, fadeDuration: 1.2 },
+      { type: 'clock', color: '#7dffb0', radius: 0.28, marks: 12, tickRate: 2, fadeInDuration: 0.4, duration: 4.5, fadeDuration: 1.2 },
+    ],
+  },
 ];
 
 /** Game effects plus the developer sandbox. Game effects match first. */
