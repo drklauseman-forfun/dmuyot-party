@@ -547,6 +547,13 @@ h1 {
   font-weight: 400;
 }
 
+/* Explanatory line under a settings toggle. */
+.settings-hint {
+  margin: 0.6rem 0 0;
+  font-size: 0.7rem;
+  color: #666;
+}
+
 .sound-packs-hint {
   margin: 0.6rem 0 0;
   font-size: 0.7rem;

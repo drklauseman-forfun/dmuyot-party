@@ -11,6 +11,8 @@ interface SettingsModalProps {
   onSpinDurationChange: (seconds: number) => void;
   onSoundEnabledChange: (enabled: boolean) => void;
   onSoundPackChange: (id: string) => void;
+  effectsEnabled: boolean;
+  onEffectsEnabledChange: (enabled: boolean) => void;
   onClose: () => void;
 }
 
@@ -23,6 +25,8 @@ function SettingsModal({
   onSpinDurationChange,
   onSoundEnabledChange,
   onSoundPackChange,
+  effectsEnabled,
+  onEffectsEnabledChange,
   onClose,
 }: SettingsModalProps) {
   // A recorded pack whose files are missing. Tracked so the button can say so
@@ -112,6 +116,21 @@ function SettingsModal({
               : 'Turn spin sound on to choose a sound.'}
           </p>
         </div>
+        <div className="settings-row">
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: '#888' }}>
+            <input
+              type="checkbox"
+              checked={effectsEnabled}
+              onChange={(e) => onEffectsEnabledChange(e.target.checked)}
+            />
+            Enable Character Effects
+          </label>
+          <p className="settings-hint">
+            Some characters get their own colours and a 3D effect when they win.
+            Off shows every winner the same way.
+          </p>
+        </div>
+
         <button onClick={onClose} style={{ width: '100%', marginTop: '1rem' }}>Close</button>
       </div>
     </div>

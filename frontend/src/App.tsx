@@ -110,6 +110,9 @@ function App() {
   // A pack removed from the registry between visits must not leave the user
   // with a stored id nothing answers to.
   const activeSoundPack = isKnownSoundPackId(soundPack) ? soundPack : DEFAULT_SOUND_PACK_ID;
+  // Off means a winner with a character effect looks like any other winner:
+  // no 3D layer, and the modal keeps its plain styling.
+  const [effectsEnabled, setEffectsEnabled] = usePersistedBoolean(STORAGE_KEYS.effects, true);
 
   // Filter, Weight & History States
   const [rangeInput, setRangeInput] = usePersistedString(STORAGE_KEYS.ranges, '');
@@ -126,8 +129,14 @@ function App() {
   // cut that short.
   const [vfxEverPlayed, setVfxEverPlayed] = useState(false);
 
+  // Warm the effects chunk ahead of the first spin, but only for someone who
+  // has them switched on — it is most of a megabyte, and a user who turned
+  // them off never needs it. Switching them back on runs this and fetches it.
   useEffect(() => {
-    void import('./vfx/EffectCanvas');
+    if (effectsEnabled) void import('./vfx/EffectCanvas');
+  }, [effectsEnabled]);
+
+  useEffect(() => {
     // Fetch and decode the spin sounds now rather than on the first spin.
     // Decoding takes long enough that a spin starting alongside it schedules
     // nothing at all, which made the first spin of every session silent.
@@ -165,12 +174,16 @@ function App() {
     devLog("🎯 [EFFECT] Checking effects for:", firstWinner?.name);
 
     const effect =
-      firstWinner && firstWinner.name !== VOID_NAME
+      effectsEnabled && firstWinner && firstWinner.name !== VOID_NAME
         ? matchCharacterEffect(firstWinner.name)
         : null;
 
     if (!effect) {
-      devLog("⚪ [EFFECT] No special trigger matched.");
+      devLog(
+        effectsEnabled
+          ? "⚪ [EFFECT] No special trigger matched."
+          : "🚫 [EFFECT] Effects are switched off in Settings.",
+      );
       setActiveEffect(null);
       setVfxConfig(null);
       return;
@@ -520,6 +533,8 @@ function App() {
           onSoundPackChange={setSoundPack}
           onSpinDurationChange={setSpinDuration}
           onSoundEnabledChange={setSoundEnabled}
+          effectsEnabled={effectsEnabled}
+          onEffectsEnabledChange={setEffectsEnabled}
           onClose={() => setShowSettings(false)}
         />
       )}
