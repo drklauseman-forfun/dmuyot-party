@@ -295,8 +295,9 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       textShadow: '0 0 12px #5dff9b',
     },
     modules: [
-      { type: 'edgeGlow', edge: 'bottom', color: '#5dff9b', intensity: 0.75, spread: 0.55, fadeInDuration: 0.4, duration: 4.5, fadeDuration: 1.2 },
-      { type: 'clock', color: '#7dffb0', radius: 0.28, marks: 12, tickRate: 2, fadeInDuration: 0.4, duration: 4.5, fadeDuration: 1.2 },
+      { type: 'edgeGlow', edge: 'bottom', color: '#5dff9b', intensity: 0.75, spread: 0.55, fadeInDuration: 1.2, duration: 4.5, fadeDuration: 1.2 },
+      // Anticlockwise: time running backwards rather than forwards.
+      { type: 'clock', color: '#7dffb0', radius: 0.28, marks: 12, tickRate: -2, fadeInDuration: 1.2, duration: 4.5, fadeDuration: 1.2 },
     ],
   },
 ];

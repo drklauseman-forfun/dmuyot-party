@@ -67,8 +67,11 @@ const fragmentShader = `
     glow += smoothstep(slice * 0.07, 0.0, toMark) * band * 0.85;
 
     // The hand. Quantised to whole steps, so it holds still and then jumps.
-    float stepIndex = floor(time * tickRate);
-    float handAngle = stepIndex * slice;
+    // Counted from the magnitude and signed afterwards: taking floor() of a
+    // negative rate directly would step off twelve immediately instead of
+    // holding there for the first beat like the forward direction does.
+    float steps = floor(time * abs(tickRate));
+    float handAngle = steps * slice * (tickRate < 0.0 ? -1.0 : 1.0);
     vec2 tip = vec2(sin(handAngle), cos(handAngle)) * radius * 0.74;
     glow += smoothstep(radius * 0.03, 0.0, segment(p, vec2(0.0), tip));
 

@@ -140,6 +140,8 @@ export interface ClockParams extends VFXTiming {
   /**
    * Steps per second. The hand holds still between them rather than sweeping
    * — a smooth rotation reads as a radar, only the jump reads as ticking.
+   *
+   * Negative runs it anticlockwise, the same way the black hole's `spin` does.
    */
   tickRate?: number;
   /** Peak brightness. */

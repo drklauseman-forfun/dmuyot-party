@@ -77,9 +77,10 @@ export const TEST_EFFECTS: CharacterEffect[] = [
 
   // --- CLOCK ---
   sandbox('clockgreen', '#5dff9b', [
-    { type: 'clock', color: '#7dffb0', radius: 0.28, marks: 12, tickRate: 2, fadeInDuration: 0.4, duration: 4.5, fadeDuration: 1.2 },
+    { type: 'clock', color: '#7dffb0', radius: 0.28, marks: 12, tickRate: -2, fadeInDuration: 1.2, duration: 4.5, fadeDuration: 1.2 },
   ]),
-  // Fast and finely divided, for checking the hand really steps.
+  // Fast, finely divided, and running the other way — the pair covers both
+  // directions.
   sandbox('clockfast', '#ffd76b', [
     { type: 'clock', color: '#ffd76b', radius: 0.34, marks: 24, tickRate: 6, fadeInDuration: 0.4, duration: 4.5, fadeDuration: 1.2 },
   ]),
