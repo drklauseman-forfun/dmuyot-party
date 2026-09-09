@@ -61,7 +61,11 @@ const fragmentShader = `
   }
 
   void main() {
-    vec2 p = (vUv - center) * vec2(aspect, 1.0);
+    // Distances are in units of the frame's SHORTER side, so the radius means
+    // the same thing on a phone as on a desktop. Measured against the height
+    // alone, the same value that gave a modest hole in a landscape window came
+    // out wider than half the screen on a portrait one, swallowing the modal.
+    vec2 p = (vUv - center) * vec2(aspect, 1.0) / min(aspect, 1.0);
     float r = max(length(p), 0.0005);
     float angle = atan(p.y, p.x);
 
