@@ -212,6 +212,18 @@ def fetch_characters_from_doc(doc_id: str) -> List[Dict[str, str]]:
         )
 
 
+@app.get("/health")
+def health():
+    """Something cheap to hit that does no work.
+
+    The free Render instance sleeps when idle and takes about half a minute to
+    wake, so a scheduled job pokes this to keep it up — see
+    .github/workflows/keep-backend-awake.yml. Any request would do the waking;
+    this one exists so the ping does not have to render the docs page.
+    """
+    return {"status": "ok"}
+
+
 # Deliberately sync: `requests` blocks, so an `async def` here would stall the
 # event loop for every other request. FastAPI runs a plain `def` in a threadpool.
 @app.post("/api/extract", response_model=ExtractionResponse)

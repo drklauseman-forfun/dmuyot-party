@@ -1,0 +1,45 @@
+name: Keep the backend awake
+
+# Render's free tier sleeps an idle instance, and waking it takes about half a
+# minute — long enough that the first person to open the app after a quiet
+# spell assumes it is broken. This pokes it often enough to stay up.
+#
+# Deliberately not around the clock. The free tier allows 750 instance-hours a
+# month and a month is about 730, so staying awake always would leave almost no
+# margin, and going over stops the service rather than slowing it down. Sixteen
+# hours a day is roughly 490, which covers the hours anyone actually uses this
+# and leaves room for the instance waking on its own outside the window.
+
+on:
+  schedule:
+    # Every ten minutes, 07:00-22:59 UTC. GitHub cron is UTC; Israel is +3 in
+    # summer and +2 in winter, so this is 10:00-02:00 locally today and shifts
+    # an hour by itself when the clocks change. Ten minutes because the
+    # instance sleeps after fifteen. GitHub also runs scheduled jobs late when
+    # it is busy, which costs an occasional gap and nothing worse.
+    - cron: '*/10 7-22 * * *'
+  # So it can be run by hand to check it works, or to warm the API on demand.
+  workflow_dispatch:
+
+# A late run must not stack up behind the one before it.
+concurrency:
+  group: keep-backend-awake
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Wake the API
+        # The URL is not a secret: it is compiled into the JavaScript every
+        # visitor downloads.
+        run: |
+          # Never fails the workflow. The job is to warm the instance, not to
+          # watch it — a red cross every ten minutes for a backend that is down
+          # anyway would only teach us to ignore the mail. The timing is logged
+          # so a cold start is visible: a warm hit is well under a second.
+          result=$(curl -s -o /dev/null -w '%{http_code} in %{time_total}s' \
+            --max-time 90 https://dmuyot-party.onrender.com/health \
+            || echo 'no answer')
+          echo "GET /health -> $result"
