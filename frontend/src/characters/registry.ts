@@ -257,6 +257,29 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       particleMaxPixels: 60,
     }),
   },
+  {
+    id: 'blackhole-sam',
+    // The source is part of the pattern here. Every other trigger is a long
+    // enough name to stand alone; "סאם" is three characters and would fire on
+    // anything else beginning with them.
+    triggers: [{ pattern: 'סאם (מגהברס 1)', match: 'prefix' }],
+    presentation: {
+      title: '🕳️ סאם 🕳️',
+      // Silver, like the black wraith's: the frame goes dark around the modal,
+      // so the text has to carry itself.
+      accentColor: '#b9c0d4',
+      backgroundColor: 'rgba(8, 8, 10, 0.96)',
+      glow: '0 0 50px #6e7480, 0 0 100px #6e748059',
+      fontFamily: "'Palatino', serif",
+      letterSpacing: '1px',
+      textShadow: '0 0 12px #b9c0d4',
+    },
+    // One module is the whole effect: the black hole darkens the frame around
+    // itself, so it needs no edge glow underneath it.
+    modules: [
+      { type: 'blackHole', color: '#454b55', radius: 0.17, spin: 1, fadeInDuration: 1.2, duration: 4.5, fadeDuration: 2.5 },
+    ],
+  },
 ];
 
 /** Game effects plus the developer sandbox. Game effects match first. */

@@ -101,7 +101,7 @@ interface VFXBlackHoleProps extends BlackHoleParams {
 }
 
 const VFXBlackHole: React.FC<VFXBlackHoleProps> = ({
-  color = '#ffb066',
+  color = '#454b55',
   radius = 0.16,
   spin = 1,
   intensity = 1,
