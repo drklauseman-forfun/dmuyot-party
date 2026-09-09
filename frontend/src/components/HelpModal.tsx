@@ -105,6 +105,9 @@ const HELP: Record<Language, HelpContent> = {
             ' puts everyone back to 1.',
           ],
           [
+            "The search box above the list only filters what you're looking at. It doesn't change who is on the wheel.",
+          ],
+          [
             'Loading a new list also resets every weight to 1. Weights are tied to positions in the document rather than to names, so carrying them over would quietly apply the old tuning to whoever now sits in those slots.',
           ],
           [
@@ -138,6 +141,21 @@ const HELP: Record<Language, HelpContent> = {
           ],
           [
             "Multiple spins draw with replacement — the same name can come up twice. That's deliberate, not a bug.",
+          ],
+        ],
+      },
+      {
+        heading: 'The last result',
+        paragraphs: [
+          [
+            'The scroll button at the top holds the winners from your most recent spin, with the time it happened. The same thing sits above the wheel as ',
+            { code: 'View Last Results' },
+            '.',
+          ],
+          [
+            'Despite the icon it is the last spin only, not a running log — each spin replaces what was there. It survives closing the results and reloading the page, so a result is not lost if someone taps away from it. ',
+            { code: 'Clear' },
+            ' empties it, and the button disappears until you spin again.',
           ],
         ],
       },
@@ -222,6 +240,9 @@ const HELP: Record<Language, HelpContent> = {
             ' מחזיר את כולם ל־1.',
           ],
           [
+            'תיבת החיפוש שמעל הרשימה מסננת רק את מה שרואים. היא לא משנה מי נמצא על הגלגל.',
+          ],
+          [
             'טעינה של רשימה חדשה גם מאפסת את כל המשקלים ל־1. המשקלים קשורים למיקומים במסמך ולא לשמות, אז שמירה עליהם הייתה מחילה בשקט את הכיוונון הישן על מי שיושב עכשיו במקומות האלה.',
           ],
           [
@@ -255,6 +276,21 @@ const HELP: Record<Language, HelpContent> = {
           ],
           [
             'כמה סיבובים מגרילים עם החזרה — אותו שם יכול לצאת פעמיים. זה בכוונה, לא באג.',
+          ],
+        ],
+      },
+      {
+        heading: 'התוצאה האחרונה',
+        paragraphs: [
+          [
+            'כפתור המגילה שלמעלה שומר את הזוכים מהסיבוב האחרון, יחד עם השעה. אותו דבר מופיע גם מעל הגלגל בתור ',
+            { code: 'View Last Results' },
+            '.',
+          ],
+          [
+            'למרות האייקון זו רק התוצאה האחרונה ולא יומן — כל סיבוב מחליף את מה שהיה. היא שורדת סגירה של חלון התוצאות וגם רענון של הדף, אז תוצאה לא הולכת לאיבוד אם יוצאים ממנה בטעות. ',
+            { code: 'Clear' },
+            ' מרוקן אותה, והכפתור נעלם עד הסיבוב הבא.',
           ],
         ],
       },
