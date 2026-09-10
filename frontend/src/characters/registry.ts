@@ -340,8 +340,15 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
   },
 ];
 
-/** Game effects plus the developer sandbox. Game effects match first. */
-const ALL_EFFECTS: CharacterEffect[] = [...CHARACTER_EFFECTS, ...TEST_EFFECTS];
+/**
+ * Game effects, plus the developer sandbox when running locally. The sandbox
+ * stays off the live site: its triggers are single words matched without
+ * regard to case, so a hand-typed list with someone called "Fireworks" would
+ * otherwise win a test animation. Game effects match first.
+ */
+const ALL_EFFECTS: CharacterEffect[] = import.meta.env.DEV
+  ? [...CHARACTER_EFFECTS, ...TEST_EFFECTS]
+  : CHARACTER_EFFECTS;
 
 /** The app's brand colour, used when a character has no colour of its own. */
 const DEFAULT_ACCENT = '#646cff';

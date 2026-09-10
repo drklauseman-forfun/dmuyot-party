@@ -5,13 +5,19 @@ import type { VFXModuleConfig } from '../vfx/types';
  * Developer sandbox effects.
  *
  * These exist so a VFX module can be eyeballed in isolation: type the trigger
- * name straight into the character list, spin, and watch. They match `exact`
- * so they can never collide with a real character name.
+ * name straight into the character list, spin, and watch.
  *
- * Not part of the game — drop the import in registry.ts to ship without them.
+ * Local development only — registry.ts leaves them out of a production build.
+ * They match `exact` but ignore case, so on the live site a hand-typed list
+ * with someone called "Fireworks" would win one. The animation builder's
+ * Animate button now covers most of what they were for.
  */
 
-/** Neutral modal styling so the 3D layer is what you're actually judging. */
+/**
+ * Neutral modal styling so the 3D layer is what you're actually judging.
+ * Marked side-effect free so a production build can drop the whole list.
+ */
+/*#__NO_SIDE_EFFECTS__*/
 function sandbox(id: string, color: string, modules: VFXModuleConfig[]): CharacterEffect {
   return {
     id,

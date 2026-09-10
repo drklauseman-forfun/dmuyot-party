@@ -82,8 +82,11 @@ it would make the builder's starting values wrong.
 
 Modules today: `glow`, `edgeGlow`, `sparkles`, `fire`, `beams`, `blackHole`,
 `clock`, `fireworks`.
-`fire` and `beams` have no game effect using them but are kept — the developer
-sandbox in `testEffects.ts` uses them and they are building blocks.
+`fire` and `beams` have no built-in animation using them but are kept — they
+are building blocks the builder offers, and the developer sandbox in
+`testEffects.ts` uses them. That sandbox exists only under `npm run dev`:
+`registry.ts` leaves it out of production builds, because its one-word triggers
+ignore case and a hand-typed list could contain one.
 
 The seven הנרץ' effects share a shape, so `registry.ts` has two builders,
 `wraithModules` and `wraithPresentation`. Seven near-identical copies is the

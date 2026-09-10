@@ -98,7 +98,8 @@ Append an entry to `CHARACTER_EFFECTS` in
 `frontend/src/characters/registry.ts`. Nothing else needs to change — the modal
 styling, the 3D layer and the trigger matching all read from that list.
 `frontend/src/characters/testEffects.ts` holds developer sandbox effects for
-eyeballing a single VFX module in isolation.
+eyeballing a single VFX module in isolation. They exist only under
+`npm run dev` — a production build leaves them out.
 
 People can also make their own in the app, behind the 🎬 button, with no code
 at all. A new VFX module — a new building block for either kind — needs a
