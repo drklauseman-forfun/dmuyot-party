@@ -1,0 +1,601 @@
+/*
+ * The animation builder and its parameter fields.
+ *
+ * Imported by AnimationBuilder, which App imports statically, so these load
+ * with the main bundle and after index.css — which is what lets .builder-modal
+ * widen the .settings-modal shell it borrows.
+ */
+
+/* The clapperboard sits in the same group as the cog, whose class spins on
+   hover. That suits a cog; this one has no reason to turn. */
+.settings-btn.no-spin:hover {
+  transform: none;
+}
+
+/* ---------- Animation builder ---------- */
+.builder-modal {
+  max-width: 560px;
+  text-align: start;
+}
+
+.builder-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.builder-header h2 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.builder-back,
+.builder-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+}
+
+.builder-back:hover,
+.builder-close:hover {
+  background: none;
+  color: #ccc;
+}
+
+.builder-section {
+  margin-bottom: 1.25rem;
+}
+
+.builder-section-title {
+  display: block;
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a8ab0;
+}
+
+.builder-gap {
+  margin-top: 0.9rem;
+}
+
+.builder-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #888;
+}
+
+.builder-flush {
+  margin: 0 0 1rem;
+}
+
+.builder-error {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #ffb3b3;
+}
+
+.builder-notice {
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(93, 255, 155, 0.28);
+  border-radius: 8px;
+  background: rgba(93, 255, 155, 0.08);
+  font-size: 0.8rem;
+  color: #b9f5c8;
+}
+
+.builder-conflict {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  color: #ddd;
+}
+
+.builder-input {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #161616;
+  color: #eee;
+  font-size: 0.9rem;
+}
+
+.builder-search {
+  margin-bottom: 0.4rem;
+}
+
+.builder-textarea {
+  height: auto;
+  min-height: 84px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  resize: vertical;
+}
+
+.builder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.builder-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  background: #252525;
+}
+
+.builder-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.builder-row-title {
+  overflow: hidden;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #eee;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.builder-row-sub {
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.builder-swatch {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+}
+
+.builder-icon-btn {
+  flex-shrink: 0;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #333;
+  font-size: 0.75rem;
+  color: #ddd;
+}
+
+.builder-icon-btn:hover {
+  background: #3d3d3d;
+}
+
+.builder-icon-btn.danger:hover {
+  border-color: #a33;
+  background: #5a2525;
+}
+
+.builder-effects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.builder-effect-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0.7rem;
+  border: 1px solid #444;
+  border-radius: 10px;
+  background: #2c2c2c;
+  color: #ddd;
+  text-align: start;
+  cursor: pointer;
+}
+
+.builder-effect-card:hover {
+  border-color: #646cff;
+  background: #333;
+}
+
+.builder-effect-card strong {
+  font-size: 0.88rem;
+  color: #fff;
+}
+
+.builder-effect-card span {
+  font-size: 0.7rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #999;
+}
+
+.builder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 1.25rem;
+}
+
+.builder-actions button {
+  flex: 1 1 auto;
+}
+
+.builder-actions-tight {
+  margin-top: 0.6rem;
+}
+
+.builder-secondary {
+  background: #333;
+}
+
+.builder-secondary:hover {
+  background: #3d3d3d;
+}
+
+.builder-play {
+  background: linear-gradient(45deg, #646cff, #ff64f2);
+}
+
+.builder-details {
+  margin-bottom: 1.25rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #3a3a3a;
+  border-radius: 10px;
+}
+
+.builder-transfer {
+  margin-top: 1.25rem;
+}
+
+.builder-details summary {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #c9ccf5;
+  cursor: pointer;
+}
+
+.builder-details[open] summary {
+  margin-bottom: 0.75rem;
+}
+
+/* Room around the preview for its glow, on a dark ground like the one the
+   real results sit on. Clipped rather than spilling over the form below. */
+.builder-style-stage {
+  overflow: hidden;
+  margin-bottom: 1rem;
+  padding: 1.5rem 1rem;
+  border-radius: 10px;
+  background: #101010;
+}
+
+.builder-style-preview {
+  max-width: 320px;
+  margin: 0 auto;
+  padding: 1rem;
+  border: 2px solid;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.builder-style-preview h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+}
+
+.builder-style-preview .results-list {
+  max-height: none;
+  margin: 0.6rem 0;
+}
+
+.builder-style-preview button {
+  padding: 0.5rem 1.2rem;
+  font-size: 0.85rem;
+  cursor: default;
+}
+
+.builder-subheading {
+  margin: 1.25rem 0 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #333;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a8ab0;
+}
+
+/* ---------- Parameter fields ---------- */
+.param-field {
+  margin-bottom: 1rem;
+}
+
+.param-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.35rem;
+}
+
+.param-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ddd;
+}
+
+.param-guide {
+  margin: 0.35rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: #888;
+}
+
+.param-number {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.param-number input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  accent-color: #646cff;
+}
+
+.param-number-text,
+.param-color-hex,
+.param-text {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #161616;
+  font-size: 0.8rem;
+  color: #eee;
+}
+
+.param-number-text {
+  width: 4.5rem;
+  text-align: end;
+}
+
+.param-unit {
+  font-size: 0.72rem;
+  color: #888;
+}
+
+.param-color {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.param-color input[type='color'],
+.param-swatch input[type='color'] {
+  width: 42px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+
+.param-color-hex {
+  width: 6.5rem;
+  font-family: monospace;
+}
+
+.param-opacity {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 140px;
+  font-size: 0.72rem;
+  color: #888;
+}
+
+.param-opacity input {
+  flex: 1;
+  accent-color: #646cff;
+}
+
+.param-text {
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.param-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.param-options button {
+  padding: 0.35rem 0.7rem;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #2c2c2c;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #aaa;
+}
+
+.param-options button:hover {
+  background: #383838;
+}
+
+.param-options button.is-selected {
+  border-color: #646cff;
+  background: rgba(100, 108, 255, 0.18);
+  color: #fff;
+}
+
+.param-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.param-toggle input {
+  accent-color: #646cff;
+}
+
+.param-subgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.param-axis-label {
+  font-size: 0.7rem;
+  color: #999;
+}
+
+.param-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.param-swatch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.param-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+.param-subhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #ccc;
+}
+
+.param-remove {
+  padding: 0.15rem 0.45rem;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #333;
+  font-size: 0.72rem;
+  color: #bbb;
+}
+
+.param-remove:hover {
+  border-color: #a33;
+  background: #5a2525;
+}
+
+.param-add {
+  align-self: flex-start;
+  padding: 0.35rem 0.7rem;
+  border: 1px dashed #555;
+  border-radius: 6px;
+  background: #2c2c2c;
+  font-size: 0.75rem;
+  color: #bbb;
+}
+
+.param-add:hover {
+  border-color: #646cff;
+  background: #333;
+}
+
+@media (max-width: 480px) {
+  .builder-effects-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Touch ----------
+   Measured at phone width, most of the small controls above came out 22 to
+   29px tall: the remove button on a clock hand was 26 by 22. A finger wants
+   about 44. Scoped to coarse pointers, so a mouse keeps the compact layout.
+
+   Text inputs go to 16px here too. Below that, iOS Safari zooms the whole
+   page in when a field is focused, and does not zoom back out. */
+@media (pointer: coarse) {
+  .builder-icon-btn {
+    min-width: 42px;
+    min-height: 40px;
+  }
+
+  .param-options button,
+  .param-add {
+    min-height: 40px;
+  }
+
+  .param-remove {
+    min-width: 38px;
+    min-height: 36px;
+  }
+
+  .builder-back,
+  .builder-close {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .builder-input,
+  .param-number-text,
+  .param-color-hex,
+  .param-text {
+    min-height: 42px;
+    font-size: 16px;
+  }
+
+  /* .builder-input above would otherwise shrink the code boxes to one line. */
+  .builder-textarea {
+    min-height: 84px;
+  }
+
+  .param-number-text {
+    width: 5rem;
+  }
+
+  .param-color input[type=color],
+  .param-swatch input[type=color] {
+    width: 48px;
+    height: 42px;
+  }
+
+  /* A taller range input gives the thumb a taller target in every engine,
+     without restyling the thumb itself. */
+  .param-number input[type=range],
+  .param-opacity input[type=range] {
+    height: 36px;
+  }
+
+  .param-toggle input {
+    width: 22px;
+    height: 22px;
+  }
+}

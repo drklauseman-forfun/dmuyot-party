@@ -10,8 +10,8 @@ import './index.css';
  * first effect isn't the one that pays for it.
  */
 const EffectCanvas = lazy(() => import('./vfx/EffectCanvas'));
-import type { EffectConfig } from './vfx/types';
-import { matchCharacterEffect, resolvePresentation } from './characters/registry';
+import type { EffectConfig, VFXModuleConfig } from './vfx/types';
+import { resolvePresentation } from './characters/registry';
 import { STORAGE_KEYS } from './storage';
 import { devLog } from './log';
 import { DEFAULT_SOUND_PACK_ID, isKnownSoundPackId } from './sound/packs';
@@ -29,6 +29,8 @@ import HelpModal from './components/HelpModal';
 import HistoryModal from './components/HistoryModal';
 import ResultsModal from './components/ResultsModal';
 import SettingsModal from './components/SettingsModal';
+import AnimationBuilder from './animations/AnimationBuilder';
+import { resolveWinnerAnimation, useAnimationLibrary } from './animations/store';
 
 interface ExtractionResponse {
   characters: { name: string; color: string }[];
@@ -102,6 +104,7 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showBuilder, setShowBuilder] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [spinDuration, setSpinDuration] = usePersistedNumber(STORAGE_KEYS.duration, 0.4);
   const [soundEnabled, setSoundEnabled] = usePersistedBoolean(STORAGE_KEYS.sound, true);
@@ -112,9 +115,13 @@ function App() {
   // A pack removed from the registry between visits must not leave the user
   // with a stored id nothing answers to.
   const activeSoundPack = isKnownSoundPackId(soundPack) ? soundPack : DEFAULT_SOUND_PACK_ID;
-  // Off means a winner with a character effect looks like any other winner:
-  // no 3D layer, and the modal keeps its plain styling.
+  // Off means a winner with an animation looks like any other winner: no 3D
+  // layer, and the modal keeps its plain styling. The key predates the word
+  // "animation" and stays as it is — people have a saved setting under it.
   const [effectsEnabled, setEffectsEnabled] = usePersistedBoolean(STORAGE_KEYS.effects, true);
+  // Whose custom animations apply. A name, not an account: see animations/store.ts.
+  const [username, setUsername] = usePersistedString(STORAGE_KEYS.username, '');
+  const [animationLibrary, setAnimationLibrary] = useAnimationLibrary();
 
   // Filter, Weight & History States
   const [rangeInput, setRangeInput] = usePersistedString(STORAGE_KEYS.ranges, '');
@@ -177,7 +184,7 @@ function App() {
 
     const effect =
       effectsEnabled && firstWinner && firstWinner.name !== VOID_NAME
-        ? matchCharacterEffect(firstWinner.name)
+        ? resolveWinnerAnimation(animationLibrary, username, firstWinner.name)
         : null;
 
     if (!effect) {
@@ -199,6 +206,19 @@ function App() {
       modules: effect.modules,
       timestamp: Date.now()
     });
+  };
+
+  /**
+   * Plays effects from the animation builder on the real canvas. It sits above
+   * every modal, so the preview shows over the builder while the builder stays
+   * usable. Deliberately not gated on the animations setting: someone pressing
+   * Animate has asked to see it.
+   */
+  const previewAnimation = (modules: VFXModuleConfig[], label: string) => {
+    if (modules.length === 0) return;
+    devLog('🎬 [BUILDER] Previewing', label);
+    setVfxEverPlayed(true);
+    setVfxConfig({ effectId: `preview-${label}`, modules, timestamp: Date.now() });
   };
 
   const clearHistory = () => {
@@ -397,6 +417,13 @@ function App() {
     [wheelCharacters, getWeight],
   );
 
+  // For the builder's character picker. Identical names collapse into one: an
+  // animation is matched by name, so they would share it either way.
+  const characterNames = useMemo(
+    () => Array.from(new Set(characters.map((c) => c.name))),
+    [characters],
+  );
+
   // Concrete modal styling for the current winner — either the matched effect's
   // presentation, or a neutral one tinted with the character's own colour.
   const presentation = useMemo(
@@ -426,6 +453,7 @@ function App() {
           {history.length > 0 && (
             <button className="settings-btn" style={{ position: 'static' }} onClick={() => setShowHistoryModal(true)} title="Last Result">📜</button>
           )}
+          <button className="settings-btn no-spin" style={{ position: 'static' }} onClick={() => setShowBuilder(true)} disabled={mustSpin} title="Animations" aria-label="Animations">🎬</button>
           <button className="settings-btn" style={{ position: 'static' }} onClick={() => setShowSettings(true)} disabled={mustSpin} title="Settings">⚙️</button>
         </div>
       </header>
@@ -528,6 +556,18 @@ function App() {
       )}
 
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+
+      {showBuilder && (
+        <AnimationBuilder
+          username={username}
+          onUsernameChange={setUsername}
+          library={animationLibrary}
+          onLibraryChange={setAnimationLibrary}
+          characterNames={characterNames}
+          onPreview={previewAnimation}
+          onClose={() => setShowBuilder(false)}
+        />
+      )}
 
       {showHistoryModal && (
         <HistoryModal
