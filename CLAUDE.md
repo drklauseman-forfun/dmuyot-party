@@ -90,6 +90,38 @@ The eight הנרץ' effects share a shape, so `registry.ts` has two builders,
 point at which that stopped being premature. An effect that wants something
 different simply does not use them.
 
+## Custom animations
+
+People build their own in `animations/AnimationBuilder.tsx`, behind the 🎬
+button. The vocabulary changed with it: an **effect** is one building block (a
+VFX module) and an **animation** is what plays when a particular character
+wins. Internal names still say effect and module — only the interface changed,
+and `STORAGE_KEYS.effects` keeps its old name because people have a saved
+setting under it.
+
+- **Kept in this browser**, under `dmuyot_party_animations`: one object holding
+  every username's animations. `dmuyot_party_username` is the name typed in.
+  Syncing to a server is planned and not built; `loadLibrary` and `saveLibrary`
+  in `animations/store.ts` are the only functions that know where it lives.
+- **A username is not an account.** No password, not unique, case-insensitive.
+  Anyone who types "jack" sees and can change jack's animations. That was
+  chosen deliberately for a group of friends.
+- **Matching is exact**, on a name picked from the loaded list — not a prefix.
+  That sidesteps both the prefix-collision and the apostrophe traps below. A
+  custom animation beats a built-in one, but only for the username it was
+  saved under (`resolveWinnerAnimation`).
+- **One animation per character per username.** The replace dialog asks, and
+  `withAnimation` enforces it whatever the caller did.
+- **Loading repairs entry by entry.** Not through `usePersistedJSON`, whose
+  validation throws away the whole stored value on any failure — one bad
+  animation would have taken everyone's with it. The library is a
+  prototype-less object because usernames like `__proto__` are typed by people.
+- **Previews bypass the animations setting.** `previewAnimation` in `App.tsx`
+  hands modules straight to the canvas, which sits above every modal.
+- **"Clear saved data" on the error screen deletes animations too** — they
+  share the `dmuyot_party_` prefix. Until there is a server, export is the only
+  backup.
+
 ## Traps
 
 Each of these cost real time. None are visible from reading the code.
@@ -128,6 +160,15 @@ fractions of the frame, but the second number is measured from the **bottom**:
 three.js gives a plane's top edge `v = 1` (see `PlaneGeometry.js`). The comment
 in `types.ts` said "from the top left" for a while, and advice built on it moved
 the hole the wrong way — a smaller second number moves it *down*.
+
+**Touch targets, and iOS zooming in.** Measured at phone width, the animation
+builder's small controls first came out 22 to 29px tall — the remove button on
+a clock hand was 26 by 22 — against the roughly 44 a finger needs. Layout checks
+all passed; only measuring sizes caught it. `animations/builder.css` enlarges
+them under `@media (pointer: coarse)`, so a mouse keeps the compact layout. The
+same block sets text inputs to 16px: below that, iOS Safari zooms the whole page
+in when a field is focused and does not zoom back out. Any new control on a
+screen people use from a phone wants the same treatment.
 
 **`edgeGlow` renders at `renderOrder={-1}`.** It is a backdrop. Drawn after the
 particles it adds light back over them, which additive particles do not notice

@@ -123,11 +123,12 @@ function SettingsModal({
               checked={effectsEnabled}
               onChange={(e) => onEffectsEnabledChange(e.target.checked)}
             />
-            Enable Character Effects
+            Enable Animations
           </label>
           <p className="settings-hint">
-            Some characters get their own colours and a 3D effect when they win.
-            Off shows every winner the same way.
+            Some characters have an animation — their own look and effects when
+            they win, including any you have made. Off shows every winner the
+            same plain way.
           </p>
         </div>
 

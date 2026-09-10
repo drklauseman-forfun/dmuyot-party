@@ -160,13 +160,43 @@ const HELP: Record<Language, HelpContent> = {
         ],
       },
       {
+        heading: 'Making your own animations',
+        paragraphs: [
+          [
+            'The clapperboard button at the top opens the animation builder. An animation is what happens when one particular character wins: some effects playing together, and how the results look.',
+          ],
+          [
+            'Start by entering a name. It is not a password and does not have to be unique — it only keeps animations apart, so ones saved under jack play for whoever has typed jack. Capital letters do not matter.',
+          ],
+          [
+            'Add effects one at a time. Each has its own settings, with a note explaining every one; ',
+            { code: 'Animate' },
+            ' shows that effect on its own, and ',
+            { code: 'Play' },
+            ' shows the whole animation. Choose the character from your loaded list, style the results if you like, then ',
+            { code: 'Save' },
+            '.',
+          ],
+          [
+            'If that character already has an animation — a built-in one, or one of yours — you are asked before it is replaced, and you can watch the old one first. Replacing a built-in animation only changes it for your name; everyone else still sees the original.',
+          ],
+          [
+            'For now animations are kept in this browser, so they do not follow you to another phone. ',
+            { code: 'Export' },
+            ' gives you a code to keep or send to yourself; ',
+            { code: 'Import' },
+            ' brings one back.',
+          ],
+        ],
+      },
+      {
         heading: 'Settings',
         paragraphs: [
           [
             'Spin duration runs from instant to ten seconds. Below 0.2s the wheel stops animating and just gives you the answer.',
           ],
           [
-            'Sound can be turned off, and so can character effects. A few characters have their own colours and visuals when they win; switching effects off shows every winner the same plain way.',
+            'Sound can be turned off, and so can animations. Some characters have their own colours and effects when they win, including any you have made; switching animations off shows every winner the same plain way.',
           ],
         ],
       },
@@ -174,7 +204,7 @@ const HELP: Record<Language, HelpContent> = {
         heading: 'What gets saved',
         paragraphs: [
           [
-            'Your list, weights, range, settings and last result are kept in this browser. Nothing is sent anywhere and nothing follows you to another device. Clearing your browser data clears all of it.',
+            'Your list, weights, range, settings, name, animations and last result are kept in this browser. Nothing is sent anywhere and nothing follows you to another device. Clearing your browser data clears all of it — animations included, so export any you want to keep.',
           ],
         ],
       },
@@ -295,13 +325,43 @@ const HELP: Record<Language, HelpContent> = {
         ],
       },
       {
+        heading: 'יצירת אנימציות משלכם',
+        paragraphs: [
+          [
+            'כפתור הקלאפר שלמעלה פותח את בונה האנימציות. אנימציה היא מה שקורה כשדמות מסוימת זוכה: כמה אפקטים שמתנגנים יחד, ואיך נראות התוצאות.',
+          ],
+          [
+            'מתחילים בהקלדת שם. זו לא סיסמה והשם לא חייב להיות ייחודי — הוא רק מפריד בין אנימציות, כך שאנימציות שנשמרו תחת jack יופיעו אצל כל מי שהקליד jack. אותיות גדולות וקטנות לא משנות.',
+          ],
+          [
+            'מוסיפים אפקטים אחד אחד. לכל אחד יש הגדרות משלו, עם הסבר לכל הגדרה; ',
+            { code: 'Animate' },
+            ' מראה את האפקט לבד, ו־',
+            { code: 'Play' },
+            ' מראה את כל האנימציה. בוחרים את הדמות מהרשימה שנטענה, מעצבים את התוצאות אם רוצים, ולוחצים ',
+            { code: 'Save' },
+            '.',
+          ],
+          [
+            'אם לדמות כבר יש אנימציה — מובנית או אחת שלכם — תישאלו לפני שהיא מוחלפת, ואפשר לצפות בישנה קודם. החלפה של אנימציה מובנית משנה אותה רק עבור השם שלכם; כל השאר עדיין רואים את המקורית.',
+          ],
+          [
+            'בינתיים האנימציות נשמרות בדפדפן הזה, כך שהן לא עוברות איתכם לטלפון אחר. ',
+            { code: 'Export' },
+            ' נותן קוד לשמירה או לשליחה לעצמכם; ',
+            { code: 'Import' },
+            ' מחזיר אותו.',
+          ],
+        ],
+      },
+      {
         heading: 'הגדרות',
         paragraphs: [
           [
             'משך הסיבוב נע בין מיידי לעשר שניות. מתחת ל־0.2 שניות הגלגל מפסיק להסתובב ופשוט נותן את התשובה.',
           ],
           [
-            'אפשר לכבות את הצליל, ואפשר לכבות גם את אפקטי הדמויות. לכמה דמויות יש צבעים ואפקטים משלהן כשהן זוכות; כיבוי האפקטים מציג את כל הזוכים באותה צורה פשוטה.',
+            'אפשר לכבות את הצליל, ואפשר לכבות גם את האנימציות. לחלק מהדמויות יש צבעים ואפקטים משלהן כשהן זוכות, כולל אלה שיצרתם; כיבוי האנימציות מציג את כל הזוכים באותה צורה פשוטה.',
           ],
         ],
       },
@@ -309,7 +369,7 @@ const HELP: Record<Language, HelpContent> = {
         heading: 'מה נשמר',
         paragraphs: [
           [
-            'הרשימה, המשקלים, הטווח, ההגדרות והתוצאה האחרונה נשמרים בדפדפן הזה. שום דבר לא נשלח לשום מקום ולא עובר איתכם למכשיר אחר. ניקוי נתוני הדפדפן מוחק את הכול.',
+            'הרשימה, המשקלים, הטווח, ההגדרות, השם, האנימציות והתוצאה האחרונה נשמרים בדפדפן הזה. שום דבר לא נשלח לשום מקום ולא עובר איתכם למכשיר אחר. ניקוי נתוני הדפדפן מוחק את הכול — כולל האנימציות, אז כדאי לייצא את אלה שרוצים לשמור.',
           ],
         ],
       },
