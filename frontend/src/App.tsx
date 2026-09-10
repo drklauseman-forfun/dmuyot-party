@@ -448,7 +448,11 @@ function App() {
           ℹ️
         </button>
         <h1>Dmuyot Party</h1>
-        <p className="sound-note">🔊 Spin sounds are on — turn them off in Settings ⚙️</p>
+        <p className="sound-note">
+          {soundEnabled
+            ? '🔊 Spin sounds are on — turn them off in Settings ⚙️'
+            : '🔇 Spin sounds are off — turn them on in Settings ⚙️'}
+        </p>
         <div style={{ position: 'absolute', right: 0, top: 0, display: 'flex', gap: '5px' }}>
           {history.length > 0 && (
             <button className="settings-btn" style={{ position: 'static' }} onClick={() => setShowHistoryModal(true)} title="Last Result">📜</button>
