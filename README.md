@@ -2,7 +2,8 @@
 
 A random character chooser. Paste a public Google Docs link (or raw text), and
 it extracts a numbered character list, puts it on a weighted spinning wheel and
-picks winners. Certain winners trigger 3D visual effects.
+picks winners. Some winners trigger an animation — built in, or made by people
+in the app's own animation builder.
 
 ## Layout
 
@@ -91,7 +92,7 @@ repeated clicks into the several short tick files a pack wants. Only use audio
 whose licence permits redistribution — `frontend/public/sounds/README.md` has
 the details and a table recording where each pack came from.
 
-## Adding a character effect
+## Adding a built-in animation
 
 Append an entry to `CHARACTER_EFFECTS` in
 `frontend/src/characters/registry.ts`. Nothing else needs to change — the modal
@@ -99,8 +100,17 @@ styling, the 3D layer and the trigger matching all read from that list.
 `frontend/src/characters/testEffects.ts` holds developer sandbox effects for
 eyeballing a single VFX module in isolation.
 
+People can also make their own in the app, behind the 🎬 button, with no code
+at all. A new VFX module — a new building block for either kind — needs a
+component, its parameters in `VFXModuleConfig`, a line in `vfx/modules.tsx` and
+a description in `vfx/schema.ts`. Add it to `VFXModuleConfig` and the build
+fails until the other three exist. [CLAUDE.md](CLAUDE.md) has the details.
+
 ## Saved data
 
-Settings, the pasted list, weights and the last result live in `localStorage`
-under `dmuyot_party_*`. Real users have data under those keys — renaming one
-without a migration loses it.
+Settings, the pasted list, weights, the last result, the name typed into the
+animation builder and the animations saved under every name live in
+`localStorage` under `dmuyot_party_*`. Real users have data under those keys —
+renaming one without a migration loses it. Animations have no other copy yet:
+the builder's export code is the only backup, and "Clear saved data" on the
+error screen deletes them with everything else.

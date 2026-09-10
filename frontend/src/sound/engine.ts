@@ -159,7 +159,7 @@ export function preloadSamples(): Promise<void> {
  * than a lone landing — the ticks are most of a pack's character.
  */
 export function playPreview(packId: string): Promise<void> {
-  // Recorded packs cannot play until their files are decoded. For synthesised
-  // ones, and for recorded ones already loaded, this resolves immediately.
+  // A pack cannot play until its files are decoded. Once they are, this
+  // resolves immediately.
   return preloadSamples().then(() => playSpin(packId, 1.1, 6));
 }

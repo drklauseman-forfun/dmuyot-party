@@ -16,9 +16,10 @@ npm run lint     # expected to pass with zero problems
 | -------------------- | ------------------------------------------------------------------- |
 | `src/App.tsx`        | Extraction, filtering, weighting, spin selection and effect matching. State lives here on purpose — these are one interdependent thing. |
 | `src/CustomWheel.tsx`| The hand-rolled SVG wheel. Owns slice geometry *and* how a label is worded, truncated and sized. |
-| `src/components/`    | Presentation only: the three modals and the character list.          |
-| `src/characters/`    | The effect registry — triggers, modal styling, which VFX modules to play. |
-| `src/vfx/`           | The 3D layer. `EffectCanvas` maps a module config onto a component.  |
+| `src/components/`    | Presentation only: the results, settings, history and help modals, and the character list. |
+| `src/characters/`    | The built-in animations — triggers, modal styling, which VFX modules to play. |
+| `src/animations/`    | The animation builder: people's own animations, where they are kept, and how one is matched to a winner. |
+| `src/vfx/`           | The 3D layer. `EffectCanvas` maps a module config onto a component; `schema.ts` describes each module for the builder. |
 | `src/storage.ts`     | Guarded `localStorage` access and the canonical key names.           |
 | `src/usePersistedState.ts` | `useState` that reads and writes through those guards.         |
 
@@ -59,6 +60,10 @@ needs to ask "when does the wheel reach this much rotation?". They have to stay
 the same curve or the clicks drift out of step with the wheel. A whole spin is
 scheduled up front on the AudioContext clock, never from setTimeout.
 
-**Three.js is in the initial bundle.** `EffectCanvas` is imported statically,
-so roughly 900 kB of three.js and postprocessing load on first paint even
-though effects fire rarely.
+**Three.js loads on demand.** `EffectCanvas` is a lazy import, so three.js and
+postprocessing — about a megabyte — are a chunk of their own rather than part
+of first paint. `App` fetches it ahead of time when animations are switched on,
+so the first effect does not wait for it. Import anything from
+`src/vfx/components/` statically outside `src/vfx/` and three.js is back in the
+main bundle. The builder only reaches `vfx/schema.ts`, `vfx/params.ts` and
+`vfx/types.ts`, which import none of it.

@@ -105,7 +105,9 @@ function wraithPresentation(title: string, accent: string, background: string): 
 }
 
 /**
- * Every custom character effect in the game.
+ * Every built-in animation in the game. People's own, made in the animation
+ * builder, live in animations/store.ts and win over these for the name they
+ * were saved under.
  *
  * To add one: append an entry here. Nothing else needs to change — the modal
  * styling, the 3D layer and the trigger matching all read from this list.

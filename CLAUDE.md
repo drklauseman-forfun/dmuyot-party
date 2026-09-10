@@ -10,7 +10,7 @@ catch you out.
 ```bash
 cd frontend && npm run build   # tsc -b && vite build — the same command Vercel runs
 cd frontend && npx eslint .    # expected to be silent; it was 14 errors before, so nobody ran it
-cd backend  && python -m pytest
+cd backend  && python -m pytest   # or py -m pytest — in Git Bash on Windows, python can be the Store stub
 ```
 
 `npm run build` failing means a broken deploy, not just a broken build. The
@@ -85,7 +85,7 @@ Modules today: `glow`, `edgeGlow`, `sparkles`, `fire`, `beams`, `blackHole`,
 `fire` and `beams` have no game effect using them but are kept — the developer
 sandbox in `testEffects.ts` uses them and they are building blocks.
 
-The eight הנרץ' effects share a shape, so `registry.ts` has two builders,
+The seven הנרץ' effects share a shape, so `registry.ts` has two builders,
 `wraithModules` and `wraithPresentation`. Seven near-identical copies is the
 point at which that stopped being premature. An effect that wants something
 different simply does not use them.
@@ -154,6 +154,18 @@ fragment shader out of the built bundle, compile it in a scratch WebGL canvas
 at a chosen size, and either read pixels back for a measurement or draw it into
 the page as a still, which screenshots reliably. That is how the phone-versus-
 desktop sizing was settled.
+
+**Start an effect's timeline on its first frame, not on mount.** The effect
+canvas is usually created fresh for each effect, and mounting stalls for as
+long as creating the WebGL context and compiling the shaders takes. A GSAP
+timeline started on mount spends its fade-in inside that stall, so the first
+frame anyone sees is already at full strength — the effect pops in, while its
+fade-out, running later on a warm canvas, looks fine. Every module builds its
+timeline paused and plays it from its first `useFrame`. A new module must too,
+or the fade-in times people set in the builder quietly stop meaning anything.
+A second, smaller cause of the same symptom: with additive blending, intensity
+belongs in alpha alone. In colour as well it ramps as its square, and the fade
+stops reading as one.
 
 **`center` runs bottom-up.** The black hole and the clock both take `center` as
 fractions of the frame, but the second number is measured from the **bottom**:
@@ -229,9 +241,12 @@ broken:
 
 ## Repository state
 
-`main` is deployed to Vercel automatically. It carries everything from this
-session: the hardening pass, the recorded sound, the mobile layout fixes, and
-the eight character effects.
+`main` deploys to Vercel automatically. The site people actually use is
+**https://dmuyot-party-6gjy.vercel.app**. A second Vercel project,
+`dmuyot-party`, is connected to the same repository and builds every push to
+https://dmuyot-party.vercel.app — a leftover nobody uses, so if it is still
+there it can be deleted from the Vercel dashboard. Both post a status on each
+commit, and nothing in the repository refers to either address.
 
 **`feat/pwa-and-deploy` is unmerged** and holds two things:
 
@@ -242,7 +257,9 @@ Do not cherry-pick `d93f88a` blindly. It also contains the `box-sizing` and
 media-query fixes, which `main` already has via `4ed2c81`, so it will conflict.
 
 The `sounds-done` tag is part of `main`'s history now; it marks the point where
-recorded sound worked, before the PWA work.
+recorded sound worked, before the PWA work. The other branches —
+`feat/black-hole-effect`, `feat/spin-sounds` and
+`refactor/character-effect-registry` — are merged and hold nothing `main` lacks.
 
 ## Open questions
 
@@ -250,8 +267,12 @@ recorded sound worked, before the PWA work.
 `https://dmuyot-party.onrender.com`, and the Vercel build has that URL compiled
 into it. This sat here as an open question for several sessions, phrased as
 though the opposite were likely. It is not: production loads lists fine. Settle
-it from the built bundle rather than by asking —
-`curl -s <site>/assets/index-*.js | grep -o 'https://[^"]*api/extract'`.
+it from the built bundle rather than by asking:
+
+```bash
+site=https://dmuyot-party-6gjy.vercel.app
+curl -s "$site/$(curl -s "$site/" | grep -o 'assets/index-[^"]*\.js')" | grep -o 'https://[^"]*api/extract'
+```
 
 **Waking that backend takes about half a minute.** Render's free tier spins an
 idle instance down. A measured cold request took 32.4s; the next was instant. So
