@@ -115,6 +115,11 @@ setting under it.
   saved under (`resolveWinnerAnimation`).
 - **One animation per character per username.** The replace dialog asks, and
   `withAnimation` enforces it whatever the caller did.
+- **Shared timing is written into the effects.** An animation's `timing`, when
+  set, is copied into every one of its effects by `sanitizeAnimation`, so
+  playback never has to know it exists and an export opened by an older build
+  plays the same. Null means each effect keeps its own, which is how anything
+  saved before shared timing existed loads. New animations start with it on.
 - **Loading repairs entry by entry.** Not through `usePersistedJSON`, whose
   validation throws away the whole stored value on any failure — one bad
   animation would have taken everyone's with it. The library is a

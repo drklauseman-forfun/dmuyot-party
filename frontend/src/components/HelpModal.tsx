@@ -178,6 +178,17 @@ const HELP: Record<Language, HelpContent> = {
             '.',
           ],
           [
+            'Timing is shared to begin with: ',
+            { code: 'Fade in' },
+            ', ',
+            { code: 'Hold' },
+            ' and ',
+            { code: 'Fade out' },
+            ' are set once for the whole animation, so every effect comes and goes together. To time each effect on its own, untick ',
+            { code: 'Same timing for every effect' },
+            '.',
+          ],
+          [
             'If that character already has an animation — a built-in one, or one of yours — you are asked before it is replaced, and you can watch the old one first. Replacing a built-in animation only changes it for your name; everyone else still sees the original.',
           ],
           [
@@ -340,6 +351,17 @@ const HELP: Record<Language, HelpContent> = {
             { code: 'Play' },
             ' מראה את כל האנימציה. בוחרים את הדמות מהרשימה שנטענה, מעצבים את התוצאות אם רוצים, ולוחצים ',
             { code: 'Save' },
+            '.',
+          ],
+          [
+            'התזמון משותף כברירת מחדל: את ',
+            { code: 'Fade in' },
+            ', ',
+            { code: 'Hold' },
+            ' ו־',
+            { code: 'Fade out' },
+            ' קובעים פעם אחת לכל האנימציה, כך שכל האפקטים מופיעים ונעלמים יחד. כדי לתזמן כל אפקט בנפרד, מבטלים את הסימון של ',
+            { code: 'Same timing for every effect' },
             '.',
           ],
           [
