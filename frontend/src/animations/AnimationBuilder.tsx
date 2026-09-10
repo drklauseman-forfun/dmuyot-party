@@ -23,7 +23,15 @@ import {
   withAnimation,
   withoutAnimation,
 } from './store';
-import type { AnimationLibrary, CustomAnimation } from './types';
+import {
+  TIMING_FIELDS,
+  defaultTiming,
+  sanitizeTiming,
+  timingOf,
+  totalSeconds,
+  withTiming,
+} from './timing';
+import type { AnimationLibrary, AnimationTiming, CustomAnimation } from './types';
 import './builder.css';
 
 /**
@@ -33,7 +41,7 @@ import './builder.css';
  * a phone has no room for a dialog on top of a dialog. The screens:
  *
  *   home      — your name, your animations, export and import
- *   animation — the one being built: its character, effects, results style
+ *   animation — the one being built: its character, effects, timing, results style
  *   effects   — every effect, to pick one to add
  *   effect    — one effect's settings, with Animate, Cancel and Add
  *   conflict  — saving would replace an animation: View, Replace, Cancel
@@ -66,6 +74,11 @@ interface Draft {
   modules: VFXModuleConfig[];
   /** Raw while being edited; sanitised on save. */
   presentation: PresentationInput;
+  /**
+   * One timing for every effect, or null for each keeping its own. Raw while
+   * being edited, like the presentation.
+   */
+  timing: AnimationTiming | null;
 }
 
 type Screen =
@@ -78,7 +91,7 @@ type Screen =
 type EffectScreen = Extract<Screen, { kind: 'effect' }>;
 type ConflictScreen = Extract<Screen, { kind: 'conflict' }>;
 
-const TIMING_KEYS = new Set(['fadeInDuration', 'duration', 'fadeDuration']);
+const TIMING_KEYS = new Set<string>(TIMING_FIELDS.map(([key]) => key));
 
 const PRESENTATION_FIELDS = Object.entries(PRESENTATION_SCHEMA) as [keyof PresentationInput, ParamSpec][];
 
@@ -88,6 +101,52 @@ function paramsOf(type: VFXModuleType): [string, ParamSpec][] {
 
 function describeModules(modules: VFXModuleConfig[]): string {
   return modules.map((module) => EFFECT_SCHEMAS[module.type].label).join(' · ');
+}
+
+/** "Plays for 6 seconds." To a tenth of a second, and singular at exactly one. */
+function describeLength(timing: AnimationTiming): string {
+  const seconds = Number(totalSeconds(timing).toFixed(1));
+  return `Plays for ${seconds} ${seconds === 1 ? 'second' : 'seconds'}.`;
+}
+
+/**
+ * The animation's timing: the switch, and while it is on, the three fields
+ * every effect follows.
+ */
+function TimingSection({
+  timing,
+  onToggle,
+  onChange,
+}: {
+  timing: AnimationTiming | null;
+  onToggle: (on: boolean) => void;
+  onChange: (key: keyof AnimationTiming, value: unknown) => void;
+}) {
+  return (
+    <div className="builder-section">
+      <p className="builder-section-title">Timing</p>
+      <label className="param-toggle">
+        <input type="checkbox" checked={timing !== null} onChange={(e) => onToggle(e.target.checked)} />
+        Same timing for every effect
+      </label>
+      {timing ? (
+        <div className="builder-gap">
+          {TIMING_FIELDS.map(([key, spec]) => (
+            <ParamField
+              key={key}
+              id={`timing-${key}`}
+              spec={spec}
+              value={timing[key]}
+              onChange={(value) => onChange(key, value)}
+            />
+          ))}
+          <p className="builder-note">{describeLength(sanitizeTiming(timing))}</p>
+        </div>
+      ) : (
+        <p className="builder-note">Each effect has its own timing, set when you add or edit it.</p>
+      )}
+    </div>
+  );
 }
 
 /** The effect's main colour, for a swatch in the list, if it has one. */
@@ -219,7 +278,15 @@ function AnimationBuilder({
 
   const startNew = () => {
     setNotice(null);
-    setDraft({ id: null, character: '', modules: [], presentation: defaultPresentation() });
+    // Shared timing starts on: most animations want their effects to come and
+    // go together, and one set of fields beats the same three on every effect.
+    setDraft({
+      id: null,
+      character: '',
+      modules: [],
+      presentation: defaultPresentation(),
+      timing: defaultTiming(),
+    });
     setCharacterFilter('');
     setScreen({ kind: 'animation' });
   };
@@ -231,6 +298,7 @@ function AnimationBuilder({
       character: animation.character,
       modules: animation.modules,
       presentation: animation.presentation,
+      timing: animation.timing,
     });
     setCharacterFilter('');
     setScreen({ kind: 'animation' });
@@ -263,7 +331,15 @@ function AnimationBuilder({
     );
   };
 
-  const buildEffect = (current: EffectScreen) => sanitizeModule({ ...current.values, type: current.type });
+  /** A draft's effects as they will play: on the shared timing, if it has one. */
+  const playable = (current: Draft, modules: VFXModuleConfig[] = current.modules) =>
+    withTiming(modules, current.timing ? sanitizeTiming(current.timing) : null);
+
+  /** The effect being edited as it will play — sanitised, and on the shared timing. */
+  const buildEffect = (current: EffectScreen) => {
+    const module = sanitizeModule({ ...current.values, type: current.type });
+    return module && draft ? playable(draft, [module])[0] : module;
+  };
 
   const addEffect = (current: EffectScreen) => {
     if (!draft) return;
@@ -281,14 +357,30 @@ function AnimationBuilder({
     setDraft({ ...draft, modules: draft.modules.filter((_, i) => i !== index) });
   };
 
+  /**
+   * Switching shared timing on starts it from the first effect's timing, so
+   * nothing jumps. Switching it off leaves every effect holding the shared
+   * values, as the starting point for timing each one on its own.
+   */
+  const setSharedTiming = (current: Draft, on: boolean) => {
+    if (on) {
+      const first = current.modules[0];
+      setDraft({ ...current, timing: first ? timingOf(first) : defaultTiming() });
+    } else {
+      setDraft({ ...current, modules: playable(current), timing: null });
+    }
+  };
+
   const commit = () => {
     if (!draft) return;
+    const timing = draft.timing ? sanitizeTiming(draft.timing) : null;
     onLibraryChange(
       withAnimation(library, username, {
         id: draft.id ?? newAnimationId(),
         character: draft.character,
-        modules: draft.modules,
+        modules: withTiming(draft.modules, timing),
         presentation: sanitizePresentation(draft.presentation),
+        timing,
         updatedAt: Date.now(),
       }),
     );
@@ -543,7 +635,7 @@ function AnimationBuilder({
                     <button
                       type="button"
                       className="builder-icon-btn"
-                      onClick={() => onPreview([module], label)}
+                      onClick={() => onPreview(playable(current, [module]), label)}
                       aria-label={`Play ${label}`}
                     >
                       ▶
@@ -576,7 +668,7 @@ function AnimationBuilder({
             <button
               type="button"
               className="builder-play"
-              onClick={() => onPreview(current.modules, current.character || 'draft')}
+              onClick={() => onPreview(playable(current), current.character || 'draft')}
               disabled={current.modules.length === 0}
             >
               ▶ Play
@@ -586,6 +678,14 @@ function AnimationBuilder({
             <p className="builder-note">That's the most one animation can hold ({MAX_EFFECTS_PER_ANIMATION}).</p>
           )}
         </div>
+
+        <TimingSection
+          timing={current.timing}
+          onToggle={(on) => setSharedTiming(current, on)}
+          onChange={(key, value) =>
+            setDraft({ ...current, timing: withField(current.timing ?? defaultTiming(), key, value) })
+          }
+        />
 
         <details className="builder-details">
           <summary>Results style</summary>
@@ -648,7 +748,16 @@ function AnimationBuilder({
         <p className="builder-note builder-flush">{schema.description}</p>
         {fields.filter(([key]) => !TIMING_KEYS.has(key)).map((entry) => field(entry))}
         <p className="builder-subheading">Timing</p>
-        {fields.filter(([key]) => TIMING_KEYS.has(key)).map((entry) => field(entry))}
+        {draft?.timing ? (
+          // The form still holds this effect's own values; the shared timing
+          // replaces them when it is added or played.
+          <p className="builder-note">
+            This animation gives every effect the same timing. Change it on the animation screen, or switch that off
+            there to time this effect on its own.
+          </p>
+        ) : (
+          fields.filter(([key]) => TIMING_KEYS.has(key)).map((entry) => field(entry))
+        )}
         <div className="builder-actions">
           <button
             type="button"

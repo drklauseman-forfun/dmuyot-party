@@ -5,6 +5,7 @@ import { STORAGE_KEYS, readString, writeString } from '../storage';
 import { sanitizeModule } from '../vfx/schema';
 import type { VFXModuleConfig } from '../vfx/types';
 import { sanitizePresentation, toEffectPresentation } from './presentation';
+import { sanitizeSharedTiming, withTiming } from './timing';
 import type { AnimationLibrary, CustomAnimation } from './types';
 
 /**
@@ -85,11 +86,16 @@ export function sanitizeAnimation(input: unknown): CustomAnimation | null {
       ? raw.updatedAt
       : 0;
 
+  // Shared timing is written into every effect here rather than applied when
+  // the animation plays, so nothing downstream needs to know it exists.
+  const timing = sanitizeSharedTiming(raw.timing);
+
   return {
     id: typeof raw.id === 'string' && ID_PATTERN.test(raw.id) ? raw.id : newAnimationId(),
     character,
-    modules,
+    modules: withTiming(modules, timing),
     presentation: sanitizePresentation(raw.presentation),
+    timing,
     updatedAt,
   };
 }

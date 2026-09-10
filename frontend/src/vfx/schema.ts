@@ -65,8 +65,11 @@ export interface EffectSchema<K extends VFXModuleType> {
 
 type EffectSchemas = { [K in VFXModuleType]: EffectSchema<K> };
 
-/** Shared by every effect. The defaults are the ones EffectCanvas assumes too. */
-const TIMING = {
+/**
+ * Shared by every effect. The defaults are the ones EffectCanvas assumes too.
+ * An animation's shared timing uses the same fields — see animations/timing.ts.
+ */
+export const TIMING_SCHEMA = {
   fadeInDuration: {
     kind: 'number',
     label: 'Fade in',
@@ -167,7 +170,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         default: 'add',
         options: BLEND_OPTIONS,
       },
-      ...TIMING,
+      ...TIMING_SCHEMA,
     },
   },
 
@@ -190,7 +193,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         max: 1,
         step: 0.05,
       },
-      ...TIMING,
+      ...TIMING_SCHEMA,
     },
   },
 
@@ -291,7 +294,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         integer: true,
         unit: 'px',
       },
-      ...TIMING,
+      ...TIMING_SCHEMA,
     },
   },
 
@@ -394,7 +397,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         integer: true,
         unit: 'px',
       },
-      ...TIMING,
+      ...TIMING_SCHEMA,
     },
   },
 
@@ -455,7 +458,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         step: 1,
       },
       center: CENTER,
-      ...TIMING,
+      ...TIMING_SCHEMA,
     },
   },
 
@@ -513,7 +516,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         max: 1,
         step: 0.05,
       },
-      ...TIMING,
+      ...TIMING_SCHEMA,
     },
   },
 
@@ -527,7 +530,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         guide: 'The colour of the light.',
         default: '#fff2b2',
       },
-      ...TIMING,
+      ...TIMING_SCHEMA,
     },
   },
 
@@ -558,7 +561,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         min: -10,
         max: 10,
       },
-      ...TIMING,
+      ...TIMING_SCHEMA,
     },
   },
 };

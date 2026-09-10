@@ -1,5 +1,8 @@
-import type { VFXModuleConfig } from '../vfx/types';
+import type { VFXModuleConfig, VFXTiming } from '../vfx/types';
 import type { PresentationInput } from './presentation';
+
+/** Fade in, hold and fade out, every one of them set. */
+export type AnimationTiming = Required<VFXTiming>;
 
 /**
  * An animation someone built themselves: the effects that play when one
@@ -16,8 +19,14 @@ export interface CustomAnimation {
   id: string;
   /** The character's name exactly as the loaded list has it, source included. */
   character: string;
+  /** Each carries its timing explicitly — the shared timing, if there is one. */
   modules: VFXModuleConfig[];
   presentation: PresentationInput;
+  /**
+   * One timing every effect follows, or null for each keeping its own. Null is
+   * also how anything saved before shared timing existed loads.
+   */
+  timing: AnimationTiming | null;
   /** Milliseconds since the epoch. Orders the list, newest first. */
   updatedAt: number;
 }
