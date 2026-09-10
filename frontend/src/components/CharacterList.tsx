@@ -35,7 +35,11 @@ function CharacterList({
           <h3 style={{ margin: 0 }}>Characters ({totalCount})</h3>
           <button
             onClick={onResetWeights}
-            style={{ padding: '2px 8px', fontSize: '0.7rem', background: '#333', border: '1px solid #444', borderRadius: '4px', cursor: 'pointer' }}
+            // Off during a spin, like the steppers. Resetting reshapes the wheel
+            // under a spin already aimed at one slice, so the pointer could stop
+            // on someone other than the winner announced.
+            disabled={disabled}
+            style={{ padding: '2px 8px', fontSize: '0.7rem', background: '#333', border: '1px solid #444', borderRadius: '4px', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1 }}
             title="Reset all weights to 1"
           >
             Reset
