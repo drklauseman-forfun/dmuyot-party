@@ -274,14 +274,31 @@ site=https://dmuyot-party-6gjy.vercel.app
 curl -s "$site/$(curl -s "$site/" | grep -o 'assets/index-[^"]*\.js')" | grep -o 'https://[^"]*api/extract'
 ```
 
+**But Render is not running `main`.** Checked on 2026-09-10: the live API has
+no `/health` route (FastAPI answers it with its own 404), turns `10 - Frodo`
+into `- Frodo`, still sends `access-control-allow-credentials: true`, and its
+OpenAPI schema has no `Character` model. All of those changed in `main`'s
+backend commits of 2026-09-04 and 2026-09-09, so the service is serving the
+June code and nothing pushed since has reached it. Whether auto-deploy is off,
+the service points at another repository or branch, or its builds fail, only
+the Render dashboard can say. Until it is redeployed, a backend fix on `main`
+is not live — check rather than assume:
+
+```bash
+curl -s https://dmuyot-party.onrender.com/openapi.json | grep -o '"/[^"]*":'   # no /health listed: still the June build
+```
+
 **Waking that backend takes about half a minute.** Render's free tier spins an
 idle instance down. A measured cold request took 32.4s; the next was instant. So
 the first list-load after a quiet spell is very slow, and anything calling the
 API on demand — a widget, a script — cannot assume it is awake. Moving the one
-endpoint onto Vercel's Python runtime beside the frontend would cut that to well
-under a second and remove the second host entirely; a keep-alive ping every ten
-minutes is the cheap version, but Render's 750 free instance-hours a month
-barely cover one always-on service.
+endpoint onto Vercel's Python runtime beside the frontend would cut that
+sharply and remove the second host entirely. The keep-awake workflow is the
+cheap version, limited to sixteen hours a day to stay inside Render's 750 free
+instance-hours — but GitHub runs frequent schedules late or not at all. In its
+first twenty hours it ran 4 times against about 70 scheduled slots, and not
+once in the first five hours of its first morning. Treat it as best-effort. Any
+request wakes the instance, so its 404 from the stale build still counts.
 
 **Home-screen widgets need a native app and can never show the wheel.**
 Researched properly rather than assumed:
