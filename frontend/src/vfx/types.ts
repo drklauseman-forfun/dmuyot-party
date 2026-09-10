@@ -119,9 +119,11 @@ export interface BlackHoleParams extends VFXTiming {
    */
   windUp?: number;
   /**
-   * Where it sits, in fractions of the frame from the top left. Centred by
-   * default, which puts the core over the middle of the results modal — move
-   * it if the winner's name has to stay readable through the effect.
+   * Where it sits, as fractions of the frame. The first number runs from the
+   * left edge (0) to the right (1); the second from the **bottom** (0) to the
+   * top (1), because three.js gives a plane's top edge v = 1 — so a smaller
+   * second number moves it down, not up. Centred by default, which puts the
+   * core over the middle of the results modal.
    */
   center?: [number, number];
 }
@@ -148,7 +150,10 @@ export interface ClockParams extends VFXTiming {
   color?: string;
   /** Face radius, as a fraction of the frame's shorter side. */
   radius?: number;
-  /** Where it sits, in fractions of the frame from the top left. */
+  /**
+   * Where it sits, as fractions of the frame: left (0) to right (1), then
+   * bottom (0) to top (1). The second number runs up; see BlackHoleParams.
+   */
   center?: [number, number];
   /** Marks around the face, and so the steps in one full revolution. */
   marks?: number;

@@ -62,13 +62,23 @@ Adding to any of these is data, not code.
 | What | Where | To add one |
 | --- | --- | --- |
 | Character effect | `frontend/src/characters/registry.ts` | Append an entry |
-| VFX module | `frontend/src/vfx/modules.tsx` | Component + params in `VFXModuleConfig` + one line |
+| VFX module | `frontend/src/vfx/modules.tsx` | Component + params in `VFXModuleConfig` + one line + a schema in `vfx/schema.ts` |
 | Sound pack | `frontend/src/sound/samples.ts` | Files in `public/sounds/<id>/` + a spec |
 
 `VFXModuleConfig` is a discriminated union, so `{ type: 'glow', gravity: 5 }` is
 a compile error rather than a line that silently does nothing, and an editor
 offers exactly the parameters that module understands. Each component's props
 extend the same declarations, so the two cannot drift apart.
+
+`vfx/schema.ts` describes every effect for the animation builder — label, guide,
+default and bounds for each parameter. Its type is derived from the same
+interfaces, so a new effect with no schema, a parameter left undescribed, or a
+colour field on a number fails the build. The bounds are what make saved
+animations safe to play: `sanitizeModule` runs anything untrusted through them,
+clamping numbers and dropping unknown keys, so a saved animation cannot ask for
+ten million sparks. The defaults copy each component's own; a saved animation
+stores every parameter explicitly, so drift cannot change what it renders, but
+it would make the builder's starting values wrong.
 
 Modules today: `glow`, `edgeGlow`, `sparkles`, `fire`, `beams`, `blackHole`,
 `clock`, `fireworks`.
@@ -112,6 +122,12 @@ fragment shader out of the built bundle, compile it in a scratch WebGL canvas
 at a chosen size, and either read pixels back for a measurement or draw it into
 the page as a still, which screenshots reliably. That is how the phone-versus-
 desktop sizing was settled.
+
+**`center` runs bottom-up.** The black hole and the clock both take `center` as
+fractions of the frame, but the second number is measured from the **bottom**:
+three.js gives a plane's top edge `v = 1` (see `PlaneGeometry.js`). The comment
+in `types.ts` said "from the top left" for a while, and advice built on it moved
+the hole the wrong way — a smaller second number moves it *down*.
 
 **`edgeGlow` renders at `renderOrder={-1}`.** It is a backdrop. Drawn after the
 particles it adds light back over them, which additive particles do not notice
