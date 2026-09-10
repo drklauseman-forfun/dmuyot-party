@@ -19,21 +19,34 @@ const VFXGlow: React.FC<VFXGlowProps> = ({
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const opacityState = useRef({ value: 0 });
+  const timeline = useRef<gsap.core.Timeline | null>(null);
+  const started = useRef(false);
 
+  // Built paused and started on the first drawn frame. Mounting stalls while
+  // the WebGL context is created and the shaders compile, and a timeline
+  // started before that spends its fade-in during the stall. See VFXClock.
   useEffect(() => {
     if (active) {
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({ paused: true });
       tl.to(opacityState.current, { value: intensity, duration: fadeInDuration, ease: "power2.out" });
       tl.to({}, { duration });
       tl.to(opacityState.current, { value: 0, duration: fadeDuration, ease: "power2.inOut" });
-      return () => { tl.kill(); };
+      timeline.current = tl;
+      return () => {
+        tl.kill();
+        timeline.current = null;
+        started.current = false;
+      };
     }
   }, [active, intensity, fadeInDuration, duration, fadeDuration]);
 
   useFrame(() => {
-    if (meshRef.current) {
-      (meshRef.current.material as THREE.MeshBasicMaterial).opacity = opacityState.current.value;
+    if (!meshRef.current) return;
+    if (timeline.current && !started.current) {
+      started.current = true;
+      timeline.current.play();
     }
+    (meshRef.current.material as THREE.MeshBasicMaterial).opacity = opacityState.current.value;
   });
 
   return (

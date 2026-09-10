@@ -26,7 +26,9 @@ const fragmentShader = `
     beams *= smoothstep(0.0, 0.8, p.y);
     beams *= smoothstep(0.0, 0.2, p.x) * smoothstep(1.0, 0.8, p.x);
     
-    vec3 finalColor = color * beams * 1.2 * intensity;
+    // Intensity goes into alpha alone. Additive blending multiplies colour by
+    // alpha on its way into the frame, so in both it ramped as its square.
+    vec3 finalColor = color * beams * 1.2;
     
     gl_FragColor = vec4(finalColor, beams * 0.4 * intensity);
   }
@@ -55,13 +57,24 @@ const SubtleTopBeams: React.FC<SubtleTopBeamsProps> = ({
     color: { value: new THREE.Color(color) }
   }), [color]);
 
+  // Built paused and started on the first drawn frame. Mounting stalls while
+  // the WebGL context is created and the shaders compile, and a timeline
+  // started before that spends its fade-in during the stall. See VFXClock.
+  const timeline = useRef<gsap.core.Timeline | null>(null);
+  const started = useRef(false);
+
   useEffect(() => {
     if (active) {
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({ paused: true });
       tl.to(intensityState.current, { value: 1, duration: fadeInDuration, ease: "power2.out" });
       tl.to({}, { duration });
       tl.to(intensityState.current, { value: 0, duration: fadeDuration, ease: "power2.inOut" });
-      return () => { tl.kill(); };
+      timeline.current = tl;
+      return () => {
+        tl.kill();
+        timeline.current = null;
+        started.current = false;
+      };
     }
   }, [active, fadeInDuration, duration, fadeDuration]);
 
@@ -71,6 +84,10 @@ const SubtleTopBeams: React.FC<SubtleTopBeamsProps> = ({
 
   useFrame((_state, delta) => {
     if (!meshRef.current) return;
+    if (timeline.current && !started.current) {
+      started.current = true;
+      timeline.current.play();
+    }
     elapsed.current += delta;
     const material = meshRef.current.material as THREE.ShaderMaterial;
     material.uniforms.time.value = elapsed.current;

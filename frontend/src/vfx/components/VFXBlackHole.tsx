@@ -142,13 +142,24 @@ const VFXBlackHole: React.FC<VFXBlackHoleProps> = ({
     [color, radius, spin, centerX, centerY, strands],
   );
 
+  // Built paused and started on the first drawn frame. Mounting stalls while
+  // the WebGL context is created and the shaders compile, and a timeline
+  // started before that spends its fade-in during the stall. See VFXClock.
+  const timeline = useRef<gsap.core.Timeline | null>(null);
+  const started = useRef(false);
+
   useEffect(() => {
     if (active) {
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({ paused: true });
       tl.to(strength.current, { value: intensity, duration: fadeInDuration, ease: 'power2.out' });
       tl.to({}, { duration });
       tl.to(strength.current, { value: 0, duration: fadeDuration, ease: 'power2.inOut' });
-      return () => { tl.kill(); };
+      timeline.current = tl;
+      return () => {
+        tl.kill();
+        timeline.current = null;
+        started.current = false;
+      };
     }
   }, [active, intensity, fadeInDuration, duration, fadeDuration]);
 
@@ -159,6 +170,10 @@ const VFXBlackHole: React.FC<VFXBlackHoleProps> = ({
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;
+    if (timeline.current && !started.current) {
+      started.current = true;
+      timeline.current.play();
+    }
     elapsed.current += delta;
     const material = meshRef.current.material as THREE.ShaderMaterial;
     material.uniforms.time.value = elapsed.current;
