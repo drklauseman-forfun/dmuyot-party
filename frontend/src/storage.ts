@@ -16,6 +16,9 @@ export const STORAGE_KEYS = {
   soundPack: 'dmuyot_party_sound_pack',
   effects: 'dmuyot_party_effects',
   helpLanguage: 'dmuyot_party_help_language',
+  username: 'dmuyot_party_username',
+  /** Custom animations, every username's, as one object. See animations/store.ts. */
+  animations: 'dmuyot_party_animations',
   ranges: 'dmuyot_party_ranges',
   weights: 'dmuyot_party_weights',
   history: 'dmuyot_party_history',
