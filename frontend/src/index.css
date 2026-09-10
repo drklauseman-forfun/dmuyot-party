@@ -400,43 +400,6 @@ h1 {
   animation: glitch-bg 1s steps(1) 1;
 }
 
-.large-list-warning {
-  color: #ffcc00;
-  font-size: 0.8rem;
-  margin-bottom: 1rem;
-  background: rgba(255, 204, 0, 0.1);
-  padding: 0.5rem;
-  border-radius: 4px;
-}
-
-.history-section {
-  margin-top: 2rem;
-  width: 100%;
-  max-width: 800px;
-  background: #1e1e1e;
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid #333;
-  text-align: left;
-}
-
-.history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #333;
-  padding-bottom: 0.5rem;
-}
-
-.history-list {
-  display: flex;
-  flex-direction: column-reverse; /* Newest at top */
-  max-height: 200px;
-  overflow-y: auto;
-  gap: 0.5rem;
-}
-
 .history-item {
   display: flex;
   justify-content: space-between;
