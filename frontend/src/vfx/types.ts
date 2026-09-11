@@ -233,7 +233,7 @@ export interface SlashesParams extends VFXTiming {
   color?: string;
   /** How many slashes over the whole effect. */
   count?: number;
-  /** Parallel marks in each slash: three for claws, one for a blade. */
+  /** Parallel marks in each claw slash. A blade always cuts once. */
   lines?: number;
   /** Thickness at the widest point, as a fraction of the frame's shorter side. */
   width?: number;

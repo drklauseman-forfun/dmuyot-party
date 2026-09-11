@@ -644,7 +644,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         kind: 'select',
         label: 'Style',
         guide:
-          'Glowing claws look like fresh wounds of light. Dark claws tear black cuts with a glowing edge. Blade cuts are clean, bright strokes, and look best with 1 mark.',
+          'Glowing claws look like fresh wounds of light. Dark claws tear black cuts with a glowing edge. Blade cuts are one clean, bright stroke each.',
         default: 'claws',
         options: [
           { value: 'claws', label: 'Glowing claws' },
@@ -671,7 +671,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
       lines: {
         kind: 'number',
         label: 'Marks per slash',
-        guide: 'Parallel cuts in each slash: 3 for claw marks, 1 for a single cut.',
+        guide: 'Parallel marks in each claw slash. Blade cuts always make a single cut, whatever this is set to.',
         default: 3,
         min: 1,
         max: 5,

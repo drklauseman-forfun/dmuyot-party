@@ -203,7 +203,9 @@ const VFXSlashes: React.FC<VFXSlashesProps> = ({
       color: { value: new THREE.Color(color) },
       styleId: { value: STYLE_IDS[style] },
       count: { value: Math.min(Math.max(Math.round(count), 0), MAX_SLASHES) },
-      lines: { value: Math.min(Math.max(Math.round(lines), 1), MAX_LINES) },
+      // A blade makes one cut. Marks per slash is a claw setting: a blade that
+      // honoured it drew three parallel strokes, which read as claws.
+      lines: { value: style === 'blade' ? 1 : Math.min(Math.max(Math.round(lines), 1), MAX_LINES) },
       width: { value: width },
       swipe: { value: swipe },
       slashFrom: { value: slashes.map((slash) => slash.from) },
