@@ -7,6 +7,9 @@ import VFXEdgeGlow from './components/VFXEdgeGlow';
 import VFXBlackHole from './components/VFXBlackHole';
 import VFXClock from './components/VFXClock';
 import VFXFireworks from './components/VFXFireworks';
+import VFXWings from './components/VFXWings';
+import VFXEyes from './components/VFXEyes';
+import VFXSlashes from './components/VFXSlashes';
 import type { VFXModuleConfig, VFXModuleType } from './types';
 
 /**
@@ -58,6 +61,9 @@ const RENDERERS: ModuleRenderers = {
   blackHole: (params, { active }) => <VFXBlackHole {...params} active={active} />,
   clock: (params, { active }) => <VFXClock {...params} active={active} />,
   fireworks: (params, { active, seed }) => <VFXFireworks {...params} active={active} seed={seed} />,
+  wings: (params, { active }) => <VFXWings {...params} active={active} />,
+  eyes: (params, { active, seed }) => <VFXEyes {...params} active={active} seed={seed} />,
+  slashes: (params, { active, seed }) => <VFXSlashes {...params} active={active} seed={seed} />,
 };
 
 /**

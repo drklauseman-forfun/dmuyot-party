@@ -81,12 +81,16 @@ stores every parameter explicitly, so drift cannot change what it renders, but
 it would make the builder's starting values wrong.
 
 Modules today: `glow`, `edgeGlow`, `sparkles`, `fire`, `beams`, `blackHole`,
-`clock`, `fireworks`.
-`fire` and `beams` have no built-in animation using them but are kept — they
-are building blocks the builder offers, and the developer sandbox in
-`testEffects.ts` uses them. That sandbox exists only under `npm run dev`:
-`registry.ts` leaves it out of production builds, because its one-word triggers
-ignore case and a hand-typed list could contain one.
+`clock`, `fireworks`, `wings`, `eyes`, `slashes`.
+`beams` has no built-in animation using it but is a building block the builder
+offers. `fire` is **retired**: it did not look like flames, so
+`RETIRED_EFFECTS` in `vfx/schema.ts` keeps it out of the builder's list. Its
+component and schema stay, so any animation already saved with one still loads,
+plays and can be edited — deleting the type would make the sanitiser drop those
+animations. Both are also used by the developer sandbox in `testEffects.ts`,
+which exists only under `npm run dev`: `registry.ts` leaves it out of production
+builds, because its one-word triggers ignore case and a hand-typed list could
+contain one.
 
 The seven הנרץ' effects share a shape, so `registry.ts` has two builders,
 `wraithModules` and `wraithPresentation`. Seven near-identical copies is the

@@ -185,6 +185,66 @@ export interface FireworksParams extends VFXTiming {
   maxPixelSize?: number;
 }
 
+/** A pair of wings spreading out from behind the results. */
+export interface WingsParams extends VFXTiming {
+  /**
+   * 'feathered' draws layered feathers in light, added to the frame.
+   * 'leathery' paints dark membranes between bony ribs, and `color` becomes
+   * the glow along their edges.
+   */
+  style?: 'feathered' | 'leathery';
+  color?: string;
+  /** How far each wing reaches, as a fraction of the frame's shorter side. */
+  size?: number;
+  /** Wingbeats per second once they have unfolded. 0 holds them still. */
+  flap?: number;
+  /**
+   * Where the wings join, as fractions of the frame: left (0) to right (1),
+   * then bottom (0) to top (1). The second number runs up; see BlackHoleParams.
+   */
+  center?: [number, number];
+  /** Peak opacity, 0–1. */
+  intensity?: number;
+}
+
+/** Eyes opening around the frame, looking about and blinking. */
+export interface EyesParams extends VFXTiming {
+  /** How many. They keep clear of the middle, where the winner's name is. */
+  count?: number;
+  /** Width of one eye, as a fraction of the frame's shorter side. */
+  size?: number;
+  irisColor?: string;
+  /** 'winner' turns every eye towards the middle; 'wander' lets each look about. */
+  gaze?: 'winner' | 'wander';
+  /** Blinks per second for each eye, on average. 0 never blinks. */
+  blinkRate?: number;
+  /** Peak opacity, 0–1. */
+  intensity?: number;
+}
+
+/** Cuts tearing across the frame one after another, left behind as scars. */
+export interface SlashesParams extends VFXTiming {
+  /**
+   * 'claws' glow like fresh wounds, added to the frame. 'tears' paint dark
+   * cuts with `color` glowing along their edges. 'blade' is a clean, bright
+   * stroke with no ragged edge.
+   */
+  style?: 'claws' | 'tears' | 'blade';
+  color?: string;
+  /** How many slashes over the whole effect. */
+  count?: number;
+  /** Parallel marks in each slash: three for claws, one for a blade. */
+  lines?: number;
+  /** Thickness at the widest point, as a fraction of the frame's shorter side. */
+  width?: number;
+  /** Seconds between one slash and the next. */
+  interval?: number;
+  /** Seconds a slash takes to tear across. */
+  swipe?: number;
+  /** Peak opacity, 0–1. */
+  intensity?: number;
+}
+
 /**
  * One module in an effect.
  *
@@ -201,7 +261,10 @@ export type VFXModuleConfig =
   | ({ type: 'edgeGlow' } & EdgeGlowParams)
   | ({ type: 'blackHole' } & BlackHoleParams)
   | ({ type: 'clock' } & ClockParams)
-  | ({ type: 'fireworks' } & FireworksParams);
+  | ({ type: 'fireworks' } & FireworksParams)
+  | ({ type: 'wings' } & WingsParams)
+  | ({ type: 'eyes' } & EyesParams)
+  | ({ type: 'slashes' } & SlashesParams);
 
 export type VFXModuleType = VFXModuleConfig['type'];
 

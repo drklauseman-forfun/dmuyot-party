@@ -520,6 +520,206 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
     },
   },
 
+  wings: {
+    label: 'Wings',
+    description: 'A pair of wings that unfold from behind the results and beat slowly.',
+    params: {
+      style: {
+        kind: 'select',
+        label: 'Style',
+        guide:
+          'Feathered draws feathers in light. Leathery paints dark, bat-like wings, with a glowing edge in the colour below.',
+        default: 'feathered',
+        options: [
+          { value: 'feathered', label: 'Feathered' },
+          { value: 'leathery', label: 'Leathery' },
+        ],
+      },
+      color: {
+        kind: 'color',
+        label: 'Colour',
+        guide: 'The colour of the feathers, or of the glowing edge on leathery wings.',
+        default: '#ffe7a8',
+      },
+      size: {
+        kind: 'number',
+        label: 'Size',
+        guide: 'How far each wing reaches, compared to the screen. Around 0.5 spans most of a phone.',
+        default: 0.5,
+        min: 0.1,
+        max: 1,
+        step: 0.01,
+      },
+      flap: {
+        kind: 'number',
+        label: 'Wingbeats',
+        guide: 'Beats per second once they have opened. 0 holds them still.',
+        default: 0.5,
+        min: 0,
+        max: 4,
+        step: 0.1,
+        unit: '/s',
+      },
+      center: { ...CENTER, default: [0.5, 0.55] },
+      intensity: {
+        kind: 'number',
+        label: 'Strength',
+        guide: 'From 0 (invisible) to 1 (full).',
+        default: 1,
+        min: 0,
+        max: 1,
+        step: 0.05,
+      },
+      ...TIMING_SCHEMA,
+    },
+  },
+
+  eyes: {
+    label: 'Eyes',
+    description: 'Eyes that open around the screen, look about and blink.',
+    params: {
+      count: {
+        kind: 'number',
+        label: 'Amount',
+        guide: 'How many eyes. They keep clear of the middle of the screen, so if there is not room for them all, fewer appear.',
+        default: 9,
+        min: 1,
+        max: 24,
+        step: 1,
+        integer: true,
+      },
+      size: {
+        kind: 'number',
+        label: 'Size',
+        guide: 'How wide each eye is, compared to the screen. Each one varies a little around this.',
+        default: 0.12,
+        min: 0.04,
+        max: 0.3,
+        step: 0.01,
+      },
+      irisColor: {
+        kind: 'color',
+        label: 'Eye colour',
+        guide: 'The colour of the iris, around the black pupil.',
+        default: '#c98a2a',
+      },
+      gaze: {
+        kind: 'select',
+        label: 'Looking',
+        guide: 'At the winner turns every eye towards the middle of the screen. Around lets each one glance about on its own.',
+        default: 'winner',
+        options: [
+          { value: 'winner', label: 'At the winner' },
+          { value: 'wander', label: 'Around' },
+        ],
+      },
+      blinkRate: {
+        kind: 'number',
+        label: 'Blinking',
+        guide: 'Roughly how often each eye blinks, per second. 0 never blinks.',
+        default: 0.25,
+        min: 0,
+        max: 2,
+        step: 0.05,
+        unit: '/s',
+      },
+      intensity: {
+        kind: 'number',
+        label: 'Strength',
+        guide: 'From 0 (invisible) to 1 (solid).',
+        default: 1,
+        min: 0,
+        max: 1,
+        step: 0.05,
+      },
+      ...TIMING_SCHEMA,
+    },
+  },
+
+  slashes: {
+    label: 'Slashes',
+    description: 'Cuts that tear across the screen one after another and stay as scars.',
+    params: {
+      style: {
+        kind: 'select',
+        label: 'Style',
+        guide:
+          'Glowing claws look like fresh wounds of light. Dark claws tear black cuts with a glowing edge. Blade cuts are clean, bright strokes, and look best with 1 mark.',
+        default: 'claws',
+        options: [
+          { value: 'claws', label: 'Glowing claws' },
+          { value: 'tears', label: 'Dark claws' },
+          { value: 'blade', label: 'Blade cuts' },
+        ],
+      },
+      color: {
+        kind: 'color',
+        label: 'Colour',
+        guide: 'The colour of the glow.',
+        default: '#ff2a2a',
+      },
+      count: {
+        kind: 'number',
+        label: 'Slashes',
+        guide: 'How many slashes appear, one after another.',
+        default: 3,
+        min: 1,
+        max: 8,
+        step: 1,
+        integer: true,
+      },
+      lines: {
+        kind: 'number',
+        label: 'Marks per slash',
+        guide: 'Parallel cuts in each slash: 3 for claw marks, 1 for a single cut.',
+        default: 3,
+        min: 1,
+        max: 5,
+        step: 1,
+        integer: true,
+      },
+      width: {
+        kind: 'number',
+        label: 'Thickness',
+        guide: 'How thick each cut is at its widest, compared to the screen.',
+        default: 0.012,
+        min: 0.002,
+        max: 0.05,
+        step: 0.001,
+      },
+      interval: {
+        kind: 'number',
+        label: 'Time between slashes',
+        guide: 'Seconds between one slash and the next.',
+        default: 0.35,
+        min: 0.05,
+        max: 3,
+        step: 0.05,
+        unit: 's',
+      },
+      swipe: {
+        kind: 'number',
+        label: 'Tear speed',
+        guide: 'Seconds each slash takes to tear across. Smaller is faster and sharper.',
+        default: 0.16,
+        min: 0.02,
+        max: 2,
+        step: 0.01,
+        unit: 's',
+      },
+      intensity: {
+        kind: 'number',
+        label: 'Strength',
+        guide: 'From 0 (invisible) to 1 (full).',
+        default: 1,
+        min: 0,
+        max: 1,
+        step: 0.05,
+      },
+      ...TIMING_SCHEMA,
+    },
+  },
+
   beams: {
     label: 'Light beams',
     description: 'Soft shafts of light across the top of the screen.',
@@ -566,8 +766,20 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
   },
 };
 
+/**
+ * Effects kept out of the builder's list. Their schemas stay, so an animation
+ * already saved with one still loads, plays and can be edited — removing the
+ * type outright would make the sanitiser drop those animations.
+ */
+const RETIRED_EFFECTS = new Set<VFXModuleType>([
+  // It did not look like flames. Something else will take its place.
+  'fire',
+]);
+
 /** In panel order. Object key order is insertion order for string keys. */
-export const EFFECT_TYPES = Object.keys(EFFECT_SCHEMAS) as VFXModuleType[];
+export const EFFECT_TYPES = (Object.keys(EFFECT_SCHEMAS) as VFXModuleType[]).filter(
+  (type) => !RETIRED_EFFECTS.has(type),
+);
 
 /**
  * Own properties only. `'constructor' in EFFECT_SCHEMAS` is true, and a saved
