@@ -187,6 +187,15 @@ A second, smaller cause of the same symptom: with additive blending, intensity
 belongs in alpha alone. In colour as well it ramps as its square, and the fade
 stops reading as one.
 
+**Bloom lights up anything bright, and brightens what it touches.** Every
+light effect is drawn through the bloom in `EffectCanvas`, and the first
+realistic wings were too: their white feathers lit up the whole screen, and
+the bloom's output also lifted their colours. Solid, realistic modules are
+listed in `UNLIT_MODULES` (`vfx/modules.tsx`) and drawn in a second scene once
+the bloom has finished, so they keep exactly the colours they were drawn in.
+That layer always sits on top of the light effects. A new solid module belongs
+in that list.
+
 **`center` runs bottom-up.** The black hole and the clock both take `center` as
 fractions of the frame, but the second number is measured from the **bottom**:
 three.js gives a plane's top edge `v = 1` (see `PlaneGeometry.js`). The comment
@@ -258,6 +267,18 @@ broken:
 - **Vite's HMR cache can serve stale modules** after a file is deleted, giving a
   blank page and a bogus `does not provide an export named …` for an export that
   plainly exists. `rm -rf frontend/node_modules/.vite` and restart.
+- **A reloaded page can still hold a stale copy of a module.** After
+  `EffectCanvas.tsx` was rewritten, the page kept importing the old one, whose
+  exports did not include the new component, and a whole round of off-screen
+  renders measured code that no longer existed — every one came back empty
+  and looked like a real bug. When importing a module to test it, add a query
+  (`?fresh=` plus `Date.now()`) and check its exports before trusting a result.
+- **Off-screen renders work while the pane is hidden** and are the reliable way
+  to judge an effect. Create an r3f root on a detached canvas with
+  `frameloop: 'never'` and `preserveDrawingBuffer`, drive it with
+  `advance(seconds)` and `gsap.updateRoot(seconds)` so time is exact rather
+  than waited for, then `readPixels`. Timers crawl in a hidden page, so never
+  wait on `setTimeout` there; yield with a `MessageChannel` instead.
 
 ## Repository state
 
