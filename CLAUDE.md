@@ -1,7 +1,8 @@
 # Working notes
 
-Context that is not obvious from reading the code, written after a long session
-of hardening, adding sound, and building the character effects. The
+Context that is not obvious from reading the code, written over several long
+sessions: hardening, recorded sound, the character effects, and then the
+animation builder and the effects people build with. The
 [README](README.md) says what the app is and how to run it; this says what will
 catch you out.
 
@@ -61,8 +62,8 @@ Adding to any of these is data, not code.
 
 | What | Where | To add one |
 | --- | --- | --- |
-| Character effect | `frontend/src/characters/registry.ts` | Append an entry |
-| VFX module | `frontend/src/vfx/modules.tsx` | Component + params in `VFXModuleConfig` + one line + a schema in `vfx/schema.ts` |
+| Built-in animation (a "character effect" in the code) | `frontend/src/characters/registry.ts` | Append an entry |
+| VFX module (an "effect" in the builder) | `frontend/src/vfx/modules.tsx` | Component + params in `VFXModuleConfig` + one line + a schema in `vfx/schema.ts`; a solid, realistic one also goes in `UNLIT_MODULES` |
 | Sound pack | `frontend/src/sound/samples.ts` | Files in `public/sounds/<id>/` + a spec |
 
 `VFXModuleConfig` is a discriminated union, so `{ type: 'glow', gravity: 5 }` is
@@ -87,10 +88,10 @@ offers. `fire` is **retired**: it did not look like flames, so
 `RETIRED_EFFECTS` in `vfx/schema.ts` keeps it out of the builder's list. Its
 component and schema stay, so any animation already saved with one still loads,
 plays and can be edited — deleting the type would make the sanitiser drop those
-animations. Both are also used by the developer sandbox in `testEffects.ts`,
-which exists only under `npm run dev`: `registry.ts` leaves it out of production
-builds, because its one-word triggers ignore case and a hand-typed list could
-contain one.
+animations. Retiring any other module works the same way. Both are also used by
+the developer sandbox in `testEffects.ts`, which exists only under
+`npm run dev`: `registry.ts` leaves it out of production builds, because its
+one-word triggers ignore case and a hand-typed list could contain one.
 
 `wings` is built differently from every other module. The first version was a
 full-screen shader like the rest and did not read as wings; realism needs real
@@ -98,7 +99,8 @@ feather shapes, which cost too much to compute for every pixel. So
 `vfx/components/wings/textures.ts` draws a feather, a patch of skin and a bone
 once on a canvas, and each style places instanced copies of them along a
 skeleton from `wings/pose.ts` every frame. `pose.ts` is plain arithmetic with no
-three.js, so a pose can be checked without drawing it.
+three.js, so a pose can be checked without drawing it. The wings are also the
+one module in `UNLIT_MODULES` — see the bloom trap below.
 
 The seven הנרץ' effects share a shape, so `registry.ts` has two builders,
 `wraithModules` and `wraithPresentation`. Seven near-identical copies is the
@@ -155,7 +157,8 @@ wraith is the only one whose glows darken the frame.
 **Particle size is unbounded.** `gl_PointSize` scales with nearness to the
 camera, so a particle drifting close becomes hundreds of pixels wide. Added to
 the frame that is the soft bloom the bright effects rely on. Painted over it, it
-is a disc that swallows the picture. `maxPixelSize` caps it, uncapped by default.
+is a disc that swallows the picture. `maxPixelSize` caps it: `sparkles` leave it
+effectively uncapped by default, `fireworks` cap it at 42.
 
 **The black hole looks different depending on how long it has been running.**
 Its strands are specks that the swirl stretches into long arcs over about
@@ -168,12 +171,13 @@ reach. **Never judge it from a capture taken with a stretched duration.**
 
 **Screenshots of an effect are usually mistimed.** A capture takes several
 seconds and the effects last about six, so most land after the thing has gone
-and show an empty frame. Do not conclude it is broken. Two techniques work:
-stretch `duration` temporarily (and put it back), or — better — pull the
-fragment shader out of the built bundle, compile it in a scratch WebGL canvas
-at a chosen size, and either read pixels back for a measurement or draw it into
-the page as a still, which screenshots reliably. That is how the phone-versus-
-desktop sizing was settled.
+and show an empty frame. Do not conclude it is broken. Stretching `duration`
+temporarily makes something visible, but judge nothing from it — see the black
+hole above. The reliable way is an off-screen render with time set exactly,
+described under *Verifying in the browser*; it also covers the wings, which have
+no single shader to pull out of the bundle. The phone-versus-desktop sizing was
+first settled the older way, by compiling a fragment shader taken from the built
+bundle in a scratch WebGL canvas and reading pixels back.
 
 **Start an effect's timeline on its first frame, not on mount.** The effect
 canvas is usually created fresh for each effect, and mounting stalls for as
@@ -196,11 +200,11 @@ the bloom has finished, so they keep exactly the colours they were drawn in.
 That layer always sits on top of the light effects. A new solid module belongs
 in that list.
 
-**`center` runs bottom-up.** The black hole and the clock both take `center` as
-fractions of the frame, but the second number is measured from the **bottom**:
-three.js gives a plane's top edge `v = 1` (see `PlaneGeometry.js`). The comment
-in `types.ts` said "from the top left" for a while, and advice built on it moved
-the hole the wrong way — a smaller second number moves it *down*.
+**`center` runs bottom-up.** The black hole, the clock and the wings all take
+`center` as fractions of the frame, but the second number is measured from the
+**bottom**: three.js gives a plane's top edge `v = 1` (see `PlaneGeometry.js`).
+The comment in `types.ts` said "from the top left" for a while, and advice built
+on it moved the hole the wrong way — a smaller second number moves it *down*.
 
 **Touch targets, and iOS zooming in.** Measured at phone width, the animation
 builder's small controls first came out 22 to 29px tall — the remove button on
@@ -222,9 +226,13 @@ in data strings.
 
 **Triggers are prefix matches and must be unique.** The pattern carries that
 burden: a shorter pattern matches more, and a collision fails silently. Check
-new triggers against the real document before trusting them — of its 941
-characters, each current trigger matches exactly one. The apostrophe in `הנרץ'`
-is **U+0027**, the plain ASCII one, not the visually identical Hebrew geresh.
+new triggers against the real document before trusting them. When these notes
+were first written the document had 941 characters, and each of the eight
+triggers of the time — `דיבי` and the seven הנרץ' — matched exactly one of them.
+The four added since, `סאם (מגהברס 1)`, `סאלין (הכל)`, `איש הזיקוקים` and
+`אבלנין אלדורה`, have been checked against each other but not against the
+document. The apostrophe in `הנרץ'` is **U+0027**, the plain ASCII one, not the
+visually identical Hebrew geresh.
 
 **Sound ticks are derived from the wheel's easing curve.** `spinCurve.ts` owns
 the cubic-bezier that the CSS transition uses *and* the inverse the scheduler
@@ -264,6 +272,10 @@ broken:
 - **Screenshots are unreliable** during heavy WebGL use: mistimed, cropped, or
   showing a white frame the code cannot produce. Confirm anything surprising on
   a clean reload before acting on it, and prefer measuring the DOM.
+- **`.claude/launch.json` has two servers.** `dmuyot-frontend` is the dev
+  server on :5173. `dmuyot-frontend-preview` serves the production build on
+  :4173, so run `npm run build` first. Use it for anything that differs between
+  the two — the developer sandbox animations, for one, exist only in dev.
 - **Vite's HMR cache can serve stale modules** after a file is deleted, giving a
   blank page and a bogus `does not provide an export named …` for an export that
   plainly exists. `rm -rf frontend/node_modules/.vite` and restart.
@@ -278,7 +290,9 @@ broken:
   `frameloop: 'never'` and `preserveDrawingBuffer`, drive it with
   `advance(seconds)` and `gsap.updateRoot(seconds)` so time is exact rather
   than waited for, then `readPixels`. Timers crawl in a hidden page, so never
-  wait on `setTimeout` there; yield with a `MessageChannel` instead.
+  wait on `setTimeout` there; yield with a `MessageChannel` instead. To test
+  what the bloom does, render `EffectScene` from `EffectCanvas.tsx`, not a
+  single component.
 
 ## Repository state
 
@@ -315,15 +329,19 @@ site=https://dmuyot-party-6gjy.vercel.app
 curl -s "$site/$(curl -s "$site/" | grep -o 'assets/index-[^"]*\.js')" | grep -o 'https://[^"]*api/extract'
 ```
 
-**But Render is not running `main`.** Checked on 2026-09-10: the live API has
-no `/health` route (FastAPI answers it with its own 404), turns `10 - Frodo`
-into `- Frodo`, still sends `access-control-allow-credentials: true`, and its
-OpenAPI schema has no `Character` model. All of those changed in `main`'s
-backend commits of 2026-09-04 and 2026-09-09, so the service is serving the
-June code and nothing pushed since has reached it. Whether auto-deploy is off,
-the service points at another repository or branch, or its builds fail, only
-the Render dashboard can say. Until it is redeployed, a backend fix on `main`
-is not live — check rather than assume:
+**But Render is not running `main`.** Checked on 2026-09-10 and again on
+2026-09-11: the live API has no `/health` route (FastAPI answers it with its own
+404), turns `10 - Frodo` into `- Frodo`, still sends
+`access-control-allow-credentials: true`, and its OpenAPI schema has no
+`Character` model. All of those changed in `main`'s backend commits of
+2026-09-04 and 2026-09-09, so the service is serving the June code and nothing
+pushed since has reached it. On 2026-09-11 the owner looked over the Render
+dashboard and found nothing wrong, while the API that same day still served the
+June code — so a healthy-looking dashboard does not settle it. The thing to read
+there is the newest entry under **Events**: its date, and the commit it built.
+Whether auto-deploy is off, the service points at another repository or branch,
+or its builds fail, that entry will say. Until it is redeployed, a backend fix
+on `main` is not live — check rather than assume:
 
 ```bash
 curl -s https://dmuyot-party.onrender.com/openapi.json | grep -o '"/[^"]*":'   # no /health listed: still the June build
@@ -337,9 +355,15 @@ endpoint onto Vercel's Python runtime beside the frontend would cut that
 sharply and remove the second host entirely. The keep-awake workflow is the
 cheap version, limited to sixteen hours a day to stay inside Render's 750 free
 instance-hours — but GitHub runs frequent schedules late or not at all. In its
-first twenty hours it ran 4 times against about 70 scheduled slots, and not
-once in the first five hours of its first morning. Treat it as best-effort. Any
-request wakes the instance, so its 404 from the stale build still counts.
+first three days it ran 11 times in all, 3, 5 and 3 a day, against about 96
+scheduled slots a day. Treat it as best-effort. Any request wakes the instance,
+so its 404 from the stale build still counts. An outside pinger, or moving the
+backend to Vercel, was offered and not yet chosen.
+
+**Eyes still glow.** `eyes` are drawn as real eyes but still go through the
+bloom, so their whites carry a soft halo — the reason `wings` were moved into
+`UNLIT_MODULES`. Whether the eyes should follow was asked and not yet answered;
+moving them is one entry in that set.
 
 **Home-screen widgets need a native app and can never show the wheel.**
 Researched properly rather than assumed:

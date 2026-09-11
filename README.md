@@ -11,7 +11,7 @@ Two services, run separately in development.
 
 | Path        | What it is                                                        |
 | ----------- | ----------------------------------------------------------------- |
-| `backend/`  | FastAPI. One endpoint, `POST /api/extract`, which fetches a Google Doc through its `export?format=html` URL and scrapes names and text colours out of it. |
+| `backend/`  | FastAPI. `POST /api/extract` fetches a Google Doc through its `export?format=html` URL and scrapes names and text colours out of it; `GET /health` does nothing and exists for the keep-awake ping. |
 | `frontend/` | Vite + React + TypeScript. The wheel, the character list, and the effects engine in `src/vfx/`. Deploys to Vercel from `main`. |
 
 ## Running it

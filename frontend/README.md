@@ -19,7 +19,7 @@ npm run lint     # expected to pass with zero problems
 | `src/components/`    | Presentation only: the results, settings, history and help modals, and the character list. |
 | `src/characters/`    | The built-in animations — triggers, modal styling, which VFX modules to play. |
 | `src/animations/`    | The animation builder: people's own animations, where they are kept, and how one is matched to a winner. |
-| `src/vfx/`           | The 3D layer. `EffectCanvas` maps a module config onto a component; `schema.ts` describes each module for the builder. |
+| `src/vfx/`           | The 3D layer. `modules.tsx` maps a module config onto its component, `schema.ts` describes each one for the builder, and `EffectCanvas` draws them: light effects through the bloom, solid ones (`UNLIT_MODULES`) after it. |
 | `src/storage.ts`     | Guarded `localStorage` access and the canonical key names.           |
 | `src/usePersistedState.ts` | `useState` that reads and writes through those guards.         |
 
