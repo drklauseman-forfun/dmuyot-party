@@ -338,6 +338,51 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       { type: 'fireworks', bursts: 14, interval: 0.28, fadeInDuration: 0.6, duration: 4, fadeDuration: 1.5 },
     ],
   },
+  {
+    id: 'angel-evlanin',
+    // Two words and long enough to stand alone, like איש הזיקוקים.
+    triggers: [{ pattern: 'אבלנין אלדורה', match: 'prefix' }],
+    presentation: {
+      title: '👁️ אבלנין אלדורה 👁️',
+      // Ivory and old gold on a warm dark ground: an angel, but not a bright one.
+      accentColor: '#f1e4c3',
+      backgroundColor: 'rgba(18, 13, 9, 0.95)',
+      glow: '0 0 50px #f1e4c3, 0 0 100px #b08a5559',
+      fontFamily: "'Palatino', serif",
+      letterSpacing: '1px',
+      textShadow: '0 0 12px #f1e4c3',
+    },
+    modules: [
+      // Angel wings, curled up for a moment and then bursting open above the results.
+      {
+        type: 'wings',
+        style: 'feathered',
+        motion: 'burst',
+        color: '#ffffff',
+        size: 0.34,
+        flap: 0.5,
+        center: [0.5, 0.62],
+        intensity: 1,
+        fadeInDuration: 0.6,
+        duration: 4,
+        fadeDuration: 1.5,
+      },
+      // Dark brown eyes opening one after another around the screen, each
+      // glancing about on its own.
+      {
+        type: 'eyes',
+        count: 10,
+        size: 0.12,
+        irisColor: '#4a2a14',
+        gaze: 'wander',
+        blinkRate: 0.25,
+        intensity: 1,
+        fadeInDuration: 0.6,
+        duration: 4,
+        fadeDuration: 1.5,
+      },
+    ],
+  },
 ];
 
 /**
