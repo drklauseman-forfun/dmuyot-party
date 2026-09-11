@@ -187,12 +187,14 @@ export interface FireworksParams extends VFXTiming {
 
 /** A pair of wings spreading out from behind the results. */
 export interface WingsParams extends VFXTiming {
-  /**
-   * 'feathered' draws layered feathers in light, added to the frame.
-   * 'leathery' paints dark membranes between bony ribs, and `color` becomes
-   * the glow along their edges.
-   */
+  /** Realistic feathers, or a leathery membrane stretched over bones. */
   style?: 'feathered' | 'leathery';
+  /**
+   * 'burst' starts curled up and springs open, throwing off loose feathers.
+   * 'gentle' is spread above the results from the start, moving lightly.
+   */
+  motion?: 'burst' | 'gentle';
+  /** Tints the feathers or skin. White keeps their natural colour. */
   color?: string;
   /** How far each wing reaches, as a fraction of the frame's shorter side. */
   size?: number;

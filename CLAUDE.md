@@ -92,6 +92,14 @@ which exists only under `npm run dev`: `registry.ts` leaves it out of production
 builds, because its one-word triggers ignore case and a hand-typed list could
 contain one.
 
+`wings` is built differently from every other module. The first version was a
+full-screen shader like the rest and did not read as wings; realism needs real
+feather shapes, which cost too much to compute for every pixel. So
+`vfx/components/wings/textures.ts` draws a feather, a patch of skin and a bone
+once on a canvas, and each style places instanced copies of them along a
+skeleton from `wings/pose.ts` every frame. `pose.ts` is plain arithmetic with no
+three.js, so a pose can be checked without drawing it.
+
 The seven הנרץ' effects share a shape, so `registry.ts` has two builders,
 `wraithModules` and `wraithPresentation`. Seven near-identical copies is the
 point at which that stopped being premature. An effect that wants something

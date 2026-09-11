@@ -522,30 +522,40 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
 
   wings: {
     label: 'Wings',
-    description: 'A pair of wings that unfold from behind the results and beat slowly.',
+    description: 'A pair of realistic wings that burst open, or spread above the results and move gently.',
     params: {
       style: {
         kind: 'select',
         label: 'Style',
-        guide:
-          'Feathered draws feathers in light. Leathery paints dark, bat-like wings, with a glowing edge in the colour below.',
+        guide: 'Feathered wings, like a bird or an angel, or leathery wings, like a bat or a dragon.',
         default: 'feathered',
         options: [
           { value: 'feathered', label: 'Feathered' },
           { value: 'leathery', label: 'Leathery' },
         ],
       },
+      motion: {
+        kind: 'select',
+        label: 'Movement',
+        guide:
+          'Burst open starts with the wings curled up and snaps them open, throwing off feathers. Open above has them spread from the start, moving gently.',
+        default: 'burst',
+        options: [
+          { value: 'burst', label: 'Burst open' },
+          { value: 'gentle', label: 'Open above' },
+        ],
+      },
       color: {
         kind: 'color',
         label: 'Colour',
-        guide: 'The colour of the feathers, or of the glowing edge on leathery wings.',
-        default: '#ffe7a8',
+        guide: 'Tints the feathers or skin. White keeps their natural colour.',
+        default: '#ffffff',
       },
       size: {
         kind: 'number',
         label: 'Size',
-        guide: 'How far each wing reaches, compared to the screen. Around 0.5 spans most of a phone.',
-        default: 0.5,
+        guide: 'How big the wings are, compared to the screen. Around 0.35 spans a phone from edge to edge; larger runs off the sides.',
+        default: 0.34,
         min: 0.1,
         max: 1,
         step: 0.01,
@@ -560,7 +570,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         step: 0.1,
         unit: '/s',
       },
-      center: { ...CENTER, default: [0.5, 0.55] },
+      center: { ...CENTER, default: [0.5, 0.62] },
       intensity: {
         kind: 'number',
         label: 'Strength',
