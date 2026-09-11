@@ -152,18 +152,19 @@ const FeatheredWings: React.FC<WingRigProps> = ({ color, size, flap, center, int
       const source = openLayout[Math.floor(r(1) * openLayout.length)];
       // A burst throws them all off as the wings snap open; gentle wings shed
       // one now and then over the hold.
-      const spawn = burst ? BURST_DELAY + 0.05 + r(2) * 0.18 : 0.4 + r(2) * Math.max(holdEnds - 0.4, 0.5);
-      const life = burst ? 1.4 + r(3) : 2.5 + r(3) * 1.5;
+      // Timed to the wings sweeping open, which takes about half a second.
+      const spawn = burst ? BURST_DELAY + 0.2 + r(2) * 0.35 : 0.4 + r(2) * Math.max(holdEnds - 0.4, 0.5);
+      const life = burst ? 1.8 + r(3) : 2.5 + r(3) * 1.5;
       const age = elapsed - spawn;
       const alive = age > 0 && age < life;
-      const travel = (1 - Math.exp(-2.2 * Math.max(age, 0))) / 2.2;
+      const travel = (1 - Math.exp(-1.8 * Math.max(age, 0))) / 1.8;
       const startX = source.x + Math.cos(source.angle) * source.length * 0.5;
       const startY = source.y + Math.sin(source.angle) * source.length * 0.5;
       const x = burst
-        ? startX + (0.5 + r(4) * 1.3) * travel
+        ? startX + (0.35 + r(4) * 0.9) * travel
         : startX + Math.sin(Math.max(age, 0) * 1.7 + i) * 0.08;
       const y = burst
-        ? startY + (0.2 + r(5) * 1.1) * travel - 0.45 * Math.max(age, 0) ** 2
+        ? startY + (0.15 + r(5) * 0.8) * travel - 0.3 * Math.max(age, 0) ** 2
         : startY - 0.2 * Math.max(age, 0);
       const spin = source.angle + (r(6) - 0.5) * 8 * travel + Math.sin(Math.max(age, 0) * 3 + i) * 0.3;
       const length = (0.14 + r(7) * 0.12) * unit;

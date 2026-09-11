@@ -50,7 +50,9 @@ const membraneFragment = `
   varying vec2 vUv;
   void main() {
     vec4 skin = texture2D(map, vUv);
-    gl_FragColor = vec4(skin.rgb * tint, 0.96 * opacity);
+    // Darkened to near black: the drawn skin keeps its veins and wrinkles,
+    // but brown enough to see was asked to be blacker.
+    gl_FragColor = vec4(skin.rgb * tint * 0.3, 0.97 * opacity);
   }
 `;
 
@@ -71,7 +73,8 @@ const boneFragment = `
     vec4 bone = texture2D(map, vUv);
     float alpha = bone.a * opacity;
     if (alpha < 0.01) discard;
-    gl_FragColor = vec4(bone.rgb * tint, alpha);
+    // As dark as the skin around it, so only the lit ridge of each bone shows.
+    gl_FragColor = vec4(bone.rgb * tint * 0.45, alpha);
   }
 `;
 

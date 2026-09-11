@@ -1,9 +1,11 @@
 
-import React, { Fragment, Suspense, useState, useEffect, useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
+import React, { Fragment, Suspense, useState, useEffect, useMemo, useRef } from 'react';
+import type { ReactNode } from 'react';
+import { Canvas, createPortal, useFrame } from '@react-three/fiber';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
+import * as THREE from 'three';
 import type { EffectConfig, VFXModuleConfig } from './types';
-import { renderVFXModule } from './modules';
+import { UNLIT_MODULES, renderVFXModule } from './modules';
 import { devLog } from '../log';
 
 interface EffectCanvasProps {
@@ -64,7 +66,7 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
   }, [config]);
 
   if (!displayConfig) return null;
-  
+
   return (
     <div style={{
       position: 'fixed',
@@ -80,35 +82,73 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
     }}>
       <Canvas
         camera={{ position: [0, 0, 5], fov: 45 }}
-        gl={{ 
-            alpha: true, 
+        gl={{
+            alpha: true,
             antialias: false,
             powerPreference: "high-performance"
         }}
         onCreated={() => devLog("🎮 [VFX] WebGL Context Created")}
         style={{ pointerEvents: 'none' }}
       >
-        <ambientLight intensity={1.0} />
-        <pointLight position={[0, 2, 2]} intensity={1.0} color="#ffffff" />
-        
-        <Suspense fallback={null}>
-          <DynamicEffectRenderer
-            modules={displayConfig.modules}
-            runId={displayConfig.timestamp}
-            active={visible}
-          />
-          
-          <EffectComposer>
-            <Bloom 
-              intensity={1.0} 
-              luminanceThreshold={0.5}
-              mipmapBlur
-            />
-          </EffectComposer>
-        </Suspense>
+        <EffectScene modules={displayConfig.modules} runId={displayConfig.timestamp} active={visible} />
       </Canvas>
     </div>
   );
+};
+
+/**
+ * Everything inside the canvas: the effects, the bloom that makes light
+ * effects glow, and a second layer, drawn once the bloom is done, for solid
+ * effects that must not glow.
+ *
+ * Exported so it can be rendered off-screen, without the page, to check what
+ * the bloom does and does not touch.
+ */
+export const EffectScene: React.FC<{ modules: VFXModuleConfig[]; runId: number; active: boolean }> = ({
+  modules,
+  runId,
+  active,
+}) => (
+  <>
+    <ambientLight intensity={1.0} />
+    <pointLight position={[0, 2, 2]} intensity={1.0} color="#ffffff" />
+
+    <Suspense fallback={null}>
+      <DynamicEffectRenderer modules={modules} runId={runId} active={active} unlit={false} />
+
+      <EffectComposer>
+        <Bloom
+          intensity={1.0}
+          luminanceThreshold={0.5}
+          mipmapBlur
+        />
+      </EffectComposer>
+
+      <UnlitLayer>
+        <DynamicEffectRenderer modules={modules} runId={runId} active={active} unlit />
+      </UnlitLayer>
+    </Suspense>
+  </>
+);
+
+/**
+ * Solid effects, drawn straight onto the frame after the bloom has finished
+ * rather than through it.
+ *
+ * Bloom spreads light from anything bright, so white feathers sent through
+ * it lit up the whole screen. Its output also brightens colours on the way
+ * out, which washed out anything meant to be dark. Rendered here instead,
+ * they keep exactly the colours they were drawn in.
+ */
+const UnlitLayer: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const scene = useMemo(() => new THREE.Scene(), []);
+  // Priority 2: after the composer, which renders the lit scene at priority 1.
+  useFrame(({ gl, camera }) => {
+    gl.autoClear = false;
+    gl.clearDepth();
+    gl.render(scene, camera);
+  }, 2);
+  return <>{createPortal(children, scene)}</>;
 };
 
 /**
@@ -118,17 +158,23 @@ const EffectCanvas: React.FC<EffectCanvasProps> = ({ config, onComplete }) => {
  * the same module type at the same index — leaving its GSAP timeline and
  * animation clock mid-flight instead of restarting them.
  *
+ * Renders either the lit modules or the unlit ones, keeping each module's
+ * place in the full list for its key and seed, so moving a module between
+ * layers never changes how it is laid out.
+ *
  * Which component each module maps to lives in modules.tsx, so adding a module
  * does not mean editing this file.
  */
-const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], runId: number, active: boolean }> = ({ modules, runId, active }) => {
+const DynamicEffectRenderer: React.FC<{ modules: VFXModuleConfig[], runId: number, active: boolean, unlit: boolean }> = ({ modules, runId, active, unlit }) => {
   return (
     <group>
-      {modules.map((mod, index) => (
-        <Fragment key={`${runId}-${index}`}>
-          {renderVFXModule(mod, { active, seed: runId + index })}
-        </Fragment>
-      ))}
+      {modules.map((mod, index) =>
+        UNLIT_MODULES.has(mod.type) === unlit ? (
+          <Fragment key={`${runId}-${index}`}>
+            {renderVFXModule(mod, { active, seed: runId + index })}
+          </Fragment>
+        ) : null,
+      )}
     </group>
   );
 };

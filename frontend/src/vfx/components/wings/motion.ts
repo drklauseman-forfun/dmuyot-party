@@ -9,8 +9,8 @@ import gsap from 'gsap';
 
 export type WingMotion = 'burst' | 'gentle';
 
-/** Seconds a bursting wing stays curled up before it springs open. */
-export const BURST_DELAY = 0.12;
+/** Seconds a bursting wing stays curled up, and is seen to, before it opens. */
+export const BURST_DELAY = 0.25;
 
 export interface WingClock {
   /** 0–1, the fade in and out, driven by the effect's timing. */
@@ -72,15 +72,17 @@ export function useWingClock(active: boolean, fadeInDuration: number, duration: 
 /**
  * How open the wings are: 0 curled up, 1 spread.
  *
- * A burst holds them curled for a moment, then lets them go like a spring —
- * past fully open and settling back, which is what makes it read as a snap
- * rather than a slide — and folds them away again as the effect fades. Gentle
- * wings are open from the start and stay open while they fade.
+ * A burst holds them curled for a moment, then lets them go like a spring:
+ * fully spread after about half a second, a little past it at one, settled by
+ * two. The overshoot is what makes it read as a burst rather than a slide.
+ * The first version was spread in under a fifth of a second, and read as a
+ * jump. Burst wings fold away again as the effect fades; gentle wings are
+ * open from the start and stay open while they fade.
  */
 export function openAmount(motion: WingMotion, elapsed: number, strength: number, fadingOut: boolean): number {
   if (motion === 'gentle') return 1;
   const t = Math.max(0, elapsed - BURST_DELAY);
-  const open = 1 - Math.exp(-7 * t) * Math.cos(9 * t);
+  const open = 1 - Math.exp(-2.4 * t) * Math.cos(2.85 * t);
   return fadingOut ? open * strength : open;
 }
 
