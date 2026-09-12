@@ -554,7 +554,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
       size: {
         kind: 'number',
         label: 'Size',
-        guide: 'How big the wings are, compared to the screen. Around 0.35 spans a phone from edge to edge; larger runs off the sides.',
+        guide: 'How big the wings are, compared to the screen. Around 0.35 spans a phone from edge to edge; larger runs off the sides. On a wide screen the same size is a little smaller, so the wings fit above the results.',
         default: 0.34,
         min: 0.1,
         max: 1,
@@ -570,7 +570,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         step: 0.1,
         unit: '/s',
       },
-      center: { ...CENTER, default: [0.5, 0.62] },
+      center: { ...CENTER, default: [0.5, 0.76] },
       intensity: {
         kind: 'number',
         label: 'Strength',

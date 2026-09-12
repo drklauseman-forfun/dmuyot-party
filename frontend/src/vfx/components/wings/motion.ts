@@ -4,13 +4,30 @@ import gsap from 'gsap';
 
 /**
  * How the wings move, shared by both styles: the fade, how open they are at
- * each moment, and the wingbeat.
+ * each moment, and the wingbeat. Also how big one wing unit is on screen.
  */
 
 export type WingMotion = 'burst' | 'gentle';
 
 /** Seconds a bursting wing stays curled up, and is seen to, before it opens. */
 export const BURST_DELAY = 0.25;
+
+/**
+ * How much of the frame's height a wing unit may be measured against.
+ *
+ * Wings were sized by the frame's shorter side. A spread wing reaches about
+ * 1.1 units above its shoulders, and on a wide screen that made them too tall
+ * for the space above the results: raised to clear the text, their tips ran
+ * off the top. Measured against 0.62 of the height instead, they fit there at
+ * the default size and centre. A portrait phone is narrower than that, so it
+ * is still sized by its width, exactly as before.
+ */
+const HEIGHT_SHARE = 0.62;
+
+/** The length of one wing unit in the frame, for an authored `size`. */
+export function wingUnit(size: number, viewport: { width: number; height: number }): number {
+  return size * Math.min(viewport.width, viewport.height * HEIGHT_SHARE);
+}
 
 export interface WingClock {
   /** 0–1, the fade in and out, driven by the effect's timing. */

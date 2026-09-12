@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { openAmount, wingbeat } from './motion';
+import { openAmount, wingUnit, wingbeat } from './motion';
 import type { WingRigProps } from './motion';
 import { armPose, fingers, joints, membraneOutline } from './pose';
 import type { ArmPose, Vec2 } from './pose';
@@ -159,7 +159,7 @@ const LeatheryWings: React.FC<WingRigProps> = ({ color, size, flap, center, inte
     const { points } = membraneOutline(j, tips, sagFor(open));
 
     const { viewport } = state;
-    const unit = size * Math.min(viewport.width, viewport.height);
+    const unit = wingUnit(size, viewport);
     const originX = (centerX - 0.5) * viewport.width;
     const originY = (centerY - 0.5) * viewport.height;
 
