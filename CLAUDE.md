@@ -102,6 +102,17 @@ skeleton from `wings/pose.ts` every frame. `pose.ts` is plain arithmetic with no
 three.js, so a pose can be checked without drawing it. The wings and the eyes
 are the modules in `UNLIT_MODULES` — see the bloom trap below.
 
+Where the wings sit was measured against the results box, not guessed. At the
+old centre of 0.62 the spread wings covered its top on a phone, title included.
+At 0.76, open wings clear the title on every size tried, from 375×667 to
+1920×1080, and the box itself on most; a burst's curled-up start and the
+feathers it throws still cross the title for a moment. No centre worked on a
+wide screen, because wings sized by the shorter side were taller than the space
+above the box, so `wingUnit` in `wings/motion.ts` sizes those by 0.62 of the
+height and leaves portrait phones as they were. Before moving either number,
+re-measure: an off-screen render of the wings against the bounding box of a
+rendered `ResultsModal`.
+
 The seven הנרץ' effects share a shape, so `registry.ts` has two builders,
 `wraithModules` and `wraithPresentation`. Seven near-identical copies is the
 point at which that stopped being premature. An effect that wants something
