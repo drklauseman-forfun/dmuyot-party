@@ -99,8 +99,8 @@ feather shapes, which cost too much to compute for every pixel. So
 `vfx/components/wings/textures.ts` draws a feather, a patch of skin and a bone
 once on a canvas, and each style places instanced copies of them along a
 skeleton from `wings/pose.ts` every frame. `pose.ts` is plain arithmetic with no
-three.js, so a pose can be checked without drawing it. The wings are also the
-one module in `UNLIT_MODULES` — see the bloom trap below.
+three.js, so a pose can be checked without drawing it. The wings and the eyes
+are the modules in `UNLIT_MODULES` — see the bloom trap below.
 
 The seven הנרץ' effects share a shape, so `registry.ts` has two builders,
 `wraithModules` and `wraithPresentation`. Seven near-identical copies is the
@@ -372,11 +372,6 @@ first three days it ran 11 times in all, 3, 5 and 3 a day, against about 96
 scheduled slots a day. Treat it as best-effort. Any request wakes the instance,
 so its 404 from the stale build still counts. An outside pinger, or moving the
 backend to Vercel, was offered and not yet chosen.
-
-**Eyes still glow.** `eyes` are drawn as real eyes but still go through the
-bloom, so their whites carry a soft halo — the reason `wings` were moved into
-`UNLIT_MODULES`. Whether the eyes should follow was asked and not yet answered;
-moving them is one entry in that set.
 
 **Home-screen widgets need a native app and can never show the wheel.**
 Researched properly rather than assumed:

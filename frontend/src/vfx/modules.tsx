@@ -37,10 +37,10 @@ export interface VFXRuntime {
 
 /**
  * Modules drawn after the bloom instead of through it: solid, realistic ones
- * that must not glow. Bloom lit up the whole screen around white feathers.
- * See EffectScene in EffectCanvas.tsx.
+ * that must not glow. Bloom lit up the whole screen around white feathers, and
+ * put a halo round the whites of the eyes. See EffectScene in EffectCanvas.tsx.
  */
-export const UNLIT_MODULES: ReadonlySet<VFXModuleType> = new Set<VFXModuleType>(['wings']);
+export const UNLIT_MODULES: ReadonlySet<VFXModuleType> = new Set<VFXModuleType>(['wings', 'eyes']);
 
 /** A module's own parameters, without the discriminant used to select it. */
 type ParamsOf<K extends VFXModuleType> = Omit<Extract<VFXModuleConfig, { type: K }>, 'type'>;
