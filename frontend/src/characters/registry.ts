@@ -361,7 +361,7 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
         color: '#ffffff',
         size: 0.34,
         flap: 0.5,
-        center: [0.5, 0.62],
+        center: [0.5, 0.76],
         intensity: 1,
         fadeInDuration: 0.6,
         duration: 4,
@@ -371,7 +371,7 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       // glancing about on its own.
       {
         type: 'eyes',
-        count: 10,
+        count: 20,
         size: 0.12,
         irisColor: '#4a2a14',
         gaze: 'wander',
