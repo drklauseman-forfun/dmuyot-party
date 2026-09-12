@@ -230,7 +230,7 @@ new triggers against the real document before trusting them. When these notes
 were first written the document had 941 characters, and each of the eight
 triggers of the time — `דיבי` and the seven הנרץ' — matched exactly one of them.
 The four added since, `סאם (מגהברס 1)`, `סאלין (הכל)`, `איש הזיקוקים` and
-`אבלנין אלדורה`, have been checked against each other but not against the
+`אבלין אלדורה`, have been checked against each other but not against the
 document. The apostrophe in `הנרץ'` is **U+0027**, the plain ASCII one, not the
 visually identical Hebrew geresh.
 

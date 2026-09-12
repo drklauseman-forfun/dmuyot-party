@@ -339,11 +339,11 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
     ],
   },
   {
-    id: 'angel-evlanin',
+    id: 'angel-evelyn',
     // Two words and long enough to stand alone, like איש הזיקוקים.
-    triggers: [{ pattern: 'אבלנין אלדורה', match: 'prefix' }],
+    triggers: [{ pattern: 'אבלין אלדורה', match: 'prefix' }],
     presentation: {
-      title: '👁️ אבלנין אלדורה 👁️',
+      title: '👁️ אבלין אלדורה 👁️',
       // Ivory and old gold on a warm dark ground: an angel, but not a bright one.
       accentColor: '#f1e4c3',
       backgroundColor: 'rgba(18, 13, 9, 0.95)',
