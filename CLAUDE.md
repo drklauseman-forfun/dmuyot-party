@@ -139,7 +139,11 @@ setting under it.
   animation would have taken everyone's with it. The library is a
   prototype-less object because usernames like `__proto__` are typed by people.
 - **Previews bypass the animations setting.** `previewAnimation` in `App.tsx`
-  hands modules straight to the canvas, which sits above every modal.
+  hands modules straight to the canvas, which sits above every modal. That
+  hides a switched-off setting: on 2026-09-13 a new built-in animation seemed
+  broken on the owner's phone because Enable Animations was off, while every
+  preview in the builder still played. Ask about that switch before debugging
+  a trigger.
 - **"Clear saved data" on the error screen deletes animations too** — they
   share the `dmuyot_party_` prefix. Until there is a server, export is the only
   backup.
@@ -233,6 +237,15 @@ The four added since, `סאם (מגהברס 1)`, `סאלין (הכל)`, `איש 
 `אבלין אלדורה`, have been checked against each other but not against the
 document. The apostrophe in `הנרץ'` is **U+0027**, the plain ASCII one, not the
 visually identical Hebrew geresh.
+
+Both sides of a match now go through `comparable()` in `registry.ts` first,
+which drops direction marks, zero-width characters and vowel points, collapses
+runs of spaces, reads a geresh or curly apostrophe as the plain one, and strips
+anything before the first letter or digit — including the `- ` the stale Render
+backend leaves on a line written `12 - Name`. Run through both real documents,
+it changed nothing except catching one דיבי line that starts with `*   **"`.
+A pattern still has to be spelled the same, and a word in front of a name still
+stops a prefix match.
 
 **Sound ticks are derived from the wheel's easing curve.** `spinCurve.ts` owns
 the cubic-bezier that the CSS transition uses *and* the inverse the scheduler
