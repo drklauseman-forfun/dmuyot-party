@@ -149,6 +149,10 @@ const fragmentShader = `
     }
 
     gl_FragColor = vec4(outRgb, outAlpha * clamp(strength * 2.0, 0.0, 1.0) * intensity);
+    // Drawn after the bloom, straight to the screen, where nothing else
+    // converts these linear colours for display. Without this the brown iris
+    // came out near black.
+    #include <colorspace_fragment>
   }
 `;
 

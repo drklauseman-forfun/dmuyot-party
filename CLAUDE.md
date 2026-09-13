@@ -215,6 +215,15 @@ the bloom has finished, so they keep exactly the colours they were drawn in.
 That layer always sits on top of the light effects. A new solid module belongs
 in that list.
 
+Nothing converts colours in that layer either: what a shader there writes is
+what the screen shows. The wings want exactly that, since their textures are
+drawn on a canvas in screen colours already. A shader that works in linear
+colour does not — `THREE.Color` turns a hex into linear values — and once the
+eyes moved there their `#4a2a14` iris came out as `#0b0401`, near black, until
+`VFXEyes` ended its shader with `#include <colorspace_fragment>`. The wings'
+`color` tint goes in through `THREE.Color` too, so a tint other than white
+draws darker than the one picked.
+
 **`center` runs bottom-up.** The black hole, the clock and the wings all take
 `center` as fractions of the frame, but the second number is measured from the
 **bottom**: three.js gives a plane's top edge `v = 1` (see `PlaneGeometry.js`).
