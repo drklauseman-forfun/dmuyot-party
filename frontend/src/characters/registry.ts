@@ -5,6 +5,7 @@ import type {
   ResolvedPresentation,
 } from './types';
 import type { VFXModuleConfig } from '../vfx/types';
+import { MEME_GIFS } from '../vfx/giphy';
 import { TEST_EFFECTS } from './testEffects';
 
 /*
@@ -380,6 +381,51 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
         fadeInDuration: 0.6,
         duration: 4,
         fadeDuration: 1.5,
+      },
+    ],
+  },
+  {
+    id: 'meme-berry',
+    // Two words, like איש הזיקוקים. Not in either document yet, so unchecked
+    // against the real list; nothing there begins with it.
+    triggers: [{ pattern: 'ברי אזומה', match: 'prefix' }],
+    presentation: {
+      title: '😂 ברי אזומה 😂',
+      // Meme captions: yellow and white letters with a hard black outline.
+      accentColor: '#ffe14d',
+      backgroundColor: 'rgba(12, 12, 12, 0.94)',
+      glow: '0 0 40px #ffe14d99',
+      fontFamily: "Impact, 'Arial Black', sans-serif",
+      letterSpacing: '1px',
+      textShadow: '-2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000',
+      shake: true,
+    },
+    // A longer hold than most, so memes on a slow connection still get their turn.
+    modules: [
+      // A random five of the hand-picked memes, a different five every time.
+      {
+        type: 'memes',
+        gifs: [...MEME_GIFS],
+        count: 5,
+        size: 0.3,
+        tilt: 12,
+        intensity: 1,
+        fadeInDuration: 0.4,
+        duration: 5,
+        fadeDuration: 1.2,
+      },
+      {
+        type: 'words',
+        words: ['גרומבה', 'scomba'],
+        count: 14,
+        colors: ['#ffffff', '#ffe14d', '#7df9ff'],
+        outlineColor: '#000000',
+        size: 0.075,
+        tilt: 25,
+        intensity: 1,
+        fadeInDuration: 0.4,
+        duration: 5,
+        fadeDuration: 1.2,
       },
     ],
   },
