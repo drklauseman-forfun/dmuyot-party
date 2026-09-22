@@ -1,10 +1,9 @@
-import { useEffect, useRef } from 'react';
-import type { RefObject } from 'react';
-import gsap from 'gsap';
+import { useFadeClock } from '../fadeClock';
+import type { FadeClock } from '../fadeClock';
 
 /**
- * How the wings move, shared by both styles: the fade, how open they are at
- * each moment, and the wingbeat. Also how big one wing unit is on screen.
+ * How the wings move, shared by both styles: how open they are at each
+ * moment, and the wingbeat. Also how big one wing unit is on screen.
  */
 
 export type WingMotion = 'burst' | 'gentle';
@@ -29,14 +28,9 @@ export function wingUnit(size: number, viewport: { width: number; height: number
   return size * Math.min(viewport.width, viewport.height * HEIGHT_SHARE);
 }
 
-export interface WingClock {
-  /** 0–1, the fade in and out, driven by the effect's timing. */
-  strength: RefObject<{ value: number }>;
-  /** Seconds since the first frame was drawn. */
-  elapsed: RefObject<number>;
-  /** Call once per drawn frame. The first call starts the fade. */
-  tick: (delta: number) => void;
-}
+/** The fade every frame-driven effect shares; see fadeClock.ts. */
+export type WingClock = FadeClock;
+export const useWingClock = useFadeClock;
 
 /** What a wing style needs to draw itself. */
 export interface WingRigProps {
@@ -49,41 +43,6 @@ export interface WingRigProps {
   clock: WingClock;
   /** Seconds after the first frame at which the fade out begins. */
   holdEnds: number;
-}
-
-/**
- * The fade, built paused and started on the first drawn frame, as every
- * effect's is — see VFXClock for why.
- */
-export function useWingClock(active: boolean, fadeInDuration: number, duration: number, fadeDuration: number): WingClock {
-  const strength = useRef({ value: 0 });
-  const elapsed = useRef(0);
-  const timeline = useRef<gsap.core.Timeline | null>(null);
-  const started = useRef(false);
-
-  useEffect(() => {
-    if (!active) return;
-    const tl = gsap.timeline({ paused: true });
-    tl.to(strength.current, { value: 1, duration: fadeInDuration, ease: 'power1.inOut' });
-    tl.to({}, { duration });
-    tl.to(strength.current, { value: 0, duration: fadeDuration, ease: 'power2.inOut' });
-    timeline.current = tl;
-    return () => {
-      tl.kill();
-      timeline.current = null;
-      started.current = false;
-    };
-  }, [active, fadeInDuration, duration, fadeDuration]);
-
-  const tick = (delta: number) => {
-    if (timeline.current && !started.current) {
-      started.current = true;
-      timeline.current.play();
-    }
-    elapsed.current += delta;
-  };
-
-  return { strength, elapsed, tick };
 }
 
 /**
