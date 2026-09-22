@@ -813,7 +813,8 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         guide:
           'The GIFs to pick from — it starts with a set of well-known memes. To add one, find it on giphy.com, copy its address or use its Copy link button, and paste it here. Each time, a random few from the list play.',
         default: [...MEME_GIFS],
-        maxItems: 24,
+        // Above the starting list, so it survives sanitising whole with room to add.
+        maxItems: 48,
       },
       count: {
         kind: 'number',

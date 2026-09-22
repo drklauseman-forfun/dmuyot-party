@@ -69,7 +69,9 @@ export function giphyStillUrl(id: string): string {
 
 /**
  * Well-known memes, picked by hand and each checked by eye. The memes effect
- * starts with this list, and ברי אזומה uses it.
+ * starts with this list, and בארי אזומה uses it. Left out on purpose: green
+ * screen versions, which show a green box, and anything much over half a
+ * megabyte, which would arrive late on phone data.
  */
 export const MEME_GIFS: readonly string[] = [
   'NTur7XlVDUdqM', // This is fine
@@ -89,4 +91,22 @@ export const MEME_GIFS: readonly string[] = [
   'BmmfETghGOPrW', // Zach Galifianakis calculating
   'lzYEj4dw7rcJJCsvjo', // Distracted boyfriend
   'b9aScKLxdv0Y0', // Orson Welles, slow clap
+  'xTiTnoORMNaANLYrHW', // Drake, Hotline Bling
+  'we4Hp4J3n7riw', // Gordon Ramsay, it's raw
+  'COYGe9rZvfiaQ', // Homer backing into the bushes
+  'dkBXo121oUIE', // Jackie Chan confused
+  'fXJyMfUdqVCMPAnPJM', // Kombucha girl
+  'JYZ397GsFrFtu', // Michael Scott, no
+  'OK27wINdQS5YQ', // Kramer, mind blown
+  'xL7PDV9frcudO', // Nick Young, question marks
+  'COYggJB0KnADm', // Oprah, you get a car
+  '5DCLZUqb0ImZy', // Roll Safe, think about it
+  'l44Q6HJ7lkiweTQ6k', // Sad Pablo Escobar
+  'cxnvN8s3FVNII', // Steve Harvey, what
+  'xUOxeZn47mrdabqDNC', // Thanos
+  '4g6xgP7FXjy12', // The Rock
+  'oW4csEbiMzVjq', // Tobey Maguire's Spider-Man strut
+  'RIq4eoF2iw3eZeJMtv', // Woman yelling at a cat
+  '11qCjC856PSmnm', // Elmo in flames
+  'V1dH38rUl9yX7xU8nh', // Keanu, you're breathtaking
 ];
