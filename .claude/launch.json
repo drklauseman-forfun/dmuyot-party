@@ -12,6 +12,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "preview", "--prefix", "frontend", "--", "--port", "4173", "--strictPort"],
       "port": 4173
+    },
+    {
+      "name": "dmuyot-backend",
+      "runtimeExecutable": "py",
+      "runtimeArgs": ["-m", "uvicorn", "main:app", "--app-dir", "backend", "--port", "8000"],
+      "port": 8000
     }
   ]
 }

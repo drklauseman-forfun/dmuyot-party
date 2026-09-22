@@ -82,7 +82,7 @@ stores every parameter explicitly, so drift cannot change what it renders, but
 it would make the builder's starting values wrong.
 
 Modules today: `glow`, `edgeGlow`, `sparkles`, `fire`, `beams`, `blackHole`,
-`clock`, `fireworks`, `wings`, `eyes`, `slashes`.
+`clock`, `fireworks`, `wings`, `eyes`, `slashes`, `words`, `memes`.
 `beams` has no built-in animation using it but is a building block the builder
 offers. `fire` is **retired**: it did not look like flames, so
 `RETIRED_EFFECTS` in `vfx/schema.ts` keeps it out of the builder's list. Its
@@ -99,8 +99,9 @@ feather shapes, which cost too much to compute for every pixel. So
 `vfx/components/wings/textures.ts` draws a feather, a patch of skin and a bone
 once on a canvas, and each style places instanced copies of them along a
 skeleton from `wings/pose.ts` every frame. `pose.ts` is plain arithmetic with no
-three.js, so a pose can be checked without drawing it. The wings and the eyes
-are the modules in `UNLIT_MODULES` — see the bloom trap below.
+three.js, so a pose can be checked without drawing it. The wings, the eyes,
+the words and the memes are the modules in `UNLIT_MODULES` — see the bloom trap
+below.
 
 Where the wings sit was measured against the results box, not guessed. At the
 old centre of 0.62 the spread wings covered its top on a phone, title included.
@@ -112,6 +113,27 @@ above the box, so `wingUnit` in `wings/motion.ts` sizes those by 0.62 of the
 height and leaves portrait phones as they were. Before moving either number,
 re-measure: an off-screen render of the wings against the bounding box of a
 rendered `ResultsModal`.
+
+`words` and `memes` are frame-driven too, and share two helpers:
+`components/fadeClock.ts` (the fade every such effect goes through, which the
+wings now use as well) and `components/scatter.ts`, which finds random spots
+clear of the middle where the results sit. A box that cannot fit clear of it at
+all is shrunk step by step until it does: on a landscape screen the bands above
+and below the results are short, and at first every meme was silently dropped
+there — the preview showed words and nothing else. Off-screen checks at phone
+size had passed, so check more than one shape.
+
+`memes` plays GIFs from Giphy, and the builder takes Giphy links, so two things
+are deliberate. Only ids are stored: `vfx/giphy.ts` reduces any shape of Giphy
+link to its id and refuses everything else, and builds the only address ever
+requested from it, so a shared animation cannot point phones at another site.
+And nothing is copied into this repository — the same reason as the audio
+licence rule below. The files are Giphy's 200-pixel MP4 versions, tens of
+kilobytes each, played as video textures: WebGL cannot animate a GIF, and
+decoding one would need another library. They download when the effect starts
+and pop in once loaded. `MEME_GIFS` is the hand-picked list, each checked by
+eye. Untested: iPhones in Low Power Mode may refuse to play them, as they do
+other videos that start themselves.
 
 The seven הנרץ' effects share a shape, so `registry.ts` has two builders,
 `wraithModules` and `wraithPresentation`. Seven near-identical copies is the
@@ -222,7 +244,15 @@ colour does not — `THREE.Color` turns a hex into linear values — and once th
 eyes moved there their `#4a2a14` iris came out as `#0b0401`, near black, until
 `VFXEyes` ended its shader with `#include <colorspace_fragment>`. The wings'
 `color` tint goes in through `THREE.Color` too, so a tint other than white
-draws darker than the one picked.
+draws darker than the one picked. The words and memes use `MeshBasicMaterial`,
+which converts for itself: their textures are marked `SRGBColorSpace`, and the
+materials `toneMapped: false`, since the canvas turns tone mapping on and it
+dulls every colour — white words measured exactly white with both set.
+
+**Video textures only refresh when the browser announces a frame.** three.js
+waits for `requestVideoFrameCallback`, which does not fire in a page that is
+not on screen: the meme videos loaded and played, and nothing was drawn.
+`VFXMemes` marks each texture for upload every frame instead.
 
 **`center` runs bottom-up.** The black hole, the clock and the wings all take
 `center` as fractions of the frame, but the second number is measured from the
@@ -253,9 +283,11 @@ burden: a shorter pattern matches more, and a collision fails silently. Check
 new triggers against the real document before trusting them. When these notes
 were first written the document had 941 characters, and each of the eight
 triggers of the time — `דיבי` and the seven הנרץ' — matched exactly one of them.
-The four added since, `סאם (מגהברס 1)`, `סאלין (הכל)`, `איש הזיקוקים` and
+The four added next, `סאם (מגהברס 1)`, `סאלין (הכל)`, `איש הזיקוקים` and
 `אבלין אלדורה`, have been checked against each other but not against the
-document. The apostrophe in `הנרץ'` is **U+0027**, the plain ASCII one, not the
+document. `ברי אזומה`, added on 2026-09-22, was run through both real documents
+(154 and 945 characters): no line begins with it, and nothing there is that
+character yet, so it has matched nothing real so far. The apostrophe in `הנרץ'` is **U+0027**, the plain ASCII one, not the
 visually identical Hebrew geresh.
 
 Both sides of a match now go through `comparable()` in `registry.ts` first,
@@ -305,10 +337,13 @@ broken:
 - **Screenshots are unreliable** during heavy WebGL use: mistimed, cropped, or
   showing a white frame the code cannot produce. Confirm anything surprising on
   a clean reload before acting on it, and prefer measuring the DOM.
-- **`.claude/launch.json` has two servers.** `dmuyot-frontend` is the dev
+- **`.claude/launch.json` has three servers.** `dmuyot-frontend` is the dev
   server on :5173. `dmuyot-frontend-preview` serves the production build on
   :4173, so run `npm run build` first. Use it for anything that differs between
   the two — the developer sandbox animations, for one, exist only in dev.
+  `dmuyot-backend` runs the API on :8000, which the dev server calls: without
+  it no list loads, and the builder refuses to start an animation until one
+  has.
 - **Vite's HMR cache can serve stale modules** after a file is deleted, giving a
   blank page and a bogus `does not provide an export named …` for an export that
   plainly exists. `rm -rf frontend/node_modules/.vite` and restart.
@@ -326,6 +361,13 @@ broken:
   wait on `setTimeout` there; yield with a `MessageChannel` instead. To test
   what the bloom does, render `EffectScene` from `EffectCanvas.tsx`, not a
   single component.
+- **The live canvas can be read too.** Its root is in the fiber module's
+  `_roots` map, keyed by the canvas element; a callback registered with
+  `store.getState().internal.subscribe(ref, 3, store)` runs after the unlit
+  layer, and `readPixels` there sees the finished frame. In a hidden pane the
+  page draws about once a second and GSAP's lag smoothing advances each of
+  those frames by only 33ms, so fades crawl and everything reads faint: judge
+  what is drawn and where, not how strongly.
 
 ## Repository state
 
