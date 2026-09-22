@@ -387,10 +387,11 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
   {
     id: 'meme-berry',
     // Two words, like איש הזיקוקים. Not in either document yet, so unchecked
-    // against the real list; nothing there begins with it.
-    triggers: [{ pattern: 'ברי אזומה', match: 'prefix' }],
+    // against the real list; nothing there begins with it. First spelled
+    // ברי אזומה by mistake.
+    triggers: [{ pattern: 'בארי אזומה', match: 'prefix' }],
     presentation: {
-      title: '😂 ברי אזומה 😂',
+      title: 'בארי אזומה',
       // Meme captions: yellow and white letters with a hard black outline.
       accentColor: '#ffe14d',
       backgroundColor: 'rgba(12, 12, 12, 0.94)',
@@ -402,11 +403,12 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
     },
     // A longer hold than most, so memes on a slow connection still get their turn.
     modules: [
-      // A random five of the hand-picked memes, a different five every time.
+      // As many at once as the effect allows, a different eight of the
+      // hand-picked memes every time.
       {
         type: 'memes',
         gifs: [...MEME_GIFS],
-        count: 5,
+        count: 8,
         size: 0.3,
         tilt: 12,
         intensity: 1,

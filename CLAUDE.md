@@ -285,9 +285,10 @@ were first written the document had 941 characters, and each of the eight
 triggers of the time — `דיבי` and the seven הנרץ' — matched exactly one of them.
 The four added next, `סאם (מגהברס 1)`, `סאלין (הכל)`, `איש הזיקוקים` and
 `אבלין אלדורה`, have been checked against each other but not against the
-document. `ברי אזומה`, added on 2026-09-22, was run through both real documents
-(154 and 945 characters): no line begins with it, and nothing there is that
-character yet, so it has matched nothing real so far. The apostrophe in `הנרץ'` is **U+0027**, the plain ASCII one, not the
+document. `בארי אזומה`, added on 2026-09-22 (first mistyped `ברי אזומה`), was run
+through both real documents (154 and 945 characters): no line begins with it,
+and nothing there is that character yet, so it has matched nothing real so far.
+The nearest, `השרביט של בארי (...)`, does not start with it. The apostrophe in `הנרץ'` is **U+0027**, the plain ASCII one, not the
 visually identical Hebrew geresh.
 
 Both sides of a match now go through `comparable()` in `registry.ts` first,
