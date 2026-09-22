@@ -10,6 +10,8 @@ import VFXFireworks from './components/VFXFireworks';
 import VFXWings from './components/VFXWings';
 import VFXEyes from './components/VFXEyes';
 import VFXSlashes from './components/VFXSlashes';
+import VFXWords from './components/VFXWords';
+import VFXMemes from './components/VFXMemes';
 import type { VFXModuleConfig, VFXModuleType } from './types';
 
 /**
@@ -40,7 +42,12 @@ export interface VFXRuntime {
  * that must not glow. Bloom lit up the whole screen around white feathers, and
  * put a halo round the whites of the eyes. See EffectScene in EffectCanvas.tsx.
  */
-export const UNLIT_MODULES: ReadonlySet<VFXModuleType> = new Set<VFXModuleType>(['wings', 'eyes']);
+export const UNLIT_MODULES: ReadonlySet<VFXModuleType> = new Set<VFXModuleType>([
+  'wings',
+  'eyes',
+  'words',
+  'memes',
+]);
 
 /** A module's own parameters, without the discriminant used to select it. */
 type ParamsOf<K extends VFXModuleType> = Omit<Extract<VFXModuleConfig, { type: K }>, 'type'>;
@@ -71,6 +78,8 @@ const RENDERERS: ModuleRenderers = {
   wings: (params, { active }) => <VFXWings {...params} active={active} />,
   eyes: (params, { active, seed }) => <VFXEyes {...params} active={active} seed={seed} />,
   slashes: (params, { active, seed }) => <VFXSlashes {...params} active={active} seed={seed} />,
+  words: (params, { active, seed }) => <VFXWords {...params} active={active} seed={seed} />,
+  memes: (params, { active, seed }) => <VFXMemes {...params} active={active} seed={seed} />,
 };
 
 /**

@@ -247,6 +247,38 @@ export interface SlashesParams extends VFXTiming {
   intensity?: number;
 }
 
+/** Words popping up around the frame, lettered like meme captions. */
+export interface WordsParams extends VFXTiming {
+  /** What to write. The words take turns, so each one appears about as often. */
+  words?: string[];
+  /** How many appear over the whole effect. They keep clear of the middle. */
+  count?: number;
+  /** Letter colours; each word picks one at random. */
+  colors?: string[];
+  /** The thick edge round every letter. */
+  outlineColor?: string;
+  /** Height of the letters, as a fraction of the frame's shorter side. */
+  size?: number;
+  /** Largest tilt either way, in degrees. */
+  tilt?: number;
+  /** Peak opacity, 0–1. */
+  intensity?: number;
+}
+
+/** Meme GIFs playing at random spots around the frame. */
+export interface MemesParams extends VFXTiming {
+  /** Giphy ids to pick from. A different few are chosen every time. */
+  gifs?: string[];
+  /** How many play at once. */
+  count?: number;
+  /** The longer side of each, as a fraction of the frame's shorter side. */
+  size?: number;
+  /** Largest tilt either way, in degrees. */
+  tilt?: number;
+  /** Peak opacity, 0–1. */
+  intensity?: number;
+}
+
 /**
  * One module in an effect.
  *
@@ -266,7 +298,9 @@ export type VFXModuleConfig =
   | ({ type: 'fireworks' } & FireworksParams)
   | ({ type: 'wings' } & WingsParams)
   | ({ type: 'eyes' } & EyesParams)
-  | ({ type: 'slashes' } & SlashesParams);
+  | ({ type: 'slashes' } & SlashesParams)
+  | ({ type: 'words' } & WordsParams)
+  | ({ type: 'memes' } & MemesParams);
 
 export type VFXModuleType = VFXModuleConfig['type'];
 

@@ -1,7 +1,9 @@
+import { MEME_GIFS } from './giphy';
 import { sanitizeValue } from './params';
 import type {
   ColorListSpec,
   ColorSpec,
+  GiphyListSpec,
   HandListSpec,
   NumberSpec,
   ParamSpec,
@@ -9,6 +11,7 @@ import type {
   ScaleSpec,
   SelectOption,
   SelectSpec,
+  TextListSpec,
   Vec3Spec,
 } from './params';
 import type { ClockHand, VFXModuleConfig, VFXModuleType } from './types';
@@ -38,6 +41,8 @@ type ParamsOf<K extends VFXModuleType> = Omit<Extract<VFXModuleConfig, { type: K
 /**
  * The spec a parameter's TypeScript type allows. The tuples are tested before
  * the scale union, which a three-number tuple would otherwise also satisfy.
+ * A list of strings may be colours, words or GIFs; the type cannot tell those
+ * apart, just as a string may be a colour or a choice.
  */
 type SpecFor<V> = [V] extends [number]
   ? NumberSpec
@@ -50,7 +55,7 @@ type SpecFor<V> = [V] extends [number]
         : [V] extends [ClockHand[]]
           ? HandListSpec
           : [V] extends [string[]]
-            ? ColorListSpec
+            ? ColorListSpec | TextListSpec | GiphyListSpec
             : [V] extends [string]
               ? ColorSpec | SelectSpec<V>
               : never;
@@ -721,6 +726,128 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         kind: 'number',
         label: 'Strength',
         guide: 'From 0 (invisible) to 1 (full).',
+        default: 1,
+        min: 0,
+        max: 1,
+        step: 0.05,
+      },
+      ...TIMING_SCHEMA,
+    },
+  },
+
+  words: {
+    label: 'Words',
+    description: 'Words that pop up around the screen, lettered like meme captions.',
+    params: {
+      words: {
+        kind: 'textList',
+        label: 'Words',
+        guide: 'Up to eight, in any language. They take turns, so each one appears about as often as the others.',
+        default: ['WOW', 'OMG'],
+        maxItems: 8,
+        maxLength: 24,
+        itemLabel: 'word',
+      },
+      count: {
+        kind: 'number',
+        label: 'Amount',
+        guide: 'How many words appear in all, one after another. They keep clear of the middle of the screen, so if there is not room, some overlap.',
+        default: 12,
+        min: 1,
+        max: 40,
+        step: 1,
+        integer: true,
+      },
+      colors: {
+        kind: 'colorList',
+        label: 'Colours',
+        guide: 'Up to four. Each word picks one at random.',
+        default: ['#ffffff'],
+        maxItems: 4,
+      },
+      outlineColor: {
+        kind: 'color',
+        label: 'Outline',
+        guide: 'The thick edge round every letter. Black is the classic meme look.',
+        default: '#000000',
+      },
+      size: {
+        kind: 'number',
+        label: 'Size',
+        guide: 'How tall the letters are, compared to the screen. A long word is shrunk to fit if it would not.',
+        default: 0.07,
+        min: 0.02,
+        max: 0.2,
+        step: 0.005,
+      },
+      tilt: {
+        kind: 'number',
+        label: 'Tilt',
+        guide: 'The most a word can lean either way. 0 keeps them all level.',
+        default: 20,
+        min: 0,
+        max: 60,
+        step: 1,
+        unit: '°',
+      },
+      intensity: {
+        kind: 'number',
+        label: 'Strength',
+        guide: 'From 0 (invisible) to 1 (solid).',
+        default: 1,
+        min: 0,
+        max: 1,
+        step: 0.05,
+      },
+      ...TIMING_SCHEMA,
+    },
+  },
+
+  memes: {
+    label: 'Memes',
+    description: 'Meme GIFs playing at random spots around the screen, a different few each time.',
+    params: {
+      gifs: {
+        kind: 'giphyList',
+        label: 'GIFs',
+        guide:
+          'The GIFs to pick from — it starts with a set of well-known memes. To add one, find it on giphy.com, copy its address or use its Copy link button, and paste it here. Each time, a random few from the list play.',
+        default: [...MEME_GIFS],
+        maxItems: 24,
+      },
+      count: {
+        kind: 'number',
+        label: 'At once',
+        guide: 'How many play at the same time. They keep clear of the middle of the screen.',
+        default: 4,
+        min: 1,
+        max: 8,
+        step: 1,
+        integer: true,
+      },
+      size: {
+        kind: 'number',
+        label: 'Size',
+        guide: 'How big each one is, compared to the screen.',
+        default: 0.3,
+        min: 0.1,
+        max: 0.6,
+        step: 0.01,
+      },
+      tilt: {
+        kind: 'number',
+        label: 'Tilt',
+        guide: 'The most one can lean either way. 0 keeps them all level.',
+        default: 10,
+        min: 0,
+        max: 45,
+        step: 1,
+        unit: '°',
+      },
+      intensity: {
+        kind: 'number',
+        label: 'Strength',
+        guide: 'From 0 (invisible) to 1 (solid).',
         default: 1,
         min: 0,
         max: 1,
