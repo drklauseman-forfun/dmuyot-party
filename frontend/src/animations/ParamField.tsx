@@ -1,14 +1,17 @@
 import { useState } from 'react';
+import { giphyId, giphyStillUrl } from '../vfx/giphy';
 import { sanitizeValue } from '../vfx/params';
 import type {
   ColorListSpec,
   ColorSpec,
+  GiphyListSpec,
   HandListSpec,
   NumberSpec,
   ParamSpec,
   PointSpec,
   ScaleSpec,
   SelectSpec,
+  TextListSpec,
   TextSpec,
   Vec3Spec,
 } from '../vfx/params';
@@ -395,6 +398,140 @@ function ColorListInput({
   );
 }
 
+/**
+ * Takes what is typed as it is, blanks included, so a word can be cleared and
+ * retyped; the builder's sanitising drops a word left empty.
+ */
+function TextListInput({
+  id,
+  spec,
+  value,
+  onChange,
+}: {
+  id: string;
+  spec: TextListSpec;
+  value: string[];
+  onChange: (v: string[]) => void;
+}) {
+  return (
+    <div className="param-subgroup">
+      {value.map((text, i) => (
+        <div key={i} className="param-row">
+          <input
+            id={i === 0 ? id : `${id}-${i}`}
+            type="text"
+            className="param-text"
+            aria-label={`${spec.itemLabel} ${i + 1}`}
+            value={text}
+            // Counted generously, as in TextInput; the sanitiser has the final say.
+            maxLength={spec.maxLength * 2}
+            onChange={(e) => onChange(value.map((item, j) => (j === i ? e.target.value : item)))}
+          />
+          {value.length > 1 && (
+            <button
+              type="button"
+              className="param-remove"
+              aria-label={`Remove ${spec.itemLabel} ${i + 1}`}
+              onClick={() => onChange(value.filter((_, j) => j !== i))}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      ))}
+      {value.length < spec.maxItems && (
+        <button type="button" className="param-add" onClick={() => onChange([...value, ''])}>
+          + Add {spec.itemLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The GIFs as thumbnails, and a box to paste a Giphy link into. Only what
+ * giphyId recognises is added, so the list never holds anything but ids.
+ */
+function GiphyListInput({
+  id,
+  spec,
+  value,
+  onChange,
+}: {
+  id: string;
+  spec: GiphyListSpec;
+  value: string[];
+  onChange: (v: string[]) => void;
+}) {
+  const [link, setLink] = useState('');
+  const [problem, setProblem] = useState<string | null>(null);
+  const add = () => {
+    if (link.trim() === '') return;
+    const found = giphyId(link);
+    if (!found) {
+      setProblem("That doesn't look like a Giphy link. Open the GIF on giphy.com and copy the address, or use its Copy link button.");
+    } else if (value.includes(found)) {
+      setProblem('That GIF is already in the list.');
+    } else {
+      onChange([...value, found]);
+      setLink('');
+      setProblem(null);
+    }
+  };
+  return (
+    <div className="param-subgroup">
+      <div className="param-gifs">
+        {value.map((gif, i) => (
+          <div key={gif} className="param-gif">
+            <img src={giphyStillUrl(gif)} alt={`GIF ${i + 1}`} loading="lazy" />
+            {value.length > 1 && (
+              <button
+                type="button"
+                className="param-remove"
+                aria-label={`Remove GIF ${i + 1}`}
+                onClick={() => onChange(value.filter((_, j) => j !== i))}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+      {value.length < spec.maxItems ? (
+        <div className="param-row">
+          <input
+            id={id}
+            type="text"
+            className="param-text"
+            inputMode="url"
+            spellCheck={false}
+            autoCapitalize="off"
+            placeholder="Paste a Giphy link"
+            value={link}
+            onChange={(e) => {
+              setLink(e.target.value);
+              setProblem(null);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') add();
+            }}
+          />
+          <button type="button" className="param-add" onClick={add}>
+            Add
+          </button>
+        </div>
+      ) : (
+        <p className="param-guide">That's the most one effect can hold ({spec.maxItems}).</p>
+      )}
+      {problem && (
+        <p className="param-problem" role="alert">
+          {problem}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function HandListInput({
   id,
   spec,
@@ -466,7 +603,8 @@ function HandListInput({
 function Control({ id, spec, value, onChange }: ParamFieldProps) {
   // Values are passed through the sanitiser for display, so a control never
   // has to cope with a shape it does not expect. Text is the exception:
-  // sanitising a cleared title would put the default straight back.
+  // sanitising a cleared title would put the default straight back, and a
+  // cleared word would vanish while it was being retyped.
   switch (spec.kind) {
     case 'number':
       return <NumberInput id={id} spec={spec} value={sanitizeValue(spec, value) as number} onChange={onChange} />;
@@ -504,6 +642,19 @@ function Control({ id, spec, value, onChange }: ParamFieldProps) {
       return (
         <ColorListInput id={id} spec={spec} value={sanitizeValue(spec, value) as string[]} onChange={onChange} />
       );
+    case 'textList':
+      return (
+        <TextListInput
+          id={id}
+          spec={spec}
+          value={Array.isArray(value) && value.every((item) => typeof item === 'string') ? value : spec.default}
+          onChange={onChange}
+        />
+      );
+    case 'giphyList':
+      return (
+        <GiphyListInput id={id} spec={spec} value={sanitizeValue(spec, value) as string[]} onChange={onChange} />
+      );
     case 'handList':
       return (
         <HandListInput id={id} spec={spec} value={sanitizeValue(spec, value) as ClockHand[]} onChange={onChange} />
@@ -514,7 +665,7 @@ function Control({ id, spec, value, onChange }: ParamFieldProps) {
 }
 
 /** Kinds whose control is a single input a label can point at. */
-const LABELLABLE = new Set<ParamSpec['kind']>(['number', 'color', 'text']);
+const LABELLABLE = new Set<ParamSpec['kind']>(['number', 'color', 'text', 'textList', 'giphyList']);
 
 function ParamField({ id, spec, value, onChange }: ParamFieldProps) {
   if (spec.kind === 'boolean') {

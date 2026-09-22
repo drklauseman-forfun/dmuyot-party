@@ -514,6 +514,53 @@
   background: #5a2525;
 }
 
+/* A text box with a button beside it: word lists, and pasting a Giphy link. */
+.param-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.param-row .param-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.param-row .param-add {
+  align-self: auto;
+}
+
+.param-gifs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 6px;
+}
+
+.param-gif {
+  position: relative;
+}
+
+.param-gif img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #111;
+}
+
+.param-gif .param-remove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+}
+
+.param-problem {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #ff8a8a;
+}
+
 .param-add {
   align-self: flex-start;
   padding: 0.35rem 0.7rem;

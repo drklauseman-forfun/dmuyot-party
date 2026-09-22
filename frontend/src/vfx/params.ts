@@ -1,3 +1,4 @@
+import { giphyId } from './giphy';
 import type { ClockHand } from './types';
 
 /**
@@ -93,6 +94,27 @@ export interface ColorListSpec extends BaseSpec {
   maxItems: number;
 }
 
+/** Short pieces of text, such as the words an effect writes on screen. */
+export interface TextListSpec extends BaseSpec {
+  kind: 'textList';
+  default: string[];
+  maxItems: number;
+  /** Per item, in characters. */
+  maxLength: number;
+  /** What one item is called, for its buttons: "Add word". */
+  itemLabel: string;
+}
+
+/**
+ * GIFs on Giphy, kept as their ids. A pasted link is reduced to its id and
+ * anything that is not one is dropped; see vfx/giphy.ts for why.
+ */
+export interface GiphyListSpec extends BaseSpec {
+  kind: 'giphyList';
+  default: string[];
+  maxItems: number;
+}
+
 export interface HandListSpec extends BaseSpec {
   kind: 'handList';
   default: ClockHand[];
@@ -116,6 +138,8 @@ export type ParamSpec =
   | ScaleSpec
   | Vec3Spec
   | ColorListSpec
+  | TextListSpec
+  | GiphyListSpec
   | HandListSpec;
 
 const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
@@ -170,8 +194,7 @@ function sanitizeBoolean(spec: BooleanSpec, value: unknown): boolean {
  * Filtered by code point instead of with a regex over the control range, which
  * eslint rightly refuses to let through.
  */
-function sanitizeText(spec: TextSpec, value: unknown): string {
-  if (typeof value !== 'string') return spec.default;
+function cleanText(value: string, maxLength: number): string {
   const cleaned = Array.from(value)
     .map((ch) => {
       const code = ch.codePointAt(0) ?? 0;
@@ -180,8 +203,12 @@ function sanitizeText(spec: TextSpec, value: unknown): string {
     .join('')
     .replace(/ {2,}/g, ' ')
     .trim();
-  const cut = Array.from(cleaned).slice(0, spec.maxLength).join('');
-  return cut || spec.default;
+  return Array.from(cleaned).slice(0, maxLength).join('').trim();
+}
+
+function sanitizeText(spec: TextSpec, value: unknown): string {
+  if (typeof value !== 'string') return spec.default;
+  return cleanText(value, spec.maxLength) || spec.default;
 }
 
 function sanitizePoint(spec: PointSpec, value: unknown): [number, number] {
@@ -221,6 +248,29 @@ function sanitizeColorList(spec: ColorListSpec, value: unknown): string[] {
     .map((c) => c.trim().toLowerCase())
     .slice(0, spec.maxItems);
   return colors.length > 0 ? colors : copy(spec.default);
+}
+
+/** Blank entries are dropped, as words left empty in the builder are. */
+function sanitizeTextList(spec: TextListSpec, value: unknown): string[] {
+  if (!Array.isArray(value)) return copy(spec.default);
+  const items = value
+    .filter((item): item is string => typeof item === 'string')
+    .map((item) => cleanText(item, spec.maxLength))
+    .filter((item) => item !== '')
+    .slice(0, spec.maxItems);
+  return items.length > 0 ? items : copy(spec.default);
+}
+
+/** Links become ids; duplicates and anything unrecognised are dropped. */
+function sanitizeGiphyList(spec: GiphyListSpec, value: unknown): string[] {
+  if (!Array.isArray(value)) return copy(spec.default);
+  const ids: string[] = [];
+  for (const item of value) {
+    if (ids.length >= spec.maxItems) break;
+    const id = typeof item === 'string' ? giphyId(item) : null;
+    if (id && !ids.includes(id)) ids.push(id);
+  }
+  return ids.length > 0 ? ids : copy(spec.default);
 }
 
 /**
@@ -268,6 +318,10 @@ export function sanitizeValue(spec: ParamSpec, value: unknown): unknown {
       return sanitizeVec3(spec, value);
     case 'colorList':
       return sanitizeColorList(spec, value);
+    case 'textList':
+      return sanitizeTextList(spec, value);
+    case 'giphyList':
+      return sanitizeGiphyList(spec, value);
     case 'handList':
       return sanitizeHands(spec, value);
   }
