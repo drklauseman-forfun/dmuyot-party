@@ -186,7 +186,7 @@ const HELP: Record<Language, HelpContent> = {
             'The clapperboard button at the top opens the animation builder. An animation is what happens when one particular character wins: some effects playing together, and how the results look.',
           ],
           [
-            'Start by entering a name. It is not a password and does not have to be unique — it only keeps animations apart, so ones saved under jack play for whoever has typed jack. Capital letters do not matter.',
+            'Start by entering a name. Your animations are kept under it, so typing the same name on another phone brings them there too. Capital letters do not matter.',
           ],
           [
             'Add effects one at a time. Each has its own settings, with a note explaining every one; ',
@@ -212,9 +212,14 @@ const HELP: Record<Language, HelpContent> = {
             'If that character already has an animation — a built-in one, or one of yours — you are asked before it is replaced, and you can watch the old one first. Replacing a built-in animation only changes it for your name; everyone else still sees the original.',
           ],
           [
-            'For now animations are kept in this browser, so they do not follow you to another phone. ',
+            'Animations are kept on the server, under your name. Ones already on a phone are uploaded the first time the app opens there, and changes made on one phone reach the others the next time the app opens on them.',
+          ],
+          [
+            'The first time you save, delete or import under a name, the builder asks you to choose a PIN for it. From then on, changing the animations under that name needs the PIN, on any phone; playing them never does. A phone remembers the PIN once it has worked. If the server cannot be reached, changes are saved on the phone and shared the next time it can be.',
+          ],
+          [
             { code: 'Export' },
-            ' gives you a code to keep or send to yourself; ',
+            ' still gives you a code to keep or send to someone; ',
             { code: 'Import' },
             ' brings one back.',
           ],
@@ -268,7 +273,7 @@ const HELP: Record<Language, HelpContent> = {
         heading: 'What gets saved',
         paragraphs: [
           [
-            'Your list, weights, range, settings, name, animations and last result are kept in this browser. Knockout mode and who is out are not: they start fresh every time. Nothing is sent anywhere and nothing follows you to another device. Clearing your browser data clears all of it — animations included, so export any you want to keep.',
+            'Your list, weights, range, settings, name and last result are kept in this browser, and clearing your browser data clears them. Animations are kept on the server too, under your name, so they survive that: type the name again and they come back. Knockout mode and who is out are not saved at all.',
           ],
         ],
       },
@@ -415,7 +420,7 @@ const HELP: Record<Language, HelpContent> = {
             'כפתור הקלאפר שלמעלה פותח את בונה האנימציות. אנימציה היא מה שקורה כשדמות מסוימת זוכה: כמה אפקטים שמתנגנים יחד, ואיך נראות התוצאות.',
           ],
           [
-            'מתחילים בהקלדת שם. זו לא סיסמה והשם לא חייב להיות ייחודי — הוא רק מפריד בין אנימציות, כך שאנימציות שנשמרו תחת jack יופיעו אצל כל מי שהקליד jack. אותיות גדולות וקטנות לא משנות.',
+            'מתחילים בהקלדת שם. האנימציות שלכם נשמרות תחתיו, כך שהקלדת אותו שם בטלפון אחר מביאה אותן גם לשם. אותיות גדולות וקטנות לא משנות.',
           ],
           [
             'מוסיפים אפקטים אחד אחד. לכל אחד יש הגדרות משלו, עם הסבר לכל הגדרה; ',
@@ -441,9 +446,14 @@ const HELP: Record<Language, HelpContent> = {
             'אם לדמות כבר יש אנימציה — מובנית או אחת שלכם — תישאלו לפני שהיא מוחלפת, ואפשר לצפות בישנה קודם. החלפה של אנימציה מובנית משנה אותה רק עבור השם שלכם; כל השאר עדיין רואים את המקורית.',
           ],
           [
-            'בינתיים האנימציות נשמרות בדפדפן הזה, כך שהן לא עוברות איתכם לטלפון אחר. ',
+            'האנימציות נשמרות בשרת, תחת השם שלכם. אנימציות שכבר נמצאות בטלפון עולות לשרת בפעם הראשונה שהאפליקציה נפתחת בו, ושינויים שנעשו בטלפון אחד מגיעים לאחרים בפעם הבאה שהאפליקציה נפתחת בהם.',
+          ],
+          [
+            'בפעם הראשונה ששומרים, מוחקים או מייבאים תחת שם, הבונה מבקש לבחור לו קוד PIN. מאז, כדי לשנות את האנימציות של השם הזה צריך את ה־PIN, בכל טלפון; כדי שיתנגנו לא צריך אותו אף פעם. טלפון זוכר את ה־PIN אחרי שהוא עבד פעם אחת. אם אי אפשר להגיע לשרת, השינויים נשמרים בטלפון ומשותפים בפעם הבאה שאפשר.',
+          ],
+          [
             { code: 'Export' },
-            ' נותן קוד לשמירה או לשליחה לעצמכם; ',
+            ' עדיין נותן קוד לשמירה או לשליחה למישהו; ',
             { code: 'Import' },
             ' מחזיר אותו.',
           ],
@@ -497,7 +507,7 @@ const HELP: Record<Language, HelpContent> = {
         heading: 'מה נשמר',
         paragraphs: [
           [
-            'הרשימה, המשקלים, הטווח, ההגדרות, השם, האנימציות והתוצאה האחרונה נשמרים בדפדפן הזה. מצב הנוקאאוט ומי שיצא לא נשמרים: הם מתחילים מחדש בכל פעם. שום דבר לא נשלח לשום מקום ולא עובר איתכם למכשיר אחר. ניקוי נתוני הדפדפן מוחק את הכול — כולל האנימציות, אז כדאי לייצא את אלה שרוצים לשמור.',
+            'הרשימה, המשקלים, הטווח, ההגדרות, השם והתוצאה האחרונה נשמרים בדפדפן הזה, וניקוי נתוני הדפדפן מוחק אותם. האנימציות נשמרות גם בשרת, תחת השם שלכם, כך שהן שורדות את זה: מקלידים שוב את השם והן חוזרות. מצב הנוקאאוט ומי שיצא לא נשמרים בכלל.',
           ],
         ],
       },

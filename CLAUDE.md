@@ -2,15 +2,17 @@
 
 Context that is not obvious from reading the code, written over several long
 sessions: hardening, recorded sound, the character effects, the animation
-builder and the effects people build with, and knockout mode. The
+builder and the effects people build with, knockout mode, and sharing
+animations by name through a server. The
 [README](README.md) says what the app is and how to run it; this says what will
 catch you out.
 
 ## Checks
 
 ```bash
-cd frontend && npm run build   # tsc -b && vite build — the same command Vercel runs
+cd frontend && npm run build   # tsc -b, vite build, then the animations API — the same command Vercel runs
 cd frontend && npx eslint .    # expected to be silent; it was 14 errors before, so nobody ran it
+cd frontend && node server/test-animations.mjs   # the animations API, against the bundle the build wrote
 cd backend  && python -m pytest   # or py -m pytest — in Git Bash on Windows, python can be the Store stub
 ```
 
@@ -221,13 +223,21 @@ wins. Internal names still say effect and module — only the interface changed,
 and `STORAGE_KEYS.effects` keeps its old name because people have a saved
 setting under it.
 
-- **Kept in this browser**, under `dmuyot_party_animations`: one object holding
-  every username's animations. `dmuyot_party_username` is the name typed in.
-  Syncing to a server is planned and not built; `loadLibrary` and `saveLibrary`
-  in `animations/store.ts` are the only functions that know where it lives.
-- **A username is not an account.** No password, not unique, case-insensitive.
-  Anyone who types "jack" sees and can change jack's animations. That was
-  chosen deliberately for a group of friends.
+- **Kept on the server per name, and in this browser.** Each name's
+  animations live in Redis behind the Vercel function `api/animations.js` —
+  see *Shared animations* below — so the same name brings them to any phone.
+  The browser keeps its own copy under `dmuyot_party_animations`, one object
+  holding every name's; that copy is what plays and what the builder edits,
+  and `animations/sync.ts` keeps it in step with the server.
+  `dmuyot_party_username` is the name typed in. `loadLibrary` and
+  `saveLibrary` in `animations/store.ts` are the only functions that know
+  where the browser's copy lives.
+- **A name is not an account, but it has a PIN.** Not unique, not secret,
+  case-insensitive, and anyone can read any name's animations — they only
+  ever play for the name they were saved under, so that changes nothing for
+  anyone else. The first change made with a PIN claims the name, and from
+  then on every change needs it. Both chosen deliberately for a group of
+  friends.
 - **Matching is exact**, on a name picked from the loaded list — not a prefix.
   That sidesteps both the prefix-collision and the apostrophe traps below. A
   custom animation beats a built-in one, but only for the username it was
@@ -249,9 +259,65 @@ setting under it.
   broken on the owner's phone because Enable Animations was off, while every
   preview in the builder still played. Ask about that switch before debugging
   a trigger.
-- **"Clear saved data" on the error screen deletes animations too** — they
-  share the `dmuyot_party_` prefix. Until there is a server, export is the only
-  backup.
+- **"Clear saved data" on the error screen deletes this phone's copy** of
+  the animations, and its remembered PINs — they share the `dmuyot_party_`
+  prefix. Whatever reached the server comes back once the name is typed
+  again, and the PIN has to be typed again too. Anything saved while sharing
+  was unavailable, and not uploaded since, is gone.
+
+## Shared animations
+
+The server half is `frontend/server/animations.ts`, run as a Vercel function.
+Vercel's own TypeScript step could not follow this repository's extensionless
+imports, so `npm run build` bundles the source — the rules and
+`@upstash/redis` included — into one plain file, `api/animations.js`
+(`vite.api.config.ts`). **That file is committed**, because Vercel finds
+functions among the committed files. A change to `server/`, or to anything
+`animations/rules.ts` reaches, shows up after a build as a modified
+`api/animations.js`: commit it with the change.
+
+- **`animations/rules.ts` runs on the server too.** The sanitiser and the
+  limits live there so the function refuses exactly what the builder would,
+  and sanitises again on the way out. Keep it to plain logic: anything that
+  needs a browser — the DOM, storage, the registry — breaks the API bundle.
+- **Storage is Upstash Redis**, attached to the Vercel project from its
+  Storage tab. The function reads `UPSTASH_REDIS_REST_URL` and
+  `UPSTASH_REDIS_REST_TOKEN`, or the `KV_REST_API_URL` and
+  `KV_REST_API_TOKEN` pair, whichever the integration set. Without them it
+  answers 503, and every phone carries on with its own copy as before. Keys,
+  with the name URI-encoded: `dmuyot:anim:<name>` is a hash from animation id
+  to its JSON, `dmuyot:pin:<name>` the PIN's salted scrypt hash, and
+  `dmuyot:tries:<name>` counts wrong PINs for an hour from the first; at ten,
+  the name accepts none until the hour is up.
+- **A forgotten PIN has no reset in the app.** Delete `dmuyot:pin:<name>` in
+  the Upstash data browser: the name is unclaimed again, keeps its
+  animations, and its next save sets a new PIN.
+- **A name nobody has claimed can be written without a PIN.** That is how
+  animations already on phones uploaded themselves the first time the app
+  opened after sharing shipped, before anyone had been asked for one. Until
+  someone saves with a PIN, anyone can change that name's animations.
+- **Deletions must not come back.** `dmuyot_party_synced` records, per name,
+  the ids this phone last saw on the server. An animation missing from the
+  server that the phone once saw there was deleted on another phone, and is
+  dropped here; one it never saw was made here, and is uploaded. Without the
+  record, a phone with an old copy brings back everything deleted since. A
+  deletion made while the server cannot be reached is not recorded, though,
+  so the next sync brings that one back.
+- **Anything short of an answer counts as offline.** A 404 (the dev server
+  without the mock), a 5xx (storage not connected), a page where JSON was
+  expected, no network: the builder says sharing is not available and saves
+  on the phone, and the next sync uploads it. A refusal is different — a
+  wrong PIN, too many animations — and undoes the change on the phone too, so
+  the phone never shows what the name does not have.
+- **It syncs when the app opens and when the name changes**, not
+  continuously: `useAnimationSync` runs from `App.tsx`, so what plays after a
+  spin is the name's latest as of opening, and a change made on another phone
+  arrives on the next open. It waits until the name has stopped changing for
+  600ms, since the name changes with every keystroke while it is typed.
+- **Locally**, the dev server proxies `/api` to the `dmuyot-animations-api`
+  server in `launch.json`, which serves the built bundle with an in-memory
+  store and forgets everything when stopped. `server/test-animations.mjs`
+  checks the server's rules against the same bundle, with no network.
 
 ## Traps
 
@@ -444,13 +510,15 @@ broken:
 - **Screenshots are unreliable** during heavy WebGL use: mistimed, cropped, or
   showing a white frame the code cannot produce. Confirm anything surprising on
   a clean reload before acting on it, and prefer measuring the DOM.
-- **`.claude/launch.json` has three servers.** `dmuyot-frontend` is the dev
+- **`.claude/launch.json` has four servers.** `dmuyot-frontend` is the dev
   server on :5173. `dmuyot-frontend-preview` serves the production build on
   :4173, so run `npm run build` first. Use it for anything that differs between
   the two — the developer sandbox animations, for one, exist only in dev.
   `dmuyot-backend` runs the API on :8000, which the dev server calls: without
   it no list loads, and the builder refuses to start an animation until one
-  has.
+  has. `dmuyot-animations-api` is the shared-animations function on :8787,
+  in memory; the dev server proxies `/api` to it, and without it the builder
+  says sharing is not available and works on its own.
 - **Vite's HMR cache can serve stale modules** after a file is deleted, giving a
   blank page and a bogus `does not provide an export named …` for an export that
   plainly exists. `rm -rf frontend/node_modules/.vite` and restart.
@@ -511,6 +579,16 @@ recorded sound worked, before the PWA work. The other branches —
 `refactor/character-effect-registry` — are merged and hold nothing `main` lacks.
 
 ## Open questions
+
+**Shared animations need their storage connected.** The function shipped on
+2026-10-01 and answers 503 until an Upstash Redis database is attached to
+the `dmuyot-party-6gjy` project in Vercel — not the leftover `dmuyot-party`
+one — and the site is redeployed. Until then every phone keeps its
+animations to itself, as before. Check rather than ask:
+
+```bash
+curl -s "https://dmuyot-party-6gjy.vercel.app/api/animations?user=x"   # "no-storage": not attached yet
+```
 
 **The backend is deployed, and `VITE_API_URL` is set.** It runs at
 `https://dmuyot-party.onrender.com`, and the Vercel build has that URL compiled
