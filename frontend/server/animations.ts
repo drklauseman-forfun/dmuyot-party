@@ -41,14 +41,35 @@ export interface Store {
   expire(key: string, seconds: number): Promise<unknown>;
 }
 
-/** Upstash Redis, from the variables the Vercel integration adds — either naming. */
+/**
+ * Where the database is, and the key to it, from the variables Vercel adds
+ * when one is connected to the project. Upstash's own names come first, then
+ * Vercel's `KV_REST_API_*`, then anything ending in `REST_API_URL`: the
+ * connect dialog offers a custom prefix, which turns `KV_REST_API_URL` into,
+ * say, `STORAGE_KV_REST_API_URL`, and that must not quietly leave sharing
+ * switched off. The read-only token is never taken for the real one.
+ */
+export function redisCredentials(env: Record<string, string | undefined>): { url: string; token: string } | null {
+  // Shortest first, so a plain name wins over a prefixed one.
+  const names = Object.keys(env).sort((a, b) => a.length - b.length);
+  for (const ending of ['UPSTASH_REDIS_REST_URL', 'KV_REST_API_URL', 'REST_API_URL']) {
+    for (const name of names) {
+      if (!name.endsWith(ending)) continue;
+      const url = env[name];
+      const token = env[`${name.slice(0, -'URL'.length)}TOKEN`];
+      if (url?.startsWith('https://') && token) return { url, token };
+    }
+  }
+  return null;
+}
+
+/** Upstash Redis, wherever those variables say it is. */
 export function upstashStore(env: Record<string, string | undefined> = process.env): Store | null {
-  const url = env.UPSTASH_REDIS_REST_URL ?? env.KV_REST_API_URL;
-  const token = env.UPSTASH_REDIS_REST_TOKEN ?? env.KV_REST_API_TOKEN;
-  if (!url || !token) return null;
+  const credentials = redisCredentials(env);
+  if (!credentials) return null;
   // Values stay the JSON strings they were written as, rather than being
   // parsed on the way out by a guess at what they are.
-  const redis = new Redis({ url, token, automaticDeserialization: false });
+  const redis = new Redis({ ...credentials, automaticDeserialization: false });
   return {
     hgetall: (key) => redis.hgetall<Record<string, string>>(key),
     hset: (key, values) => redis.hset(key, values),

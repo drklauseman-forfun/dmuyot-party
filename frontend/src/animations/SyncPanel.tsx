@@ -32,7 +32,7 @@ function SyncPanel({ sync }: { sync: AnimationSync }) {
               className="builder-input"
               type="password"
               value={pin}
-              maxLength={40}
+              maxLength={20}
               autoComplete="off"
               autoCapitalize="off"
               spellCheck={false}
@@ -49,7 +49,7 @@ function SyncPanel({ sync }: { sync: AnimationSync }) {
           </div>
           <p className="builder-note">
             {state === 'unclaimed'
-              ? 'Nobody has protected this name yet. Choose a PIN of 4 or more characters: your first save sets it, and from then on changes under this name need it, on any phone.'
+              ? 'Nobody has protected this name yet. Choose a PIN of 4 to 20 characters: your first save sets it, and from then on changes under this name need it, on any phone.'
               : 'This name is protected. Its animations still play, but saving, deleting or importing needs its PIN. It is remembered on this phone once it works.'}
           </p>
         </>

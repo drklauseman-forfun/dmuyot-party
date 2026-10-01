@@ -9,7 +9,7 @@ export type AnimationTiming = Required<VFXTiming>;
  * particular character wins, and how the results look.
  *
  * It is stored under a username rather than carrying one, so the same record
- * works whether it lives in this browser or, later, on a server.
+ * lives in this browser and on the server alike.
  */
 export interface CustomAnimation {
   /**

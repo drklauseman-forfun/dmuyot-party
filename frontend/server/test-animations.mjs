@@ -3,7 +3,7 @@
 // non-zero on the first failure. Runs in Node only; Redis is not involved.
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
-import handler, { handle, memoryStore } from '../api/animations.js';
+import handler, { handle, memoryStore, redisCredentials } from '../api/animations.js';
 
 const q = (s = '') => new URLSearchParams(s);
 const anim = (over = {}) => ({
@@ -118,6 +118,17 @@ await check('a name cannot hold more than 100', async () => {
   const many = Array.from({ length: 101 }, (_, i) => anim({ id: `m-${i}`, character: `C${i}`, updatedAt: i + 1 }));
   const r = await handle('POST', q(), { user: 'lots', op: 'apply', upserts: many }, store);
   assert.equal(r.status, 413);
+});
+
+await check('the database is found under any name Vercel may give it', async () => {
+  const at = { url: 'https://example.upstash.io', token: 't' };
+  assert.deepEqual(redisCredentials({ UPSTASH_REDIS_REST_URL: at.url, UPSTASH_REDIS_REST_TOKEN: 't' }), at);
+  assert.deepEqual(redisCredentials({ KV_REST_API_URL: at.url, KV_REST_API_TOKEN: 't', KV_REST_API_READ_ONLY_TOKEN: 'r' }), at);
+  assert.deepEqual(redisCredentials({ STORAGE_KV_REST_API_URL: at.url, STORAGE_KV_REST_API_TOKEN: 't' }), at);
+  assert.deepEqual(redisCredentials({ STORAGE_REST_API_URL: at.url, STORAGE_REST_API_TOKEN: 't' }), at);
+  assert.equal(redisCredentials({ KV_REST_API_URL: at.url, KV_REST_API_READ_ONLY_TOKEN: 'r' }), null);
+  assert.equal(redisCredentials({ KV_REST_API_URL: 'http://plain', KV_REST_API_TOKEN: 't' }), null);
+  assert.equal(redisCredentials({ REDIS_URL: 'rediss://x', KV_URL: 'rediss://x' }), null);
 });
 
 await check('the Vercel adapter reads a streamed body and answers JSON', async () => {

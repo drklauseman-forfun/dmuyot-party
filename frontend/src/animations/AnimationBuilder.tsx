@@ -33,7 +33,7 @@ import {
 } from './timing';
 import type { AnimationLibrary, AnimationTiming, CustomAnimation } from './types';
 import SyncPanel from './SyncPanel';
-import type { AnimationSync } from './sync';
+import { validPin, type AnimationSync } from './sync';
 import './builder.css';
 
 /**
@@ -267,8 +267,8 @@ function AnimationBuilder({
   const pinBlocker =
     sync.state === 'locked'
       ? "This name is protected. Enter its PIN on the first screen and press Unlock."
-      : sync.state === 'unclaimed' && Array.from(sync.pin.trim()).length < 4
-        ? 'Choose a PIN for this name on the first screen — at least 4 characters.'
+      : sync.state === 'unclaimed' && !validPin(sync.pin)
+        ? 'Choose a PIN for this name on the first screen — 4 to 20 characters.'
         : sync.state === 'loading'
           ? 'Checking this name with the server — a moment.'
           : null;
@@ -549,8 +549,8 @@ function AnimationBuilder({
         <details className="builder-details builder-transfer">
           <summary>Export and import</summary>
           <p className="builder-note">
-            For now animations live only in this browser. Export gives you a code to keep somewhere safe or send to
-            yourself; import brings one back, under the name above.
+            Export gives you a code to keep as a backup or send to someone; import brings one back, under the name
+            above.
           </p>
           <p className="builder-section-title builder-gap">Export</p>
           <textarea

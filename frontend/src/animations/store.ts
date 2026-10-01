@@ -25,12 +25,13 @@ export {
 } from './rules';
 
 /**
- * Where custom animations live, and the rules for matching one to a winner.
+ * Where custom animations live in this browser, and the rules for matching
+ * one to a winner.
  *
- * For now "where" is this browser. Everything that decides what an animation
- * is — sanitising, one per character per name, custom before built-in — is
- * kept apart from the reading and writing, so moving storage to a server
- * later changes `loadLibrary` and `saveLibrary` and nothing else here.
+ * This browser's copy is what plays and what the builder edits; sync.ts keeps
+ * it in step with the server, which holds each name's animations for every
+ * phone. Here, only `loadLibrary` and `saveLibrary` know where the copy is
+ * kept.
  */
 
 /** An import larger than this is refused before it is parsed. */

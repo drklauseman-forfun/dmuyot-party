@@ -112,7 +112,8 @@ const readSynced = (name: string) => new Set(readMap<string[]>(STORAGE_KEYS.sync
 const writeSynced = (name: string, animations: CustomAnimation[]) =>
   writeEntry(STORAGE_KEYS.syncedAnimations, name, animations.map((a) => a.id));
 
-const validPin = (pin: string) => {
+/** Four to twenty characters, as the server counts them. */
+export const validPin = (pin: string) => {
   const length = Array.from(pin.trim()).length;
   return length >= 4 && length <= 20;
 };
@@ -193,6 +194,7 @@ export function useAnimationSync(
       let shared = remote.animations;
       let claimed = remote.claimed;
       let pinWorks = false;
+      let pinRefused = false;
       let waiting = extras;
       if (extras.length > 0 && (!claimed || validPin(pinToUse))) {
         const result = await post({
@@ -207,19 +209,28 @@ export function useAnimationSync(
           claimed = result.claimed;
           pinWorks = claimed;
           waiting = [];
+        } else {
+          pinRefused = result.kind === 'refused' && result.status === 403;
         }
       } else if (claimed && validPin(pinToUse)) {
-        pinWorks = (await post({ user: target, op: 'check', pin: pinToUse })).kind === 'ok';
+        const result = await post({ user: target, op: 'check', pin: pinToUse });
         if (latest.current.name !== target) return;
+        pinWorks = result.kind === 'ok';
+        pinRefused = result.kind === 'refused' && result.status === 403;
       }
 
       writeSynced(target, shared);
       const kept = waiting.filter((a) => !shared.some((s) => s.id === a.id));
       setLibrary(withName(latest.current.library, target, [...kept, ...shared]));
       if (pinWorks) writeEntry(STORAGE_KEYS.pins, target, pinToUse.trim());
+      // A remembered PIN that has stopped working — the name was reset and
+      // claimed again — is forgotten rather than tried at every open: each
+      // wrong try counts towards locking the name, for its owner too.
+      if (pinRefused) writeEntry(STORAGE_KEYS.pins, target, undefined);
       update(target, {
         state: !claimed ? 'unclaimed' : pinWorks ? 'unlocked' : 'locked',
         unshared: kept.length,
+        ...(pinRefused ? { pin: '' } : {}),
       });
     },
     [setLibrary, update],
@@ -289,9 +300,11 @@ export function useAnimationSync(
           // Not shared, and not kept: what is on this phone should match what
           // the name actually has.
           setLibrary(withName(latest.current.library, target, before));
+          // Nor is a PIN that was just refused kept for the next try.
+          if (result.status === 403) writeEntry(STORAGE_KEYS.pins, target, undefined);
           update(target, {
             message: `Not saved: ${result.message}`,
-            ...(result.status === 403 ? { state: 'locked' as const } : {}),
+            ...(result.status === 403 ? { state: 'locked' as const, pin: '' } : {}),
           });
         } else {
           update(target, {
