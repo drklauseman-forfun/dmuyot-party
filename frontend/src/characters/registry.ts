@@ -385,6 +385,32 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
     ],
   },
   {
+    id: 'ethereal-emma',
+    // The bracketed marker is part of the name, and it is also what keeps
+    // this clear of אמה סוואן, who is already in the long list.
+    triggers: [{ pattern: 'אמה [נ]', match: 'prefix' }],
+    presentation: {
+      title: 'אמה',
+      accentColor: '#bfe8ff',
+      backgroundColor: 'rgba(7, 13, 22, 0.95)',
+      glow: '0 0 50px #bfe8ff44, 0 0 110px #1d4a6e55',
+      fontFamily: "'Palatino', serif",
+      letterSpacing: '2px',
+      textShadow: '0 0 14px #bfe8ff',
+    },
+    modules: [
+      // A whale of light crossing high up, over the name rather than through
+      // it, with its tail beating as it goes.
+      { type: 'creatures', style: 'whale', direction: 'left', lane: 0.8, size: 0.85, speed: 1, color: '#bfe8ff', intensity: 0.9, fadeInDuration: 0.8, duration: 5, fadeDuration: 1.6 },
+      // Critters along the foot of the screen and up both sides.
+      { type: 'creatures', style: 'critters', edge: 'bottom', direction: 'left', count: 14, size: 0.07, speed: 1.3, color: '#cdf2ff', intensity: 0.9, fadeInDuration: 0.5, duration: 5, fadeDuration: 1.6 },
+      { type: 'creatures', style: 'critters', edge: 'left', direction: 'right', count: 8, size: 0.06, speed: 1, color: '#cdf2ff', intensity: 0.85, fadeInDuration: 0.6, duration: 5, fadeDuration: 1.6 },
+      { type: 'creatures', style: 'critters', edge: 'right', direction: 'left', count: 8, size: 0.06, speed: 1.1, color: '#cdf2ff', intensity: 0.85, fadeInDuration: 0.7, duration: 5, fadeDuration: 1.6 },
+      // Motes drifting in the water around them.
+      { type: 'sparkles', color: '#bfe8ff', count: 140, size: 1.1, speed: 0.5, scale: [12, 9, 5], noise: 0.5, blend: 'add', maxPixelSize: 70, fadeInDuration: 0.8, duration: 5, fadeDuration: 1.6 },
+    ],
+  },
+  {
     id: 'black-lady',
     // Four words of Hebrew; nothing else in either document begins with them.
     triggers: [{ pattern: 'הגבירה השחורה', match: 'prefix' }],
