@@ -6,7 +6,8 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // api/ holds the function bundle built from server/ — generated, not written.
+  globalIgnores(['dist', 'api']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

@@ -5,14 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && vite build --config vite.api.config.ts",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:api": "vite build --config vite.api.config.ts"
   },
   "dependencies": {
     "@react-three/fiber": "^9.6.1",
     "@react-three/postprocessing": "^3.0.4",
     "@types/three": "^0.184.1",
+    "@upstash/redis": "^1.39.0",
     "axios": "^1.16.1",
     "gsap": "^3.15.0",
     "react": "^19.2.6",
