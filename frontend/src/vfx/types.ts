@@ -269,10 +269,12 @@ export interface CreaturesParams extends VFXTiming {
   intensity?: number;
 }
 
-/** A cloth falling across the frame, or rising up it. */
+/** A silk curtain on a rod, over the results box or across the whole frame. */
 export interface CurtainParams extends VFXTiming {
-  /** Which way it moves. */
+  /** Which way it moves. A falling curtain hangs from a rod; a rising one has none. */
   style?: 'falling' | 'rising';
+  /** What it hangs over: the box the results are shown in, or the whole frame. */
+  over?: 'results' | 'screen';
   /**
    * The cloth. Painted over the frame rather than added to it, so black works
    * — but a colour a little above black is needed for the folds to show.
@@ -284,6 +286,8 @@ export interface CurtainParams extends VFXTiming {
   fall?: number;
   /** How many folds run down it. */
   folds?: number;
+  /** How much the silk shines along its folds, 0–1. */
+  sheen?: number;
   /** Peak opacity, 0–1. */
   intensity?: number;
 }

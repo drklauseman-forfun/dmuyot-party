@@ -829,16 +829,26 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
 
   curtain: {
     label: 'Curtain',
-    description: 'A heavy cloth falling across the screen, with folds and a swaying hem.',
+    description: 'A silk curtain on a rod, falling over the results or across the whole screen.',
     params: {
       style: {
         kind: 'select',
         label: 'Kind',
-        guide: 'Falling comes down from the top; rising comes up from the bottom.',
+        guide: 'Falling comes down from a rod at the top; rising comes up from the bottom, with no rod.',
         default: 'falling',
         options: [
           { value: 'falling', label: 'Falling' },
           { value: 'rising', label: 'Rising' },
+        ],
+      },
+      over: {
+        kind: 'select',
+        label: 'Over',
+        guide: 'The results hangs it over the box the winner is shown in, sized to it on every screen. The whole screen hangs it from edge to edge.',
+        default: 'results',
+        options: [
+          { value: 'results', label: 'The results' },
+          { value: 'screen', label: 'The whole screen' },
         ],
       },
       color: {
@@ -850,7 +860,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
       coverage: {
         kind: 'number',
         label: 'How far',
-        guide: "How much of the screen it ends up covering. 1 covers everything, including the winner's name.",
+        guide: "How far down it comes before it stops. 1 comes all the way down — over the results, just past the bottom of the box.",
         default: 1,
         min: 0.1,
         max: 1,
@@ -875,6 +885,15 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         max: 30,
         step: 1,
         integer: true,
+      },
+      sheen: {
+        kind: 'number',
+        label: 'Sheen',
+        guide: 'How much it shines down each fold, as silk does. 0 is matt cloth. The shine is a lighter shade of the colour, so black silk shines silver.',
+        default: 0.8,
+        min: 0,
+        max: 1,
+        step: 0.05,
       },
       intensity: {
         kind: 'number',
@@ -907,7 +926,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
       size: {
         kind: 'number',
         label: 'Size',
-        guide: 'How tall a candle is, compared to the screen. The flame is sized from it.',
+        guide: 'How tall a candle is, compared to the screen. The flame is sized from it. On a wide screen the same size is a little smaller, so it fits below the results.',
         default: 0.22,
         min: 0.05,
         max: 0.6,

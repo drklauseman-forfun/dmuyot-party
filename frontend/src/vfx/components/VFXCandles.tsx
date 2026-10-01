@@ -292,7 +292,9 @@ const VFXCandles: React.FC<VFXCandlesProps> = ({
     const t = clock.elapsed.current;
     const fade = Math.min(1, clock.strength.current.value * 1.6) * intensity;
     const unit = state.viewport.width / state.size.width;
-    const height = size * Math.min(frame.width, frame.height) * unit;
+    // Measured against less of the height on a wide screen, as the hands
+    // are: sized for a phone, a candle on a laptop stood up into the results.
+    const height = size * Math.min(frame.width, frame.height * 0.62) * unit;
     const originX = (centerX - 0.5) * state.viewport.width;
     const originY = (centerY - 0.5) * state.viewport.height;
 
