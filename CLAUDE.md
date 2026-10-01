@@ -149,6 +149,20 @@ about the hub, a metronome's arm about its pivot, the whale's tail about the
 peduncle. Getting a hinge wrong is obvious and cheap to fix; the whale's tail
 floated a body's width away on the first try.
 
+What the owner has turned down, so it is not tried again: an open palm facing
+the viewer, which reads as "stop" or a wave and not as offering a deal (the
+Handshake kind is side on, palm out, thumb up, from a cuff and sleeve); a hand
+drawn edge on, which read as a paddle with a stick for a thumb; hands whose
+thumb ran past the edge of the picture they were drawn on (keep every part
+inside the canvas — nothing reports the clip); and a whale that slid across
+rigid with a hinged tail. The whale now bends as one strip, the wave growing
+from the head to the flukes, up and down, and its flukes are broad blades
+seen from a little below — two equal upright blades made it a fish.
+
+Hands, the wings and the whale are sized against the shorter side on a phone
+but against 0.62 of the height on a wide screen, where the bands beside the
+results are short; a phone-sized hand reached into the box on a laptop.
+
 Most of them take a `style` or `kind`, and draw **one** of the thing. A wall of
 clocks or a battery of mixed weapons is the same effect called over and over
 with different kinds, places and sizes, which is how ארה and ג'ול\ייט are
