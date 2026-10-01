@@ -140,7 +140,27 @@ const HELP: Record<Language, HelpContent> = {
             'One spin turns the wheel. Ask for more than one and it skips the animation and hands you the whole list of winners at once.',
           ],
           [
-            "Multiple spins draw with replacement — the same name can come up twice. That's deliberate, not a bug.",
+            "Multiple spins draw with replacement — the same name can come up twice. That's deliberate, not a bug. Knockout mode is the exception; see below.",
+          ],
+        ],
+      },
+      {
+        heading: 'Knockout',
+        paragraphs: [
+          [
+            'Tick ',
+            { code: '🥊 Knockout' },
+            ' beside the spin button and every winner is out: they drop off the wheel and are marked out in the list until you press ',
+            { code: 'Restart' },
+            '. Spinning several times at once picks that many different characters; if fewer are left, you get the ones that are.',
+          ],
+          [
+            'Once everyone has been picked, the spin button turns into ',
+            { code: 'Restart' },
+            ', which brings them all back for a new round. Loading a list, or switching knockout off, brings everyone back too.',
+          ],
+          [
+            'Neither knockout nor who is out is saved. Refresh the page or close the app and it opens in the normal mode with everyone in — so a round left unfinished never costs anyone their turn later.',
           ],
         ],
       },
@@ -215,7 +235,7 @@ const HELP: Record<Language, HelpContent> = {
         heading: 'What gets saved',
         paragraphs: [
           [
-            'Your list, weights, range, settings, name, animations and last result are kept in this browser. Nothing is sent anywhere and nothing follows you to another device. Clearing your browser data clears all of it — animations included, so export any you want to keep.',
+            'Your list, weights, range, settings, name, animations and last result are kept in this browser. Knockout mode and who is out are not: they start fresh every time. Nothing is sent anywhere and nothing follows you to another device. Clearing your browser data clears all of it — animations included, so export any you want to keep.',
           ],
         ],
       },
@@ -316,7 +336,27 @@ const HELP: Record<Language, HelpContent> = {
             'סיבוב אחד מסובב את הגלגל. אם מבקשים יותר מאחד, האנימציה מדולגת ומקבלים את כל הזוכים בבת אחת.',
           ],
           [
-            'כמה סיבובים מגרילים עם החזרה — אותו שם יכול לצאת פעמיים. זה בכוונה, לא באג.',
+            'כמה סיבובים מגרילים עם החזרה — אותו שם יכול לצאת פעמיים. זה בכוונה, לא באג. מצב נוקאאוט הוא היוצא מן הכלל; ראו בהמשך.',
+          ],
+        ],
+      },
+      {
+        heading: 'נוקאאוט',
+        paragraphs: [
+          [
+            'סמנו ',
+            { code: '🥊 Knockout' },
+            ' ליד כפתור הסיבוב, וכל מי שנבחר יוצא: הוא יורד מהגלגל ומסומן כיוצא ברשימה עד שלוחצים ',
+            { code: 'Restart' },
+            '. סיבוב של כמה פעמים בבת אחת בוחר דמויות שונות זו מזו; אם נשארו פחות, מקבלים את אלה שנשארו.',
+          ],
+          [
+            'כשכולם כבר נבחרו, כפתור הסיבוב הופך ל־',
+            { code: 'Restart' },
+            ', שמחזיר את כולם לסבב חדש. טעינת רשימה, או כיבוי הנוקאאוט, מחזירים את כולם גם הם.',
+          ],
+          [
+            'לא מצב הנוקאאוט ולא מי שיצא נשמרים. רענון הדף או סגירת האפליקציה פותחים אותה במצב הרגיל עם כולם בפנים — כך שסבב שלא הסתיים אף פעם לא יגרום למישהו לפספס את התור שלו בהמשך.',
           ],
         ],
       },
@@ -391,7 +431,7 @@ const HELP: Record<Language, HelpContent> = {
         heading: 'מה נשמר',
         paragraphs: [
           [
-            'הרשימה, המשקלים, הטווח, ההגדרות, השם, האנימציות והתוצאה האחרונה נשמרים בדפדפן הזה. שום דבר לא נשלח לשום מקום ולא עובר איתכם למכשיר אחר. ניקוי נתוני הדפדפן מוחק את הכול — כולל האנימציות, אז כדאי לייצא את אלה שרוצים לשמור.',
+            'הרשימה, המשקלים, הטווח, ההגדרות, השם, האנימציות והתוצאה האחרונה נשמרים בדפדפן הזה. מצב הנוקאאוט ומי שיצא לא נשמרים: הם מתחילים מחדש בכל פעם. שום דבר לא נשלח לשום מקום ולא עובר איתכם למכשיר אחר. ניקוי נתוני הדפדפן מוחק את הכול — כולל האנימציות, אז כדאי לייצא את אלה שרוצים לשמור.',
           ],
         ],
       },

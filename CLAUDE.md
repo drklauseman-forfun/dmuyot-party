@@ -42,7 +42,16 @@ Product decisions, not accidents. Changing one is a regression.
 - Zero total weight gives a `VOID` winner rather than a crash.
 - More than one spin, or a duration under 0.2s, skips the wheel and resolves
   instantly. Multi-spin samples **with replacement** — the same character can
-  win twice, deliberately.
+  win twice, deliberately. Knockout mode is the one exception.
+- **Knockout mode**, switched on beside the spin button: every winner leaves
+  the wheel until Restart, and a multi-spin draws that many *different*
+  characters, or as many as are left. Once everyone is out the spin button
+  becomes Restart; an empty wheel because every weight is 0 still gives `VOID`.
+  Loading a list or switching the mode off brings everyone back.
+- **Knockout is never saved** — neither the switch nor who is out. Both are
+  plain state in `App.tsx`, on purpose and at the owner's request: a round left
+  unfinished must not quietly cost someone their turn on another day. Do not
+  move them into `storage.ts`.
 - Loading a list **resets all weights to 1** (a failed load does not). Weights
   are positional, so carrying them over silently applied one document's tuning
   to the next document's characters.
