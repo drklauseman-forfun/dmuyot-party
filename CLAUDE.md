@@ -82,7 +82,8 @@ stores every parameter explicitly, so drift cannot change what it renders, but
 it would make the builder's starting values wrong.
 
 Modules today: `glow`, `edgeGlow`, `sparkles`, `fire`, `beams`, `blackHole`,
-`clock`, `fireworks`, `wings`, `eyes`, `slashes`, `words`, `memes`.
+`clock`, `fireworks`, `wings`, `eyes`, `slashes`, `words`, `memes`, `glitch`,
+`timepieces`, `hands`, `figure`, `weapons`, `curtain`, `candles`, `creatures`.
 `beams` has no built-in animation using it but is a building block the builder
 offers. `fire` is **retired**: it did not look like flames, so
 `RETIRED_EFFECTS` in `vfx/schema.ts` keeps it out of the builder's list. Its
@@ -100,8 +101,10 @@ feather shapes, which cost too much to compute for every pixel. So
 once on a canvas, and each style places instanced copies of them along a
 skeleton from `wings/pose.ts` every frame. `pose.ts` is plain arithmetic with no
 three.js, so a pose can be checked without drawing it. The wings, the eyes,
-the words and the memes are the modules in `UNLIT_MODULES` — see the bloom trap
-below.
+the words, the memes, the clocks, the hands, the figure, the weapons, the
+curtain and the candles are the modules in `UNLIT_MODULES` — see the bloom trap
+below. The glitch and the creatures are not: they are light, and are meant to
+glow.
 
 Where the wings sit was measured against the results box, not guessed. At the
 old centre of 0.62 the spread wings covered its top on a phone, title included.
@@ -134,6 +137,23 @@ decoding one would need another library. They download when the effect starts
 and pop in once loaded. `MEME_GIFS` is the hand-picked list, each checked by
 eye. Untested: iPhones in Low Power Mode may refuse to play them, as they do
 other videos that start themselves.
+
+Seven of the effects draw **objects** rather than light: `timepieces` (a
+clock, a digital counter, an hourglass or a metronome), `hands` (flesh, machine
+or porcelain), `figure`, `weapons`, `curtain`, `candles` and `creatures`. They
+follow the wings' pattern — each picture drawn once on a canvas in neutral
+colours and lit from the top left, then placed, turned and tinted every frame —
+and they share `components/fadeClock.ts` and, where they scatter, `scatter.ts`.
+Moving parts are their own quads hinged where they belong: a clock's hands turn
+about the hub, a metronome's arm about its pivot, the whale's tail about the
+peduncle. Getting a hinge wrong is obvious and cheap to fix; the whale's tail
+floated a body's width away on the first try.
+
+Most of them take a `style` or `kind`, and draw **one** of the thing. A wall of
+clocks or a battery of mixed weapons is the same effect called over and over
+with different kinds, places and sizes, which is how ארה and ג'ול\ייט are
+built. That was asked for directly, and it is also what keeps a parameter list
+short enough to use.
 
 The seven הנרץ' effects share a shape, so `registry.ts` has two builders,
 `wraithModules` and `wraithPresentation`. Seven near-identical copies is the
@@ -254,6 +274,15 @@ waits for `requestVideoFrameCallback`, which does not fire in a page that is
 not on screen: the meme videos loaded and played, and nothing was drawn.
 `VFXMemes` marks each texture for upload every frame instead.
 
+**eslint refuses property assignment on anything a hook returned.**
+`react-hooks/immutability` reads `mesh.rotation.z = x` or
+`material.uniforms.a.value = b` inside `useFrame` as modifying a value that
+came from `useMemo` or went into `useEffect`, and fails the build. Method calls
+(`mesh.position.set`, `mesh.scale.set`) pass, and so does anything done inside
+a plain module-level function. The newer effects therefore keep their parts in
+a ref and write through small helpers — `setPose`, `setOpacity`, `setTurn`,
+`setUniform`. Copy that shape rather than fighting the rule.
+
 **`center` runs bottom-up.** The black hole, the clock and the wings all take
 `center` as fractions of the frame, but the second number is measured from the
 **bottom**: three.js gives a plane's top edge `v = 1` (see `PlaneGeometry.js`).
@@ -288,7 +317,17 @@ The four added next, `סאם (מגהברס 1)`, `סאלין (הכל)`, `איש �
 document. `בארי אזומה`, added on 2026-09-22 (first mistyped `ברי אזומה`), was run
 through both real documents (154 and 945 characters): no line begins with it,
 and nothing there is that character yet, so it has matched nothing real so far.
-The nearest, `השרביט של בארי (...)`, does not start with it. The apostrophe in `הנרץ'` is **U+0027**, the plain ASCII one, not the
+The nearest, `השרביט של בארי (...)`, does not start with it.
+
+Five more were added on 2026-10-01 and run through both documents the same way:
+`ארה [נ]`, `אמה [נ]`, `אייט [נ]`, `ג'ול\ייט` and `הגבירה השחורה`. Three of them
+carry a bracketed `[נ]` because the owner's list writes them that way, and it
+earns its place: `אמה` alone would also fire for `אמה סוואן (המימד הסגול)`, who
+is already in the long document, and `ארה` is three letters. The backslash in
+`ג'ול\ייט` is part of the name, so it is part of the pattern — written twice in
+the source to mean one — and the apostrophe may be a geresh or the plain one,
+since `comparable()` reads them alike. None of the five matches anything in
+either document yet. The apostrophe in `הנרץ'` is **U+0027**, the plain ASCII one, not the
 visually identical Hebrew geresh.
 
 Both sides of a match now go through `comparable()` in `registry.ts` first,
