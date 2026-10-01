@@ -247,6 +247,28 @@ export interface SlashesParams extends VFXTiming {
   intensity?: number;
 }
 
+/** Creatures made of light: a whale, or small things scurrying along an edge. */
+export interface CreaturesParams extends VFXTiming {
+  /** One drifting whale, or a crowd of critters. */
+  style?: 'whale' | 'critters';
+  /** Which edge the critters run along. The whale ignores it. */
+  edge?: 'bottom' | 'top' | 'left' | 'right';
+  /** Which way they travel; a few critters always go against it. */
+  direction?: 'left' | 'right';
+  /** How high the whale swims, from the bottom (0) to the top (1). */
+  lane?: number;
+  /** How many critters. A whale is always one. */
+  count?: number;
+  /** Length of the whale, or height of a critter, against the shorter side. */
+  size?: number;
+  /** How fast they move, and how fast the whale's tail beats. */
+  speed?: number;
+  /** Tints them. They are added to the frame, so dark colours barely show. */
+  color?: string;
+  /** Peak opacity, 0–1. */
+  intensity?: number;
+}
+
 /** A cloth falling across the frame, or rising up it. */
 export interface CurtainParams extends VFXTiming {
   /** Which way it moves. */
@@ -426,6 +448,7 @@ export type VFXModuleConfig =
   | ({ type: 'slashes' } & SlashesParams)
   | ({ type: 'glitch' } & GlitchParams)
   | ({ type: 'timepieces' } & TimepiecesParams)
+  | ({ type: 'creatures' } & CreaturesParams)
   | ({ type: 'curtain' } & CurtainParams)
   | ({ type: 'candles' } & CandlesParams)
   | ({ type: 'weapons' } & WeaponsParams)

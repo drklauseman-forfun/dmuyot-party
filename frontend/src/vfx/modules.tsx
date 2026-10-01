@@ -13,6 +13,7 @@ import VFXSlashes from './components/VFXSlashes';
 import VFXGlitch from './components/VFXGlitch';
 import VFXTimepieces from './components/VFXTimepieces';
 import VFXWeapons from './components/VFXWeapons';
+import VFXCreatures from './components/VFXCreatures';
 import VFXCurtain from './components/VFXCurtain';
 import VFXCandles from './components/VFXCandles';
 import VFXHands from './components/VFXHands';
@@ -94,6 +95,7 @@ const RENDERERS: ModuleRenderers = {
   glitch: (params, { active }) => <VFXGlitch {...params} active={active} />,
   timepieces: (params, { active }) => <VFXTimepieces {...params} active={active} />,
   weapons: (params, { active, seed }) => <VFXWeapons {...params} active={active} seed={seed} />,
+  creatures: (params, { active, seed }) => <VFXCreatures {...params} active={active} seed={seed} />,
   curtain: (params, { active }) => <VFXCurtain {...params} active={active} />,
   candles: (params, { active, seed }) => <VFXCandles {...params} active={active} seed={seed} />,
   hands: (params, { active, seed }) => <VFXHands {...params} active={active} seed={seed} />,
