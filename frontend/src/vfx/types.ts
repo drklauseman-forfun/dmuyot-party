@@ -327,18 +327,22 @@ export interface WeaponsParams extends VFXTiming {
 
 /** Hands reaching in from an edge of the frame. */
 export interface HandsParams extends VFXTiming {
-  /** Flesh held out to be shaken, a machine's, or glazed porcelain. */
-  style?: 'open' | 'robotic' | 'porcelain';
+  /** An open palm, one held out to shake on a deal, a machine's, or porcelain. */
+  style?: 'open' | 'deal' | 'robotic' | 'porcelain';
   /** Which edge they come in from. */
   edge?: 'bottom' | 'top' | 'left' | 'right';
   /** How many. They arrive one after another rather than together. */
   count?: number;
-  /** Height of a hand, as a fraction of the frame's shorter side. */
+  /** Where along the edge they come in, 0–1: left to right, or bottom to top. */
+  position?: number;
+  /** Height of a hand and forearm, as a fraction of the frame's shorter side. */
   size?: number;
   /** How far in they reach, as a fraction of their own height. */
   reach?: number;
   /** How much of the edge they are spread along, 0–1. */
   spread?: number;
+  /** Turns them, in degrees; positive is clockwise. */
+  tilt?: number;
   /** Tints them. White keeps the colours they were drawn in. */
   color?: string;
   /** Peak opacity, 0–1. */

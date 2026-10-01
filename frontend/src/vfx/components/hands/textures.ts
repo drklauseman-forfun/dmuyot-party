@@ -4,17 +4,20 @@ import * as THREE from 'three';
  * Hands, and the figure standing behind one of them, drawn once each on a
  * canvas — the same approach as the wings and the clocks.
  *
- * Every hand is built from the same bones: a palm, four fingers and a thumb,
- * laid out once and then dressed as skin, as machinery or as porcelain. That
- * is why three very different hands hold the same pose; only the surface
- * changes.
+ * Three of the hands are built from the same bones: a palm, four fingers and
+ * a thumb, laid out once and then dressed as skin, as machinery or as
+ * porcelain. That is why they hold the same pose; only the surface changes.
+ * The fourth, the handshake, is a different pose altogether — held out side
+ * on, thumb up, from a suit sleeve — because an open palm facing the viewer
+ * reads as "stop" or a wave, and was not taken for an offer.
  *
- * Each is drawn upright, wrist at the bottom, so an effect can turn it to
- * reach in from whichever edge it likes.
+ * Each is drawn upright with its forearm running off the bottom edge, so an
+ * effect can turn it to reach in from whichever edge it likes, and reach a
+ * long way in without the arm ending in a cut.
  */
 
-const WIDTH = 320;
-const HEIGHT = 440;
+const WIDTH = 400;
+const HEIGHT = 640;
 
 function canvas2d(width: number, height: number): [HTMLCanvasElement, CanvasRenderingContext2D] {
   const canvas = document.createElement('canvas');
@@ -54,16 +57,24 @@ interface Finger {
   width: number;
 }
 
-/** The pose every hand holds: four fingers spread, thumb out to the left. */
+/**
+ * The pose the open, machine and porcelain hands share: four fingers spread,
+ * thumb out to the left. Laid out about the middle of the picture with room
+ * for the thumb — the first layout ran it past the left edge, and every hand
+ * was drawn missing the end of its thumb.
+ */
 const FINGERS: Finger[] = [
-  { x: 112, y: 232, lean: -0.22, length: 150, width: 34 }, // index
-  { x: 152, y: 224, lean: -0.06, length: 168, width: 35 }, // middle
-  { x: 192, y: 230, lean: 0.08, length: 152, width: 33 }, // ring
-  { x: 228, y: 244, lean: 0.26, length: 118, width: 29 }, // little
+  { x: 144, y: 232, lean: -0.22, length: 150, width: 34 }, // index
+  { x: 184, y: 224, lean: -0.06, length: 168, width: 35 }, // middle
+  { x: 224, y: 230, lean: 0.08, length: 152, width: 33 }, // ring
+  { x: 260, y: 244, lean: 0.26, length: 118, width: 29 }, // little
 ];
-const THUMB: Finger = { x: 96, y: 300, lean: -1.15, length: 118, width: 38 };
+const THUMB: Finger = { x: 128, y: 300, lean: -1.05, length: 112, width: 38 };
 
-const PALM = { x: 88, y: 214, width: 160, height: 150, radius: 54 };
+const PALM = { x: 120, y: 214, width: 160, height: 150, radius: 54 };
+
+/** The wrist and forearm, from under the palm off the bottom edge. */
+const ARM = { top: 330, wristLeft: 140, wristRight: 260, bottomLeft: 124, bottomRight: 276 };
 
 function capsule(ctx: CanvasRenderingContext2D, finger: Finger, fill: string | CanvasGradient): void {
   const tipX = finger.x + Math.sin(finger.lean) * finger.length;
@@ -87,85 +98,105 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
-/** Lit from the top left on every hand, so three of them share a light. */
+function forearm(): Path2D {
+  const arm = new Path2D();
+  const middle = (ARM.top + HEIGHT) / 2;
+  arm.moveTo(ARM.wristLeft, ARM.top);
+  arm.lineTo(ARM.wristRight, ARM.top);
+  arm.quadraticCurveTo(ARM.wristRight + 8, middle, ARM.bottomRight, HEIGHT);
+  arm.lineTo(ARM.bottomLeft, HEIGHT);
+  arm.quadraticCurveTo(ARM.wristLeft - 8, middle, ARM.wristLeft, ARM.top);
+  arm.closePath();
+  return arm;
+}
+
+/** Lit from the top left on every hand, so several of them share a light. */
 function shading(ctx: CanvasRenderingContext2D, light: string, mid: string, dark: string): CanvasGradient {
-  const g = ctx.createLinearGradient(60, 60, 280, 400);
+  const g = ctx.createLinearGradient(70, 60, 340, 620);
   g.addColorStop(0, light);
   g.addColorStop(0.45, mid);
   g.addColorStop(1, dark);
   return g;
 }
 
-/** The parts every hand shares, in one fill. */
+/** The parts the spread-fingered hands share, in one fill. */
 function handBody(ctx: CanvasRenderingContext2D, fill: string | CanvasGradient): void {
   ctx.fillStyle = fill;
+  ctx.fill(forearm());
   for (const finger of [...FINGERS, THUMB]) capsule(ctx, finger, fill);
   roundRect(ctx, PALM.x, PALM.y, PALM.width, PALM.height, PALM.radius);
   ctx.fill();
-  // The wrist, running off the bottom of the picture.
-  roundRect(ctx, PALM.x + 18, PALM.y + 110, PALM.width - 36, 120, 28);
-  ctx.fill();
 }
 
-/** An open hand of flesh and blood, held out to be shaken. */
+/** Shade down the far side of the forearm, so it reads as round. */
+function armShade(ctx: CanvasRenderingContext2D, color: string): void {
+  const g = ctx.createLinearGradient(ARM.wristLeft, 0, ARM.bottomRight, 0);
+  g.addColorStop(0, 'rgba(0, 0, 0, 0)');
+  g.addColorStop(0.65, 'rgba(0, 0, 0, 0)');
+  g.addColorStop(1, color);
+  ctx.fillStyle = g;
+  ctx.fill(forearm());
+}
+
+/** A line across a finger at some way along it, square to the finger. */
+function across(ctx: CanvasRenderingContext2D, finger: Finger, along: number, reach: number): void {
+  const x = finger.x + Math.sin(finger.lean) * finger.length * along;
+  const y = finger.y - Math.cos(finger.lean) * finger.length * along;
+  const dx = Math.cos(finger.lean) * finger.width * reach;
+  const dy = Math.sin(finger.lean) * finger.width * reach;
+  ctx.beginPath();
+  ctx.moveTo(x - dx, y - dy);
+  ctx.lineTo(x + dx, y + dy);
+  ctx.stroke();
+}
+
+/** An open hand of flesh and blood, palm out. */
 export function openHand(): THREE.CanvasTexture {
   return cached('hand-open', () => {
     const [canvas, ctx] = canvas2d(WIDTH, HEIGHT);
     handBody(ctx, shading(ctx, '#f0c9a8', '#d9a279', '#9c6442'));
+    armShade(ctx, 'rgba(90, 48, 26, 0.45)');
 
     // Creases: where the fingers fold, and across the palm.
     ctx.strokeStyle = 'rgba(120, 68, 40, 0.35)';
     ctx.lineWidth = 5;
     ctx.lineCap = 'round';
-    for (const finger of FINGERS) {
-      for (const along of [0.34, 0.66]) {
-        const x = finger.x + Math.sin(finger.lean) * finger.length * along;
-        const y = finger.y - Math.cos(finger.lean) * finger.length * along;
-        ctx.beginPath();
-        ctx.moveTo(x - finger.width * 0.32, y);
-        ctx.lineTo(x + finger.width * 0.32, y);
-        ctx.stroke();
-      }
+    for (const finger of [...FINGERS, THUMB]) {
+      for (const along of [0.34, 0.66]) across(ctx, finger, along, 0.32);
     }
     ctx.beginPath();
-    ctx.moveTo(110, 262);
-    ctx.quadraticCurveTo(170, 292, 224, 268);
+    ctx.moveTo(142, 262);
+    ctx.quadraticCurveTo(202, 292, 256, 268);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(104, 300);
-    ctx.quadraticCurveTo(168, 330, 226, 302);
+    ctx.moveTo(136, 300);
+    ctx.quadraticCurveTo(200, 330, 258, 302);
     ctx.stroke();
 
     // A highlight along the top of the hand, where the light falls.
     ctx.strokeStyle = 'rgba(255, 236, 214, 0.5)';
     ctx.lineWidth = 9;
     ctx.beginPath();
-    ctx.moveTo(104, 226);
-    ctx.quadraticCurveTo(160, 206, 222, 236);
+    ctx.moveTo(136, 226);
+    ctx.quadraticCurveTo(192, 206, 254, 236);
     ctx.stroke();
     return canvas;
   });
 }
 
-/** A machine's hand: plates, joints and a lit edge. */
+/** A machine's hand: plates, joints and a lit edge, on a jointed forearm. */
 export function roboticHand(): THREE.CanvasTexture {
   return cached('hand-robotic', () => {
     const [canvas, ctx] = canvas2d(WIDTH, HEIGHT);
     handBody(ctx, shading(ctx, '#d8dde6', '#878d99', '#3b4049'));
+    armShade(ctx, 'rgba(10, 12, 18, 0.55)');
 
     // Gaps between the segments, which is what makes it read as built.
     ctx.strokeStyle = 'rgba(18, 20, 26, 0.85)';
     ctx.lineCap = 'butt';
+    ctx.lineWidth = 7;
     for (const finger of [...FINGERS, THUMB]) {
-      for (const along of [0.3, 0.62]) {
-        const x = finger.x + Math.sin(finger.lean) * finger.length * along;
-        const y = finger.y - Math.cos(finger.lean) * finger.length * along;
-        ctx.lineWidth = 7;
-        ctx.beginPath();
-        ctx.moveTo(x - finger.width * 0.52, y + finger.width * 0.1);
-        ctx.lineTo(x + finger.width * 0.52, y - finger.width * 0.1);
-        ctx.stroke();
-      }
+      for (const along of [0.3, 0.62]) across(ctx, finger, along, 0.52);
       // A pin through each knuckle.
       ctx.fillStyle = '#20242c';
       ctx.beginPath();
@@ -188,12 +219,34 @@ export function roboticHand(): THREE.CanvasTexture {
     ctx.lineTo(PALM.x + PALM.width - 48, PALM.y + 90);
     ctx.stroke();
 
+    // The forearm: a ring at the wrist, plates down its length, and a piston
+    // either side.
+    ctx.fillStyle = '#2a2f38';
+    roundRect(ctx, ARM.wristLeft - 6, ARM.top + 6, ARM.wristRight - ARM.wristLeft + 12, 26, 10);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(16, 18, 24, 0.85)';
+    ctx.lineWidth = 6;
+    for (const y of [410, 480, 550, 620]) {
+      ctx.beginPath();
+      ctx.moveTo(ARM.wristLeft - 2, y);
+      ctx.lineTo(ARM.wristRight + 4, y + 6);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = '#c3c9d4';
+    ctx.lineWidth = 8;
+    for (const [x, out] of [[ARM.wristLeft + 14, -10], [ARM.wristRight - 14, 10]] as const) {
+      ctx.beginPath();
+      ctx.moveTo(x, ARM.top + 40);
+      ctx.lineTo(x + out, HEIGHT);
+      ctx.stroke();
+    }
+
     ctx.strokeStyle = 'rgba(236, 246, 255, 0.55)';
     ctx.lineWidth = 6;
     ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.moveTo(104, 230);
-    ctx.quadraticCurveTo(160, 212, 220, 240);
+    ctx.moveTo(136, 230);
+    ctx.quadraticCurveTo(192, 212, 252, 240);
     ctx.stroke();
     return canvas;
   });
@@ -204,17 +257,19 @@ export function porcelainHand(): THREE.CanvasTexture {
   return cached('hand-porcelain', () => {
     const [canvas, ctx] = canvas2d(WIDTH, HEIGHT);
     handBody(ctx, shading(ctx, '#ffffff', '#e4e8f0', '#9aa6bb'));
+    armShade(ctx, 'rgba(90, 104, 130, 0.4)');
 
     // Hairline cracks, drawn from a fixed set so every visit matches.
     ctx.strokeStyle = 'rgba(120, 132, 154, 0.55)';
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     const cracks: [number, number, number, number, number, number][] = [
-      [150, 120, 164, 170, 150, 214],
-      [196, 150, 182, 196, 196, 240],
-      [120, 250, 162, 268, 150, 316],
-      [214, 262, 190, 300, 214, 338],
-      [128, 196, 112, 232, 132, 268],
+      [182, 120, 196, 170, 182, 214],
+      [228, 150, 214, 196, 228, 240],
+      [152, 250, 194, 268, 182, 316],
+      [246, 262, 222, 300, 246, 338],
+      [160, 196, 144, 232, 164, 268],
+      [190, 400, 206, 470, 186, 560],
     ];
     for (const [x1, y1, cx, cy, x2, y2] of cracks) {
       ctx.beginPath();
@@ -223,7 +278,7 @@ export function porcelainHand(): THREE.CanvasTexture {
       ctx.stroke();
     }
 
-    // The glaze: a hard highlight along the fingers and a soft one on the palm.
+    // The glaze: a hard highlight along the fingers and soft ones elsewhere.
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
     ctx.lineWidth = 7;
     for (const finger of FINGERS) {
@@ -234,11 +289,162 @@ export function porcelainHand(): THREE.CanvasTexture {
       ctx.lineTo(tipX - finger.width * 0.2, tipY);
       ctx.stroke();
     }
-    const gloss = ctx.createRadialGradient(140, 250, 6, 150, 270, 90);
+    ctx.beginPath();
+    ctx.moveTo(ARM.wristLeft + 22, ARM.top + 30);
+    ctx.lineTo(ARM.bottomLeft + 26, HEIGHT - 10);
+    ctx.stroke();
+    const gloss = ctx.createRadialGradient(172, 250, 6, 182, 270, 90);
     gloss.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
     gloss.addColorStop(1, 'rgba(255, 255, 255, 0)');
     ctx.fillStyle = gloss;
     roundRect(ctx, PALM.x, PALM.y, PALM.width, PALM.height, PALM.radius);
+    ctx.fill();
+    return canvas;
+  });
+}
+
+/**
+ * The handshake's own pose: fingers held together and straight, the thumb
+ * raised away from them. Seen palm on, as a hand offered across a table is
+ * seen from the side — the first version was drawn edge on, and read as a
+ * paddle with a stick for a thumb.
+ *
+ * Index on the right and the thumb beyond it, so that turned to come in from
+ * the right edge the hand points left with the thumb on top.
+ */
+const DEAL_FINGERS: Finger[] = [
+  { x: 158, y: 238, lean: -0.05, length: 138, width: 34 }, // little
+  { x: 189, y: 230, lean: -0.02, length: 160, width: 35 }, // ring
+  { x: 221, y: 228, lean: 0.01, length: 168, width: 35 }, // middle
+  { x: 252, y: 234, lean: 0.04, length: 154, width: 34 }, // index
+];
+const DEAL_THUMB: Finger = { x: 268, y: 322, lean: 0.62, length: 110, width: 40 };
+const DEAL_PALM = { x: 140, y: 222, width: 146, height: 190, radius: 52 };
+
+/**
+ * A hand held out to shake on a deal, coming out of a white cuff and a suit
+ * sleeve. Drawn pointing up, so turned to come in from the right edge it
+ * points left, palm towards the viewer and thumb on top.
+ */
+export function dealHand(): THREE.CanvasTexture {
+  return cached('hand-deal', () => {
+    const [canvas, ctx] = canvas2d(WIDTH, HEIGHT);
+
+    // The sleeve first, so the cuff and the hand sit in front of it.
+    const sleeve = new Path2D();
+    sleeve.moveTo(128, 440);
+    sleeve.lineTo(292, 440);
+    sleeve.quadraticCurveTo(300, 540, 308, HEIGHT);
+    sleeve.lineTo(108, HEIGHT);
+    sleeve.quadraticCurveTo(118, 540, 128, 440);
+    sleeve.closePath();
+    const cloth = ctx.createLinearGradient(108, 0, 308, 0);
+    cloth.addColorStop(0, '#565d6c');
+    cloth.addColorStop(0.45, '#2c313b');
+    cloth.addColorStop(1, '#14171d');
+    ctx.fillStyle = cloth;
+    ctx.fill(sleeve);
+    // A crease across the sleeve, and light along its near edge.
+    ctx.strokeStyle = 'rgba(10, 12, 16, 0.6)';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(136, 524);
+    ctx.quadraticCurveTo(206, 546, 286, 518);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(200, 210, 228, 0.3)';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(132, 450);
+    ctx.quadraticCurveTo(122, 540, 114, 636);
+    ctx.stroke();
+
+    // The hand: palm, the fingers together, and the thumb raised.
+    const skin = shading(ctx, '#f3cfb0', '#dda77e', '#a66a46');
+    ctx.fillStyle = skin;
+    roundRect(ctx, DEAL_PALM.x, DEAL_PALM.y, DEAL_PALM.width, DEAL_PALM.height, DEAL_PALM.radius);
+    ctx.fill();
+    for (const finger of [...DEAL_FINGERS, DEAL_THUMB]) capsule(ctx, finger, skin);
+
+    // The cushion of the thumb, rounding the palm out towards it.
+    ctx.beginPath();
+    ctx.ellipse(262, 350, 36, 52, -0.35, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Where the fingers meet, so they read as four held together.
+    ctx.strokeStyle = 'rgba(122, 68, 42, 0.55)';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    for (let i = 0; i < DEAL_FINGERS.length - 1; i++) {
+      const a = DEAL_FINGERS[i];
+      const b = DEAL_FINGERS[i + 1];
+      const x = (a.x + b.x) / 2;
+      const top = Math.max(a.y - a.length, b.y - b.length) + 18;
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x + 1, (a.y + b.y) / 2 + 6);
+      ctx.stroke();
+    }
+
+    // Creases across the fingers and the thumb, and the lines of the palm.
+    ctx.strokeStyle = 'rgba(120, 66, 40, 0.38)';
+    ctx.lineWidth = 4;
+    for (const finger of DEAL_FINGERS) {
+      for (const along of [0.34, 0.66]) across(ctx, finger, along, 0.3);
+    }
+    across(ctx, DEAL_THUMB, 0.5, 0.3);
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(146, 262);
+    ctx.quadraticCurveTo(200, 288, 266, 262);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(146, 300);
+    ctx.quadraticCurveTo(206, 318, 250, 300);
+    ctx.stroke();
+    // The life line, curving round the base of the thumb.
+    ctx.beginPath();
+    ctx.moveTo(244, 284);
+    ctx.quadraticCurveTo(214, 348, 236, 406);
+    ctx.stroke();
+
+    // Fingernails just showing over the tips, and light along the index.
+    ctx.fillStyle = 'rgba(255, 230, 214, 0.55)';
+    for (const finger of [DEAL_FINGERS[3], DEAL_THUMB]) {
+      const tipX = finger.x + Math.sin(finger.lean) * (finger.length - 6);
+      const tipY = finger.y - Math.cos(finger.lean) * (finger.length - 6);
+      ctx.beginPath();
+      ctx.ellipse(tipX, tipY, finger.width * 0.24, finger.width * 0.32, finger.lean, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.strokeStyle = 'rgba(255, 240, 226, 0.5)';
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(262, 220);
+    ctx.lineTo(258, 96);
+    ctx.stroke();
+    // Shade down the little-finger side, the far edge of the hand.
+    const far = ctx.createLinearGradient(DEAL_PALM.x, 0, DEAL_PALM.x + 50, 0);
+    far.addColorStop(0, 'rgba(90, 46, 24, 0.35)');
+    far.addColorStop(1, 'rgba(90, 46, 24, 0)');
+    ctx.fillStyle = far;
+    roundRect(ctx, DEAL_PALM.x, DEAL_PALM.y - 150, 50, DEAL_PALM.height + 150, 20);
+    ctx.fill();
+
+    // The shirt cuff, white, with a cufflink.
+    const cuff = ctx.createLinearGradient(136, 0, 284, 0);
+    cuff.addColorStop(0, '#ffffff');
+    cuff.addColorStop(0.6, '#e2e6ee');
+    cuff.addColorStop(1, '#aab2c2');
+    ctx.fillStyle = cuff;
+    roundRect(ctx, 136, 400, 148, 50, 10);
+    ctx.fill();
+    ctx.fillStyle = '#d6b45a';
+    ctx.beginPath();
+    ctx.arc(256, 425, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255, 246, 210, 0.9)';
+    ctx.beginPath();
+    ctx.arc(253, 422, 3.5, 0, Math.PI * 2);
     ctx.fill();
     return canvas;
   });

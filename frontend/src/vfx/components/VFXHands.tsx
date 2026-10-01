@@ -3,12 +3,12 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { HandsParams } from '../types';
 import { useFadeClock } from './fadeClock';
-import { HAND_ASPECT, openHand, porcelainHand, roboticHand } from './hands/textures';
+import { HAND_ASPECT, dealHand, openHand, porcelainHand, roboticHand } from './hands/textures';
 import { seededRandom } from './scatter';
 
 /**
- * Hands reaching in from an edge of the screen: an open one held out to be
- * shaken, machines' hands, or porcelain.
+ * Hands reaching in from an edge of the screen: an open palm, one held out to
+ * shake on a deal, machines' hands, or porcelain.
  *
  * They slide in one after another and then hold, swaying a little, rather
  * than arriving together — a row of hands appearing at once reads as a
@@ -24,6 +24,7 @@ const REACH_TIME = 0.55;
 
 const TEXTURES = {
   open: openHand,
+  deal: dealHand,
   robotic: roboticHand,
   porcelain: porcelainHand,
 };
@@ -56,9 +57,11 @@ const VFXHands: React.FC<VFXHandsProps> = ({
   style = 'open',
   edge = 'bottom',
   count = 1,
-  size = 0.42,
-  reach = 0.6,
+  position = 0.5,
+  size = 0.6,
+  reach = 0.75,
   spread = 0.7,
+  tilt = 0,
   color = '#ffffff',
   intensity = 1,
   fadeInDuration = 1,
@@ -75,14 +78,21 @@ const VFXHands: React.FC<VFXHandsProps> = ({
     const random = seededRandom(seed * 9173 + 41);
     const many = Math.max(1, Math.round(count));
     return Array.from({ length: many }, (_, i) => ({
-      // Spread evenly, then nudged, so a row of them is not a comb.
-      place: many === 1 ? 0.5 : 0.5 + ((i / (many - 1)) - 0.5) * spread + (random() - 0.5) * (spread / many) * 0.6,
+      // Spread evenly about their position, then nudged, so a row of them is
+      // not a comb.
+      place: Math.min(
+        0.97,
+        Math.max(
+          0.03,
+          many === 1 ? position : position + ((i / (many - 1)) - 0.5) * spread + (random() - 0.5) * (spread / many) * 0.6,
+        ),
+      ),
       arrives: (i / many) * 0.5 + random() * 0.12,
       sway: 0.5 + random(),
       lean: (random() - 0.5) * 0.16,
       scale: 0.85 + random() * 0.3,
     }));
-  }, [count, spread, seed]);
+  }, [count, position, spread, seed]);
 
   const parts = useMemo(() => {
     const texture = (TEXTURES[style] ?? openHand)();
@@ -136,9 +146,17 @@ const VFXHands: React.FC<VFXHandsProps> = ({
     const t = clock.elapsed.current;
     const fade = Math.min(1, clock.strength.current.value * 1.6) * intensity;
     const unit = state.viewport.width / state.size.width;
-    const height = size * Math.min(frame.width, frame.height) * unit;
+    // Measured against less of the height on a wide screen, as the wings are:
+    // there the bands either side of the results are short, and a hand sized
+    // for a phone reached into the box.
+    const height = size * Math.min(frame.width, frame.height * 0.62) * unit;
     const { turn, along, sign } = EDGES[edge] ?? EDGES.bottom;
     const half = { x: state.viewport.width / 2, y: state.viewport.height / 2 };
+    // Positive tilt turns clockwise, whichever edge they come from.
+    const tilted = turn - (tilt * Math.PI) / 180;
+    // From the left, the picture is mirrored, so the thumb drawn on its right
+    // still ends up on top rather than underneath.
+    const mirror = edge === 'left' ? -1 : 1;
 
     current.meshes.forEach((mesh, i) => {
       const hand = hands[i];
@@ -154,11 +172,11 @@ const VFXHands: React.FC<VFXHandsProps> = ({
       if (along === 'x') {
         const x = (hand.place - 0.5) * state.viewport.width;
         const y = sign > 0 ? -half.y - out : half.y + out;
-        setPose(mesh, x, y, turn + hand.lean + sway, tall * HAND_ASPECT, tall);
+        setPose(mesh, x, y, tilted + hand.lean + sway, tall * HAND_ASPECT * mirror, tall);
       } else {
         const y = (hand.place - 0.5) * state.viewport.height;
         const x = sign > 0 ? -half.x - out : half.x + out;
-        setPose(mesh, x, y, turn + hand.lean + sway, tall * HAND_ASPECT, tall);
+        setPose(mesh, x, y, tilted + hand.lean + sway, tall * HAND_ASPECT * mirror, tall);
       }
       setOpacity(mesh, fade * Math.min(1, arrived * 2.5));
     });
