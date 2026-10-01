@@ -129,7 +129,7 @@ const HELP: Record<Language, HelpContent> = {
             ' uses three separate chunks. The numbers are the ones shown beside each name. Leave it empty to use everyone.',
           ],
           [
-            "Unlike weights, a range survives loading a new list. It stays visible in its box, so it can't quietly go stale on you.",
+            'Unlike weights, a range survives loading a new list — and closing the app. If the wheel has fewer characters than you expect, look in this box first: a number left in it from last time is the usual reason.',
           ],
         ],
       },
@@ -221,6 +221,36 @@ const HELP: Record<Language, HelpContent> = {
         ],
       },
       {
+        heading: 'The effects',
+        paragraphs: [
+          [
+            'Most effects draw one thing, with a ',
+            { code: 'Kind' },
+            ' or ',
+            { code: 'Style' },
+            ' to choose which: one clock, one weapon, one hand reaching in. To fill the screen, add the same effect several times with different kinds, places and sizes — that is how the built-in animation with a wall of clocks is made.',
+          ],
+          [
+            { code: 'Words' },
+            ' writes your own words around the screen, in any language. ',
+            { code: 'Memes' },
+            ' plays GIFs from Giphy: it starts with a set of well-known memes, and you can add any other by pasting its giphy.com link. Memes need an internet connection, can pop in a moment late on slow data, and an iPhone in Low Power Mode may not play them.',
+          ],
+          [
+            'Effects that scatter things about — words, memes, eyes — keep clear of the middle, where the winner\'s name is. ',
+            { code: 'Curtain' },
+            ' can hang over the results box itself, fitted to it on any screen, or across the whole screen.',
+          ],
+          [
+            'Effects made of light glow and brighten the screen, so a dark colour barely shows in them. Where an effect has a ',
+            { code: 'Blend' },
+            ' setting, ',
+            { code: 'Paint over' },
+            ' is how to make it dark.',
+          ],
+        ],
+      },
+      {
         heading: 'Settings',
         paragraphs: [
           [
@@ -228,6 +258,9 @@ const HELP: Record<Language, HelpContent> = {
           ],
           [
             'Sound can be turned off, and so can animations. Some characters have their own colours and effects when they win, including any you have made; switching animations off shows every winner the same plain way.',
+          ],
+          [
+            'Previews in the animation builder always play, even with animations switched off. So if an animation plays in the builder but not after a spin, check that animations are on here.',
           ],
         ],
       },
@@ -325,7 +358,7 @@ const HELP: Record<Language, HelpContent> = {
             ' לוקח שלושה חלקים נפרדים. המספרים הם אלה שמופיעים ליד כל שם. אם משאירים ריק, כולם נכנסים.',
           ],
           [
-            'בניגוד למשקלים, טווח שורד טעינה של רשימה חדשה. הוא נשאר גלוי בתיבה שלו, ככה שהוא לא מתיישן בלי ששמים לב.',
+            'בניגוד למשקלים, טווח שורד טעינה של רשימה חדשה — וגם סגירה של האפליקציה. אם בגלגל יש פחות דמויות ממה שציפיתם, הסתכלו קודם בתיבה הזו: מספר שנשאר בה מפעם קודמת הוא הסיבה הרגילה.',
           ],
         ],
       },
@@ -417,6 +450,36 @@ const HELP: Record<Language, HelpContent> = {
         ],
       },
       {
+        heading: 'האפקטים',
+        paragraphs: [
+          [
+            'רוב האפקטים מציירים דבר אחד, עם ',
+            { code: 'Kind' },
+            ' או ',
+            { code: 'Style' },
+            ' שבוחר מה: שעון אחד, כלי נשק אחד, יד אחת שנכנסת. כדי למלא את המסך, מוסיפים את אותו אפקט כמה פעמים עם סוגים, מקומות וגדלים שונים — ככה בנויה האנימציה המובנית עם הקיר של השעונים.',
+          ],
+          [
+            { code: 'Words' },
+            ' כותב מילים משלכם מסביב למסך, בכל שפה. ',
+            { code: 'Memes' },
+            ' מנגן קובצי GIF מ־Giphy: הוא מתחיל עם סט של ממים מוכרים, ואפשר להוסיף כל אחד אחר על ידי הדבקת הקישור שלו מ־giphy.com. ממים צריכים חיבור לאינטרנט, יכולים להופיע רגע באיחור בגלישה איטית, ואייפון במצב חיסכון בסוללה עלול לא לנגן אותם.',
+          ],
+          [
+            'אפקטים שמפזרים דברים — מילים, ממים, עיניים — שומרים מרחק מהאמצע, איפה שהשם של הזוכה. ',
+            { code: 'Curtain' },
+            ' יכול להיתלות מעל חלון התוצאות עצמו, מותאם אליו בכל מסך, או לרוחב כל המסך.',
+          ],
+          [
+            'אפקטים שעשויים מאור זוהרים ומבהירים את המסך, כך שצבע כהה כמעט לא נראה בהם. באפקטים שיש להם הגדרת ',
+            { code: 'Blend' },
+            ', ',
+            { code: 'Paint over' },
+            ' היא הדרך לצבוע בכהה.',
+          ],
+        ],
+      },
+      {
         heading: 'הגדרות',
         paragraphs: [
           [
@@ -424,6 +487,9 @@ const HELP: Record<Language, HelpContent> = {
           ],
           [
             'אפשר לכבות את הצליל, ואפשר לכבות גם את האנימציות. לחלק מהדמויות יש צבעים ואפקטים משלהן כשהן זוכות, כולל אלה שיצרתם; כיבוי האנימציות מציג את כל הזוכים באותה צורה פשוטה.',
+          ],
+          [
+            'תצוגות מקדימות בבונה האנימציות תמיד מתנגנות, גם כשהאנימציות כבויות. אז אם אנימציה מתנגנת בבונה אבל לא אחרי סיבוב, בדקו כאן שהאנימציות מופעלות.',
           ],
         ],
       },
