@@ -247,6 +247,42 @@ export interface SlashesParams extends VFXTiming {
   intensity?: number;
 }
 
+/** Hands reaching in from an edge of the frame. */
+export interface HandsParams extends VFXTiming {
+  /** Flesh held out to be shaken, a machine's, or glazed porcelain. */
+  style?: 'open' | 'robotic' | 'porcelain';
+  /** Which edge they come in from. */
+  edge?: 'bottom' | 'top' | 'left' | 'right';
+  /** How many. They arrive one after another rather than together. */
+  count?: number;
+  /** Height of a hand, as a fraction of the frame's shorter side. */
+  size?: number;
+  /** How far in they reach, as a fraction of their own height. */
+  reach?: number;
+  /** How much of the edge they are spread along, 0–1. */
+  spread?: number;
+  /** Tints them. White keeps the colours they were drawn in. */
+  color?: string;
+  /** Peak opacity, 0–1. */
+  intensity?: number;
+}
+
+/** Someone standing behind the results: at the moment, a suit. */
+export interface FigureParams extends VFXTiming {
+  style?: 'suit';
+  /**
+   * Where it stands, as fractions of the frame: left (0) to right (1), then
+   * bottom (0) to top (1). The second number runs up; see BlackHoleParams.
+   */
+  center?: [number, number];
+  /** Height, as a fraction of the frame's shorter side. */
+  size?: number;
+  /** Tints it. White keeps the colours it was drawn in. */
+  color?: string;
+  /** Peak opacity, 0–1. Low is the point: it belongs in the background. */
+  intensity?: number;
+}
+
 /** One machine for telling the time, drawn as an object rather than in light. */
 export interface TimepiecesParams extends VFXTiming {
   /** Which machine. Each is drawn, with its own moving parts. */
@@ -334,6 +370,8 @@ export type VFXModuleConfig =
   | ({ type: 'slashes' } & SlashesParams)
   | ({ type: 'glitch' } & GlitchParams)
   | ({ type: 'timepieces' } & TimepiecesParams)
+  | ({ type: 'hands' } & HandsParams)
+  | ({ type: 'figure' } & FigureParams)
   | ({ type: 'words' } & WordsParams)
   | ({ type: 'memes' } & MemesParams);
 
