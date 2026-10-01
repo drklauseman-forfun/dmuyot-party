@@ -385,6 +385,35 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
     ],
   },
   {
+    id: 'duality-ayit',
+    // The bracketed marker is part of the name in the document, and it is what
+    // keeps this clear of anything else starting with the same three letters.
+    triggers: [{ pattern: 'אייט [נ]', match: 'prefix' }],
+    presentation: {
+      title: 'אייט',
+      // Silver on the modal: the left of the frame goes black and the right
+      // goes white, so the text has to carry itself against either.
+      accentColor: '#dcdce6',
+      backgroundColor: 'rgba(10, 10, 12, 0.96)',
+      glow: '0 0 50px #ffffff40, 0 0 100px #00000080',
+      fontFamily: "'Palatino', serif",
+      letterSpacing: '1px',
+      textShadow: '0 0 12px #ffffff80',
+    },
+    modules: [
+      // White light from the right, darkness from the left. Black added to a
+      // frame changes nothing, so that side paints over instead — see the
+      // black wraith.
+      { type: 'edgeGlow', edge: 'right', color: '#ffffff', intensity: 0.5, spread: 0.42, blend: 'add', fadeInDuration: 0.6, duration: 4, fadeDuration: 1.5 },
+      { type: 'edgeGlow', edge: 'left', color: '#000000', intensity: 0.8, spread: 0.45, blend: 'normal', fadeInDuration: 0.6, duration: 4, fadeDuration: 1.5 },
+      // Black rising, white falling. The black ones paint over as well, and
+      // are capped in size: painted over, a near particle becomes a disc that
+      // swallows the picture.
+      { type: 'sparkles', direction: 'up', color: '#000000', count: 310, size: 1.6, speed: 2.6, scale: [12, 9, 5], noise: 0.35, blend: 'normal', maxPixelSize: 60, fadeInDuration: 0.6, duration: 4, fadeDuration: 1.5 },
+      { type: 'sparkles', direction: 'down', color: '#ffffff', count: 280, size: 1.3, speed: 2.2, scale: [12, 9, 5], noise: 0.25, blend: 'add', maxPixelSize: 90, fadeInDuration: 0.6, duration: 4, fadeDuration: 1.5 },
+    ],
+  },
+  {
     id: 'meme-berry',
     // Two words, like איש הזיקוקים. Not in either document yet, so unchecked
     // against the real list; nothing there begins with it. First spelled
