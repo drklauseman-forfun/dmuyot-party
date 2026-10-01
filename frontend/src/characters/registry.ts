@@ -401,7 +401,7 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
     modules: [
       // A whale of light crossing high up, over the name rather than through
       // it, with its tail beating as it goes.
-      { type: 'creatures', style: 'whale', direction: 'left', lane: 0.8, size: 0.85, speed: 1, color: '#bfe8ff', intensity: 0.9, fadeInDuration: 0.8, duration: 5, fadeDuration: 1.6 },
+      { type: 'creatures', style: 'whale', direction: 'left', lane: 0.83, size: 0.95, speed: 1, color: '#bfe8ff', intensity: 0.95, fadeInDuration: 0.8, duration: 5, fadeDuration: 1.6 },
       // Critters along the foot of the screen and up both sides.
       { type: 'creatures', style: 'critters', edge: 'bottom', direction: 'left', count: 14, size: 0.07, speed: 1.3, color: '#cdf2ff', intensity: 0.9, fadeInDuration: 0.5, duration: 5, fadeDuration: 1.6 },
       { type: 'creatures', style: 'critters', edge: 'left', direction: 'right', count: 8, size: 0.06, speed: 1, color: '#cdf2ff', intensity: 0.85, fadeInDuration: 0.6, duration: 5, fadeDuration: 1.6 },
@@ -425,10 +425,12 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       textShadow: '0 0 14px #d8bd8499',
     },
     modules: [
-      // The cloth comes down over everything, the name included. Not quite
-      // solid: at full strength it takes the name with it, and the point is
-      // to read the name by candlelight.
-      { type: 'curtain', style: 'falling', color: '#0b0b0e', coverage: 1, fall: 1, folds: 11, intensity: 0.78, fadeInDuration: 0.3, duration: 5, fadeDuration: 1.6 },
+      // The cloth comes down onto the name and stops just past it, short of
+      // the button: measured, the name ends between 51% and 54% of the way
+      // down on every screen tried, and the button starts no higher than 58%.
+      // It covered the whole screen at first, and was asked to be shorter.
+      // Not quite solid, so the name still reads through it.
+      { type: 'curtain', style: 'falling', color: '#0b0b0e', coverage: 0.57, fall: 0.8, folds: 11, intensity: 0.78, fadeInDuration: 0.3, duration: 5, fadeDuration: 1.6 },
       // One candle, caught a moment after the cloth lands.
       { type: 'candles', count: 1, center: [0.5, 0.13], size: 0.3, spread: 0, color: '#ffb03a', intensity: 1, fadeInDuration: 0.5, duration: 5, fadeDuration: 1.6 },
     ],
@@ -458,8 +460,8 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       { type: 'weapons', style: 'bow', side: 'left', count: 1, rate: 0.9, size: 0.2, color: '#ffffff', intensity: 1, fadeInDuration: 0.7, duration: 5, fadeDuration: 1.4 },
       { type: 'weapons', style: 'missile', side: 'right', count: 1, rate: 1.1, size: 0.16, color: '#ffffff', intensity: 1, fadeInDuration: 0.6, duration: 5, fadeDuration: 1.4 },
       // Machines reaching up from below, and one porcelain hand coming down.
-      { type: 'hands', style: 'robotic', edge: 'bottom', count: 5, size: 0.36, reach: 0.62, spread: 0.88, color: '#ffffff', intensity: 1, fadeInDuration: 0.5, duration: 5, fadeDuration: 1.4 },
-      { type: 'hands', style: 'porcelain', edge: 'top', count: 1, size: 0.44, reach: 0.72, spread: 0, color: '#ffffff', intensity: 1, fadeInDuration: 0.9, duration: 5, fadeDuration: 1.4 },
+      { type: 'hands', style: 'robotic', edge: 'bottom', count: 5, size: 0.52, reach: 0.85, spread: 0.88, color: '#ffffff', intensity: 1, fadeInDuration: 0.5, duration: 5, fadeDuration: 1.4 },
+      { type: 'hands', style: 'porcelain', edge: 'top', count: 1, size: 0.62, reach: 0.88, spread: 0, color: '#ffffff', intensity: 1, fadeInDuration: 0.9, duration: 5, fadeDuration: 1.4 },
     ],
   },
   {
@@ -490,9 +492,12 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       { type: 'timepieces', style: 'metronome', center: [0.88, 0.84], size: 0.18, color: '#ffffff', speed: 1.8, intensity: 1, fadeInDuration: 0.55, duration: 5, fadeDuration: 1.5 },
       { type: 'timepieces', style: 'analogue', center: [0.88, 0.63], size: 0.15, color: '#ffffff', speed: 4, intensity: 1, fadeInDuration: 0.65, duration: 5, fadeDuration: 1.5 },
       { type: 'timepieces', style: 'hourglass', center: [0.87, 0.4], size: 0.17, color: '#ffffff', speed: 1.5, intensity: 1, fadeInDuration: 0.75, duration: 5, fadeDuration: 1.5 },
-      { type: 'timepieces', style: 'digital', center: [0.88, 0.18], size: 0.1, color: '#ffffff', speed: 6, intensity: 1, fadeInDuration: 0.85, duration: 5, fadeDuration: 1.5 },
-      // The hand itself, held out to be shaken.
-      { type: 'hands', style: 'open', edge: 'bottom', count: 1, size: 0.5, reach: 0.82, spread: 0, color: '#ffffff', intensity: 1, fadeInDuration: 0.6, duration: 5, fadeDuration: 1.5 },
+      // Top centre rather than the bottom right, where the handshake comes in.
+      { type: 'timepieces', style: 'digital', center: [0.5, 0.9], size: 0.1, color: '#ffffff', speed: 6, intensity: 1, fadeInDuration: 0.85, duration: 5, fadeDuration: 1.5 },
+      // A hand held out to shake on a deal, from a suit sleeve, coming in
+      // from the right below the results. An open palm facing the viewer
+      // was tried first and read as "stop" rather than as an offer.
+      { type: 'hands', style: 'deal', edge: 'right', count: 1, position: 0.14, size: 0.64, reach: 0.95, spread: 0, tilt: 6, color: '#ffffff', intensity: 1, fadeInDuration: 0.6, duration: 5, fadeDuration: 1.5 },
       // Two glitches at different rates, so the breaking up never falls into
       // a rhythm.
       { type: 'glitch', style: 'tear', color: '#9fd7ff', rate: 2.4, coverage: 0.3, intensity: 0.9, fadeInDuration: 0.3, duration: 5, fadeDuration: 1.5 },
