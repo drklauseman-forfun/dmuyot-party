@@ -3,12 +3,14 @@ import type { Winner } from '../types';
 
 interface ResultsModalProps {
   winners: Winner[];
+  /** A line under the winners: what knockout mode has to say about the round. */
+  note?: string | null;
   /** Already flattened by resolvePresentation — every fallback applied. */
   presentation: ResolvedPresentation;
   onClose: () => void;
 }
 
-function ResultsModal({ winners, presentation, onClose }: ResultsModalProps) {
+function ResultsModal({ winners, note, presentation, onClose }: ResultsModalProps) {
   return (
     <div className="results-overlay" onClick={onClose}>
       {presentation.glitch && <div className="glitch-overlay" />}
@@ -52,6 +54,7 @@ function ResultsModal({ winners, presentation, onClose }: ResultsModalProps) {
             </div>
           ))}
         </div>
+        {note && <p className="results-note">{note}</p>}
         <button
           onClick={onClose}
           style={{

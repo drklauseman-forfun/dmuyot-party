@@ -128,6 +128,15 @@ function App() {
   const [listSearch, setListSearch] = useState('');
   const [weights, setWeights] = usePersistedJSON<WeightMap>(STORAGE_KEYS.weights, {}, isWeightMap);
   const [history, setHistory] = usePersistedJSON<HistoryEntry[]>(STORAGE_KEYS.history, [], isHistory);
+
+  // Knockout mode: every winner is out until Restart. Neither the mode nor who
+  // is out is saved — both start fresh every time the app opens, so nobody
+  // misses their turn because a round left unfinished yesterday was never
+  // restarted. Kept in memory on purpose; do not move these into storage.
+  const [knockout, setKnockout] = useState(false);
+  const [knockedOut, setKnockedOut] = useState<ReadonlySet<number>>(() => new Set());
+  // A line under the winners, for what knockout has to say about the round.
+  const [resultNote, setResultNote] = useState<string | null>(null);
   
   // Special Visuals State. Effect definitions live in characters/registry.ts.
   const [activeEffect, setActiveEffect] = useState<CharacterEffect | null>(null);
@@ -270,6 +279,8 @@ function App() {
         // positions — including leaving a character off the wheel at weight 0.
         // A load starts fresh.
         setWeights({});
+        // Who is out is keyed by position too, and belonged to the old list.
+        setKnockedOut(new Set());
       } else {
         setLoadError(
           'No characters found. Only lines that start with a number — or items in a numbered list — count as characters.',
@@ -349,51 +360,125 @@ function App() {
     return filteredCharacters.filter(char => getWeight(char.originalIndex) > 0);
   }, [filteredCharacters, getWeight]);
 
+  // Who a spin can land on: everyone with a weight, less anyone knocked out.
+  // Outside knockout mode it is simply the wheel.
+  const spinPool = useMemo(
+    () => (knockout ? wheelCharacters.filter((char) => !knockedOut.has(char.originalIndex)) : wheelCharacters),
+    [knockout, knockedOut, wheelCharacters],
+  );
+  const outCount = wheelCharacters.length - spinPool.length;
+  // Everyone has had a turn. Not the same as an empty wheel: with every weight
+  // at 0 there was never anyone to pick, and that still gives VOID.
+  const allPicked = knockout && wheelCharacters.length > 0 && spinPool.length === 0;
+
+  const knockOut = (indices: number[]) => {
+    setKnockedOut((current) => {
+      const next = new Set(current);
+      for (const index of indices) if (index >= 0) next.add(index);
+      return next;
+    });
+  };
+
+  /** Up to `count` different characters, each drawn by weight from those left. */
+  const drawDistinct = (pool: CharacterData[], count: number) => {
+    const left = [...pool];
+    const drawn: CharacterData[] = [];
+    while (drawn.length < count && left.length > 0) {
+      const i = pickRandomIndex(left);
+      if (i === -1) break;
+      drawn.push(left[i]);
+      left.splice(i, 1);
+    }
+    return drawn;
+  };
+
+  /** What the results say about the round, when there is something to say. */
+  const knockoutNote = (asked: number, got: number, leftAfter: number) => {
+    const notes: string[] = [];
+    if (got > 0 && got < asked) notes.push(`Only ${got} ${got === 1 ? 'was' : 'were'} left to pick.`);
+    if (got > 0 && leftAfter === 0) notes.push('That was everyone — press Restart for a new round.');
+    return notes.length > 0 ? notes.join(' ') : null;
+  };
+
+  const restartRound = () => {
+    // Mid-round, a stray tap would undo the whole round, so it asks first.
+    // Once everyone is out there is nothing to lose.
+    if (!allPicked && outCount > 0 && !window.confirm(`Bring back the ${outCount} already picked?`)) return;
+    setKnockedOut(new Set());
+  };
+
+  const toggleKnockout = (on: boolean) => {
+    if (!on && outCount > 0 && !window.confirm(`Turn knockout off? The ${outCount} already picked come back.`)) return;
+    setKnockout(on);
+    setKnockedOut(new Set());
+  };
+
   const handleSpinClick = () => {
-    if (!mustSpin && filteredCharacters.length > 0) {
-      const finalCount = getNumericSpinCount();
-      
-      if (finalCount > 1 || spinDuration < 0.2) {
-        const actualCount = finalCount;
-        const newWinners: { name: string; index: number; color: string }[] = [];
-        for (let i = 0; i < actualCount; i++) {
-          const idx = pickRandomIndex(wheelCharacters);
+    if (mustSpin || filteredCharacters.length === 0) return;
+    // Everyone has had a turn, and the button says Restart.
+    if (allPicked) {
+      setKnockedOut(new Set());
+      return;
+    }
+    const finalCount = getNumericSpinCount();
+
+    if (finalCount > 1 || spinDuration < 0.2) {
+      const newWinners: { name: string; index: number; color: string }[] = [];
+      if (knockout) {
+        // Without replacement: one batch never names the same character
+        // twice, and everyone it names is out.
+        for (const char of drawDistinct(spinPool, finalCount)) {
+          newWinners.push({ name: char.name, index: char.originalIndex, color: char.color });
+        }
+        if (newWinners.length === 0) newWinners.push({ name: VOID_NAME, index: -1, color: '#ff00ff' });
+      } else {
+        // With replacement, deliberately: the same name can come up twice.
+        for (let i = 0; i < finalCount; i++) {
+          const idx = pickRandomIndex(spinPool);
           if (idx === -1) {
             newWinners.push({ name: VOID_NAME, index: -1, color: '#ff00ff' });
           } else {
-            const char = wheelCharacters[idx];
+            const char = spinPool[idx];
             newWinners.push({ name: char.name, index: char.originalIndex, color: char.color });
           }
         }
-        if (actualCount === 1) {
-          setSelectedIndex(newWinners[0].index);
-        }
-        setWinners(newWinners);
-        checkEffect(newWinners);
-        setShowModal(true);
-        addToHistory(newWinners);
-        // No wheel to tick along with on this path, so just the landing.
-        playResultSound();
-      } else {
-        const newPrizeNumber = pickRandomIndex(wheelCharacters);
-        if (newPrizeNumber === -1) {
-          const voidWinner = { name: VOID_NAME, index: -1, color: '#ff00ff' };
-          setWinners([voidWinner]);
-          setSelectedIndex(-1);
-          // Clears any effect left over from the previous winner — without
-          // this, VOID inherits that winner's modal styling.
-          checkEffect([voidWinner]);
-          setShowModal(true);
-          addToHistory([voidWinner]);
-          playResultSound();
-          return;
-        }
-        setPrizeNumber(newPrizeNumber);
-        setMustSpin(true);
-        setSelectedIndex(null);
-        setWinners([]);
-        playSpinSound(spinDuration, wheelCharacters.length);
       }
+      if (finalCount === 1) {
+        setSelectedIndex(newWinners[0].index);
+      }
+      if (knockout) {
+        const picked = newWinners.filter((w) => w.index >= 0);
+        knockOut(picked.map((w) => w.index));
+        setResultNote(knockoutNote(finalCount, picked.length, spinPool.length - picked.length));
+      } else {
+        setResultNote(null);
+      }
+      setWinners(newWinners);
+      checkEffect(newWinners);
+      setShowModal(true);
+      addToHistory(newWinners);
+      // No wheel to tick along with on this path, so just the landing.
+      playResultSound();
+    } else {
+      const newPrizeNumber = pickRandomIndex(spinPool);
+      if (newPrizeNumber === -1) {
+        const voidWinner = { name: VOID_NAME, index: -1, color: '#ff00ff' };
+        setWinners([voidWinner]);
+        setSelectedIndex(-1);
+        setResultNote(null);
+        // Clears any effect left over from the previous winner — without
+        // this, VOID inherits that winner's modal styling.
+        checkEffect([voidWinner]);
+        setShowModal(true);
+        addToHistory([voidWinner]);
+        playResultSound();
+        return;
+      }
+      setPrizeNumber(newPrizeNumber);
+      setMustSpin(true);
+      setSelectedIndex(null);
+      setWinners([]);
+      playSpinSound(spinDuration, spinPool.length);
     }
   };
 
@@ -408,13 +493,13 @@ function App() {
   // slice actually has.
   const wheelData = useMemo<WheelSlice[]>(
     () =>
-      wheelCharacters.map((char) => ({
+      spinPool.map((char) => ({
         number: char.originalIndex + 1,
         name: char.name,
         color: char.color,
         weight: getWeight(char.originalIndex),
       })),
-    [wheelCharacters, getWeight],
+    [spinPool, getWeight],
   );
 
   // For the builder's character picker. Identical names collapse into one: an
@@ -518,9 +603,18 @@ function App() {
                 spinDuration={spinDuration}
                 onStopSpinning={() => {
                   setMustSpin(false);
-                  const winner = wheelCharacters[prizeNumber];
+                  // The pool the spin was aimed at: nothing can change it
+                  // mid-spin, since every control is off until now.
+                  const winner = spinPool[prizeNumber];
+                  if (!winner) return;
                   setSelectedIndex(winner.originalIndex);
                   const winnerObj = { name: winner.name, index: winner.originalIndex, color: winner.color };
+                  if (knockout) {
+                    knockOut([winner.originalIndex]);
+                    setResultNote(knockoutNote(1, 1, spinPool.length - 1));
+                  } else {
+                    setResultNote(null);
+                  }
                   setWinners([winnerObj]);
                   checkEffect([winnerObj]);
                   setShowModal(true);
@@ -533,13 +627,45 @@ function App() {
                   <label style={{ fontSize: '0.8rem', color: '#888' }}>Spins</label>
                   <input type="number" className="spin-input" value={spinCount} min={1} max={1000} onChange={(e) => setSpinCount(e.target.value)} disabled={mustSpin} />
                 </div>
-                <button 
-                  onClick={handleSpinClick} 
-                  style={{ fontSize: '1.2rem', padding: '1rem 2.5rem', background: 'linear-gradient(45deg, #646cff, #ff64f2)', height: 'fit-content', marginTop: '1.2rem' }}
+                <button
+                  onClick={handleSpinClick}
+                  style={{
+                    fontSize: allPicked ? '1rem' : '1.2rem',
+                    padding: '1rem 2.5rem',
+                    background: allPicked
+                      ? 'linear-gradient(45deg, #ff7a45, #ff4f8b)'
+                      : 'linear-gradient(45deg, #646cff, #ff64f2)',
+                    height: 'fit-content',
+                    marginTop: '1.2rem',
+                  }}
                   disabled={mustSpin}
                 >
-                  {getNumericSpinCount() > 1 ? `SPIN ${getNumericSpinCount()} TIMES` : 'SPIN'}
+                  {allPicked
+                    ? "Everyone's been picked — Restart"
+                    : `${knockout ? '🥊 ' : ''}${getNumericSpinCount() > 1 ? `SPIN ${getNumericSpinCount()} TIMES` : 'SPIN'}`}
                 </button>
+              </div>
+
+              <div className={`knockout-bar${knockout ? ' is-on' : ''}`}>
+                <label className="knockout-switch">
+                  <input
+                    type="checkbox"
+                    checked={knockout}
+                    onChange={(e) => toggleKnockout(e.target.checked)}
+                    disabled={mustSpin}
+                  />
+                  <span>🥊 Knockout</span>
+                </label>
+                {knockout && (
+                  <>
+                    <span className="knockout-count">
+                      {outCount} of {wheelCharacters.length} out
+                    </span>
+                    <button className="knockout-restart" onClick={restartRound} disabled={mustSpin || outCount === 0}>
+                      Restart
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -550,6 +676,7 @@ function App() {
             weights={weights}
             getWeight={getWeight}
             selectedIndex={selectedIndex}
+            knockedOut={knockout ? knockedOut : undefined}
             search={listSearch}
             disabled={mustSpin}
             onSearchChange={setListSearch}
@@ -598,6 +725,7 @@ function App() {
       {showModal && (
         <ResultsModal
           winners={winners}
+          note={resultNote}
           presentation={presentation}
           onClose={() => setShowModal(false)}
         />

@@ -251,6 +251,101 @@ h1 {
   color: white;
 }
 
+/* Knockout mode's switch, beside the spin button. Quiet when off; when on it
+   turns orange and says who is out, so nobody can miss that it is on. */
+.knockout-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid #333;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.knockout-bar.is-on {
+  border-color: #ff7a45;
+  background: rgba(255, 122, 69, 0.14);
+  color: #ffd6c4;
+  box-shadow: 0 0 16px rgba(255, 122, 69, 0.25);
+}
+
+.knockout-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.knockout-switch input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: #ff7a45;
+}
+
+.knockout-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.knockout-restart {
+  padding: 0.3rem 0.9rem;
+  border: none;
+  border-radius: 999px;
+  background: #ff7a45;
+  color: #1c0f08;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.knockout-restart:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* A finger needs about 44px; see the touch-target note in CLAUDE.md. */
+@media (pointer: coarse) {
+  .knockout-switch {
+    min-height: 40px;
+  }
+
+  .knockout-restart {
+    min-height: 38px;
+    padding: 0.4rem 1.1rem;
+  }
+}
+
+/* Knocked out this round: still listed, so a weight can be set for the next. */
+.character-item.is-out {
+  opacity: 0.5;
+}
+
+.out-name {
+  text-decoration: line-through;
+}
+
+.out-badge {
+  margin-right: 0.6rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 122, 69, 0.2);
+  color: #ffb08f;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.results-note {
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
+  color: #ffb08f;
+}
+
 /* Phone layout. Must stay below the desktop rules it overrides — these have
    the same specificity, so the later block wins. */
 @media (max-width: 768px) {

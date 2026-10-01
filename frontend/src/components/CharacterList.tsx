@@ -9,6 +9,8 @@ interface CharacterListProps {
   /** The effective weight, with the default and in-progress edits resolved. */
   getWeight: (originalIndex: number) => number;
   selectedIndex: number | null;
+  /** Knocked out this round; only given while knockout mode is on. */
+  knockedOut?: ReadonlySet<number>;
   search: string;
   disabled: boolean;
   onSearchChange: (value: string) => void;
@@ -22,6 +24,7 @@ function CharacterList({
   weights,
   getWeight,
   selectedIndex,
+  knockedOut,
   search,
   disabled,
   onSearchChange,
@@ -52,16 +55,23 @@ function CharacterList({
           style={{ padding: '5px 10px', background: '#2c2c2c', border: '1px solid #444', color: 'white', borderRadius: '4px', width: '100px' }}
         />
       </div>
-      {visible.map((char) => (
+      {visible.map((char) => {
+        // Still listed, so their weight can be set for the next round.
+        const out = knockedOut?.has(char.originalIndex) ?? false;
+        return (
         <div
           key={char.originalIndex}
           id={`char-${char.originalIndex}`}
-          className={`character-item ${selectedIndex === char.originalIndex ? 'highlight' : ''}`}
+          className={`character-item ${selectedIndex === char.originalIndex ? 'highlight' : ''}${out ? ' is-out' : ''}`}
           style={{ color: char.color !== '#ffffff' ? char.color : 'inherit' }}
         >
-          <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginRight: '10px' }}>
+          <span
+            className={out ? 'out-name' : undefined}
+            style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginRight: '10px' }}
+          >
             {char.originalIndex + 1}. {char.name}
           </span>
+          {out && <span className="out-badge">OUT</span>}
           <div className="weight-control">
             <button onClick={() => onWeightChange(char.originalIndex, getWeight(char.originalIndex) - 1)} disabled={disabled}>-</button>
             <input
@@ -75,7 +85,8 @@ function CharacterList({
             <button onClick={() => onWeightChange(char.originalIndex, getWeight(char.originalIndex) + 1)} disabled={disabled}>+</button>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
