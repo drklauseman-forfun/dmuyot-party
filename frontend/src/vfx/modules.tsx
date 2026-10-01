@@ -10,6 +10,8 @@ import VFXFireworks from './components/VFXFireworks';
 import VFXWings from './components/VFXWings';
 import VFXEyes from './components/VFXEyes';
 import VFXSlashes from './components/VFXSlashes';
+import VFXGlitch from './components/VFXGlitch';
+import VFXTimepieces from './components/VFXTimepieces';
 import VFXWords from './components/VFXWords';
 import VFXMemes from './components/VFXMemes';
 import type { VFXModuleConfig, VFXModuleType } from './types';
@@ -47,6 +49,7 @@ export const UNLIT_MODULES: ReadonlySet<VFXModuleType> = new Set<VFXModuleType>(
   'eyes',
   'words',
   'memes',
+  'timepieces',
 ]);
 
 /** A module's own parameters, without the discriminant used to select it. */
@@ -78,6 +81,8 @@ const RENDERERS: ModuleRenderers = {
   wings: (params, { active }) => <VFXWings {...params} active={active} />,
   eyes: (params, { active, seed }) => <VFXEyes {...params} active={active} seed={seed} />,
   slashes: (params, { active, seed }) => <VFXSlashes {...params} active={active} seed={seed} />,
+  glitch: (params, { active }) => <VFXGlitch {...params} active={active} />,
+  timepieces: (params, { active }) => <VFXTimepieces {...params} active={active} />,
   words: (params, { active, seed }) => <VFXWords {...params} active={active} seed={seed} />,
   memes: (params, { active, seed }) => <VFXMemes {...params} active={active} seed={seed} />,
 };

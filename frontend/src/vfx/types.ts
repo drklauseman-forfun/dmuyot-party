@@ -247,6 +247,39 @@ export interface SlashesParams extends VFXTiming {
   intensity?: number;
 }
 
+/** One machine for telling the time, drawn as an object rather than in light. */
+export interface TimepiecesParams extends VFXTiming {
+  /** Which machine. Each is drawn, with its own moving parts. */
+  style?: 'analogue' | 'digital' | 'hourglass' | 'metronome';
+  /**
+   * Where it sits, as fractions of the frame: left (0) to right (1), then
+   * bottom (0) to top (1). The second number runs up; see BlackHoleParams.
+   */
+  center?: [number, number];
+  /** Height, as a fraction of the frame's shorter side. */
+  size?: number;
+  /** Tints the drawing. White keeps the colours it was drawn in. */
+  color?: string;
+  /** How fast it runs: ticks a second, beats a second, or turns of the glass. */
+  speed?: number;
+  /** Peak opacity, 0–1. */
+  intensity?: number;
+}
+
+/** The picture breaking up in bursts: torn slices, split colour, or static. */
+export interface GlitchParams extends VFXTiming {
+  /** 'tear' slides slices sideways, 'split' separates red from cyan, 'blocks' is static. */
+  style?: 'tear' | 'split' | 'blocks';
+  /** Tints the bands. */
+  color?: string;
+  /** Bursts per second. Between bursts the screen is left alone. */
+  rate?: number;
+  /** How much of the frame each burst touches, 0–1. */
+  coverage?: number;
+  /** Peak opacity, 0–1. */
+  intensity?: number;
+}
+
 /** Words popping up around the frame, lettered like meme captions. */
 export interface WordsParams extends VFXTiming {
   /** What to write. The words take turns, so each one appears about as often. */
@@ -299,6 +332,8 @@ export type VFXModuleConfig =
   | ({ type: 'wings' } & WingsParams)
   | ({ type: 'eyes' } & EyesParams)
   | ({ type: 'slashes' } & SlashesParams)
+  | ({ type: 'glitch' } & GlitchParams)
+  | ({ type: 'timepieces' } & TimepiecesParams)
   | ({ type: 'words' } & WordsParams)
   | ({ type: 'memes' } & MemesParams);
 

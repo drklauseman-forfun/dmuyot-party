@@ -468,7 +468,7 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
   },
 
   clock: {
-    label: 'Clock',
+    label: 'Clock face in light',
     description: 'A clock face drawn in light, with hands that tick from mark to mark.',
     params: {
       color: {
@@ -721,6 +721,114 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         max: 2,
         step: 0.01,
         unit: 's',
+      },
+      intensity: {
+        kind: 'number',
+        label: 'Strength',
+        guide: 'From 0 (invisible) to 1 (full).',
+        default: 1,
+        min: 0,
+        max: 1,
+        step: 0.05,
+      },
+      ...TIMING_SCHEMA,
+    },
+  },
+
+  timepieces: {
+    label: 'Clocks',
+    description: 'A machine for telling the time: a clock, a digital one, an hourglass or a metronome.',
+    params: {
+      style: {
+        kind: 'select',
+        label: 'Kind',
+        guide: 'Which machine it is. One effect shows one machine, so a wall of them is this effect several times over, each with its own kind, place and size.',
+        default: 'analogue',
+        options: [
+          { value: 'analogue', label: 'Clock' },
+          { value: 'digital', label: 'Digital' },
+          { value: 'hourglass', label: 'Hourglass' },
+          { value: 'metronome', label: 'Metronome' },
+        ],
+      },
+      center: { ...CENTER, default: [0.2, 0.7] },
+      size: {
+        kind: 'number',
+        label: 'Size',
+        guide: 'How tall it is, compared to the screen.',
+        default: 0.2,
+        min: 0.05,
+        max: 0.6,
+        step: 0.01,
+      },
+      color: {
+        kind: 'color',
+        label: 'Colour',
+        guide: 'Tints the whole machine. White keeps the colours it was drawn in — metal, wood and glass.',
+        default: '#ffffff',
+      },
+      speed: {
+        kind: 'number',
+        label: 'Speed',
+        guide: 'Ticks a second for a clock, beats a second for a metronome, and how many times the hourglass empties over the hold. A digital clock counts at this rate.',
+        default: 1,
+        min: 0.1,
+        max: 10,
+        step: 0.1,
+      },
+      intensity: {
+        kind: 'number',
+        label: 'Strength',
+        guide: 'From 0 (invisible) to 1 (solid).',
+        default: 1,
+        min: 0,
+        max: 1,
+        step: 0.05,
+      },
+      ...TIMING_SCHEMA,
+    },
+  },
+
+  glitch: {
+    label: 'Glitch',
+    description: 'The picture breaking up in bursts: torn slices, split colour, or static.',
+    params: {
+      style: {
+        kind: 'select',
+        label: 'Kind',
+        guide:
+          'Torn slices slide bands of the picture sideways. Split colour separates it into red and cyan ghosts. Static fills blocks with noise.',
+        default: 'tear',
+        options: [
+          { value: 'tear', label: 'Torn slices' },
+          { value: 'split', label: 'Split colour' },
+          { value: 'blocks', label: 'Static' },
+        ],
+      },
+      color: {
+        kind: 'color',
+        label: 'Colour',
+        guide: 'Tints the bands. Split colour keeps its red and cyan whatever this is.',
+        default: '#8ad7ff',
+      },
+      rate: {
+        kind: 'number',
+        label: 'Bursts',
+        guide: 'How many times a second it breaks up. Between bursts the screen is left alone, which is what makes it read as a fault.',
+        default: 3,
+        min: 0.2,
+        max: 12,
+        step: 0.1,
+        unit: '/s',
+      },
+      coverage: {
+        kind: 'number',
+        label: 'How much',
+        guide: 'How much of the screen each burst touches, from a few slices (0.1) to nearly all of it (1).',
+        default: 0.35,
+        min: 0.05,
+        max: 1,
+        step: 0.05,
       },
       intensity: {
         kind: 'number',
