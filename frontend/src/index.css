@@ -50,6 +50,17 @@ header {
   margin-bottom: 1rem;
 }
 
+/* The buttons sit in the header's top corners — information on the left,
+   history, animations and settings on the right. Below about 560px the title
+   no longer fits between them, and on every phone the right-hand group
+   covered the end of it. There the title and its note move down into a row
+   of their own, under the buttons. */
+@media (max-width: 600px) {
+  header {
+    padding-top: 3.2rem;
+  }
+}
+
 /* Information, at the top left. Deliberately not `.settings-btn`: that one
    spins on hover, which is right for a cog and odd for anything else. */
 .help-btn {
