@@ -385,6 +385,29 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
     ],
   },
   {
+    id: 'black-lady',
+    // Four words of Hebrew; nothing else in either document begins with them.
+    triggers: [{ pattern: 'הגבירה השחורה', match: 'prefix' }],
+    presentation: {
+      title: 'הגבירה השחורה',
+      // Candlelight on the modal: everything around it goes dark.
+      accentColor: '#d8bd84',
+      backgroundColor: 'rgba(6, 6, 7, 0.96)',
+      glow: '0 0 40px #d8bd8444, 0 0 90px #00000088',
+      fontFamily: "'Palatino', serif",
+      letterSpacing: '2px',
+      textShadow: '0 0 14px #d8bd8499',
+    },
+    modules: [
+      // The cloth comes down over everything, the name included. Not quite
+      // solid: at full strength it takes the name with it, and the point is
+      // to read the name by candlelight.
+      { type: 'curtain', style: 'falling', color: '#0b0b0e', coverage: 1, fall: 1, folds: 11, intensity: 0.78, fadeInDuration: 0.3, duration: 5, fadeDuration: 1.6 },
+      // One candle, caught a moment after the cloth lands.
+      { type: 'candles', count: 1, center: [0.5, 0.13], size: 0.3, spread: 0, color: '#ffb03a', intensity: 1, fadeInDuration: 0.5, duration: 5, fadeDuration: 1.6 },
+    ],
+  },
+  {
     id: 'arsenal-juliet',
     // The backslash is part of the name, so it is part of the pattern; in a
     // TypeScript string it has to be written twice to mean one.
