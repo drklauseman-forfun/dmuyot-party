@@ -247,6 +247,24 @@ export interface SlashesParams extends VFXTiming {
   intensity?: number;
 }
 
+/** Weapons at the sides of the frame, firing across it. */
+export interface WeaponsParams extends VFXTiming {
+  /** Which weapon. Each fires its own kind of shot. */
+  style?: 'pistol' | 'rifle' | 'cannon' | 'laser' | 'bow' | 'missile';
+  /** Which side they stand on. */
+  side?: 'left' | 'right' | 'both';
+  /** How many on each side. */
+  count?: number;
+  /** Shots a second, from each weapon. They keep their own time. */
+  rate?: number;
+  /** Height of a weapon, as a fraction of the frame's shorter side. */
+  size?: number;
+  /** Tints them. White keeps the colours they were drawn in. */
+  color?: string;
+  /** Peak opacity, 0–1. */
+  intensity?: number;
+}
+
 /** Hands reaching in from an edge of the frame. */
 export interface HandsParams extends VFXTiming {
   /** Flesh held out to be shaken, a machine's, or glazed porcelain. */
@@ -370,6 +388,7 @@ export type VFXModuleConfig =
   | ({ type: 'slashes' } & SlashesParams)
   | ({ type: 'glitch' } & GlitchParams)
   | ({ type: 'timepieces' } & TimepiecesParams)
+  | ({ type: 'weapons' } & WeaponsParams)
   | ({ type: 'hands' } & HandsParams)
   | ({ type: 'figure' } & FigureParams)
   | ({ type: 'words' } & WordsParams)

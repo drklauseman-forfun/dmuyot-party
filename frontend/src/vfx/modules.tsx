@@ -12,6 +12,7 @@ import VFXEyes from './components/VFXEyes';
 import VFXSlashes from './components/VFXSlashes';
 import VFXGlitch from './components/VFXGlitch';
 import VFXTimepieces from './components/VFXTimepieces';
+import VFXWeapons from './components/VFXWeapons';
 import VFXHands from './components/VFXHands';
 import VFXFigure from './components/VFXFigure';
 import VFXWords from './components/VFXWords';
@@ -54,6 +55,7 @@ export const UNLIT_MODULES: ReadonlySet<VFXModuleType> = new Set<VFXModuleType>(
   'timepieces',
   'hands',
   'figure',
+  'weapons',
 ]);
 
 /** A module's own parameters, without the discriminant used to select it. */
@@ -87,6 +89,7 @@ const RENDERERS: ModuleRenderers = {
   slashes: (params, { active, seed }) => <VFXSlashes {...params} active={active} seed={seed} />,
   glitch: (params, { active }) => <VFXGlitch {...params} active={active} />,
   timepieces: (params, { active }) => <VFXTimepieces {...params} active={active} />,
+  weapons: (params, { active, seed }) => <VFXWeapons {...params} active={active} seed={seed} />,
   hands: (params, { active, seed }) => <VFXHands {...params} active={active} seed={seed} />,
   figure: (params, { active }) => <VFXFigure {...params} active={active} />,
   words: (params, { active, seed }) => <VFXWords {...params} active={active} seed={seed} />,
