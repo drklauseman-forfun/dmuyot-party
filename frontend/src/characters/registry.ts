@@ -385,6 +385,35 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
     ],
   },
   {
+    id: 'arsenal-juliet',
+    // The backslash is part of the name, so it is part of the pattern; in a
+    // TypeScript string it has to be written twice to mean one.
+    triggers: [{ pattern: "ג'ול\\ייט", match: 'prefix' }],
+    presentation: {
+      title: "ג'ול\\ייט",
+      accentColor: '#e3e7ee',
+      backgroundColor: 'rgba(12, 12, 14, 0.95)',
+      glow: '0 0 50px #e3e7ee44, 0 0 100px #8a1f2a44',
+      fontFamily: "'Georgia', serif",
+      letterSpacing: '1px',
+      textShadow: '0 0 12px #e3e7ee',
+      shake: true,
+    },
+    modules: [
+      // Six kinds of weapon, each its own call, so they keep their own rates
+      // and never fall into one rhythm.
+      { type: 'weapons', style: 'pistol', side: 'left', count: 2, rate: 2.2, size: 0.16, color: '#ffffff', intensity: 1, fadeInDuration: 0.4, duration: 5, fadeDuration: 1.4 },
+      { type: 'weapons', style: 'rifle', side: 'right', count: 2, rate: 1.6, size: 0.17, color: '#ffffff', intensity: 1, fadeInDuration: 0.5, duration: 5, fadeDuration: 1.4 },
+      { type: 'weapons', style: 'cannon', side: 'left', count: 1, rate: 0.7, size: 0.21, color: '#ffffff', intensity: 1, fadeInDuration: 0.6, duration: 5, fadeDuration: 1.4 },
+      { type: 'weapons', style: 'laser', side: 'right', count: 1, rate: 3.2, size: 0.14, color: '#ffffff', intensity: 1, fadeInDuration: 0.4, duration: 5, fadeDuration: 1.4 },
+      { type: 'weapons', style: 'bow', side: 'left', count: 1, rate: 0.9, size: 0.2, color: '#ffffff', intensity: 1, fadeInDuration: 0.7, duration: 5, fadeDuration: 1.4 },
+      { type: 'weapons', style: 'missile', side: 'right', count: 1, rate: 1.1, size: 0.16, color: '#ffffff', intensity: 1, fadeInDuration: 0.6, duration: 5, fadeDuration: 1.4 },
+      // Machines reaching up from below, and one porcelain hand coming down.
+      { type: 'hands', style: 'robotic', edge: 'bottom', count: 5, size: 0.36, reach: 0.62, spread: 0.88, color: '#ffffff', intensity: 1, fadeInDuration: 0.5, duration: 5, fadeDuration: 1.4 },
+      { type: 'hands', style: 'porcelain', edge: 'top', count: 1, size: 0.44, reach: 0.72, spread: 0, color: '#ffffff', intensity: 1, fadeInDuration: 0.9, duration: 5, fadeDuration: 1.4 },
+    ],
+  },
+  {
     id: 'timekeeper-ara',
     // The bracketed marker is part of the name in the document, and it is
     // what keeps a three-letter trigger from catching anything else.
