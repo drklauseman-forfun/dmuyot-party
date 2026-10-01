@@ -19,6 +19,10 @@ export const STORAGE_KEYS = {
   username: 'dmuyot_party_username',
   /** Custom animations, every username's, as one object. See animations/store.ts. */
   animations: 'dmuyot_party_animations',
+  /** Each name's PIN, once it has worked on this phone. See animations/sync.ts. */
+  pins: 'dmuyot_party_pins',
+  /** Per name, the animation ids last seen on the server. See animations/sync.ts. */
+  syncedAnimations: 'dmuyot_party_synced',
   ranges: 'dmuyot_party_ranges',
   weights: 'dmuyot_party_weights',
   history: 'dmuyot_party_history',

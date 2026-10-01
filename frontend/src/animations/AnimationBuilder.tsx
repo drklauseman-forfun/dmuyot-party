@@ -32,6 +32,8 @@ import {
   withTiming,
 } from './timing';
 import type { AnimationLibrary, AnimationTiming, CustomAnimation } from './types';
+import SyncPanel from './SyncPanel';
+import type { AnimationSync } from './sync';
 import './builder.css';
 
 /**
@@ -56,6 +58,8 @@ interface AnimationBuilderProps {
   onUsernameChange: (name: string) => void;
   library: AnimationLibrary;
   onLibraryChange: (next: AnimationLibrary) => void;
+  /** Where the name stands with the server, and its PIN. See sync.ts. */
+  sync: AnimationSync;
   /** Names from the loaded list — the characters an animation can be made for. */
   characterNames: string[];
   /** Play these effects on the real effect canvas, above this modal. */
@@ -233,6 +237,7 @@ function AnimationBuilder({
   onUsernameChange,
   library,
   onLibraryChange,
+  sync,
   characterNames,
   onPreview,
   onClose,
@@ -257,9 +262,21 @@ function AnimationBuilder({
   // home rather than a form with nothing behind it.
   const view: Screen = !draft && screen.kind !== 'home' ? { kind: 'home' } : screen;
 
+  // Changes to a protected name need its PIN; the first save to a shared name
+  // sets one. With no server, everything stays on this phone as before.
+  const pinBlocker =
+    sync.state === 'locked'
+      ? "This name is protected. Enter its PIN on the first screen and press Unlock."
+      : sync.state === 'unclaimed' && Array.from(sync.pin.trim()).length < 4
+        ? 'Choose a PIN for this name on the first screen — at least 4 characters.'
+        : sync.state === 'loading'
+          ? 'Checking this name with the server — a moment.'
+          : null;
   const saveBlocker = !hasName
     ? 'Enter your name on the first screen before saving.'
-    : !draft
+    : pinBlocker
+      ? pinBlocker
+      : !draft
       ? null
       : !draft.character
         ? 'Choose the character this animation is for.'
@@ -305,6 +322,10 @@ function AnimationBuilder({
   };
 
   const remove = (animation: CustomAnimation) => {
+    if (pinBlocker) {
+      setNotice(pinBlocker);
+      return;
+    }
     if (!window.confirm(`Delete the animation for ${animation.character}?`)) return;
     onLibraryChange(withoutAnimation(library, username, animation.id));
     setNotice(`Deleted the animation for ${animation.character}.`);
@@ -420,6 +441,10 @@ function AnimationBuilder({
   };
 
   const runImport = () => {
+    if (pinBlocker) {
+      setImportMessage({ ok: false, text: pinBlocker });
+      return;
+    }
     const result = importAnimations(library, username, importCode.trim());
     if (result.error) {
       setImportMessage({ ok: false, text: result.error });
@@ -464,9 +489,10 @@ function AnimationBuilder({
           onChange={(e) => onUsernameChange(e.target.value)}
         />
         <p className="builder-note">
-          Your animations are saved under this name. It isn't a password and doesn't have to be unique — anyone who
-          types the same name shares them. Capital letters don't matter.
+          Your animations are saved under this name: type it on any phone to get them there too. Capital letters
+          don't matter.
         </p>
+        {hasName && <SyncPanel sync={sync} />}
       </div>
 
       <div className="builder-section">

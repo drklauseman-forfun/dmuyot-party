@@ -646,3 +646,26 @@
     height: 22px;
   }
 }
+
+/* The name's standing with the server, under the name: see SyncPanel.tsx. */
+.sync-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 0.6rem;
+}
+
+.sync-pin-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sync-pin-row .builder-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.sync-ok {
+  color: #9fe0b0;
+}

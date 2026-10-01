@@ -31,6 +31,7 @@ import ResultsModal from './components/ResultsModal';
 import SettingsModal from './components/SettingsModal';
 import AnimationBuilder from './animations/AnimationBuilder';
 import { resolveWinnerAnimation, useAnimationLibrary } from './animations/store';
+import { useAnimationSync } from './animations/sync';
 
 interface ExtractionResponse {
   characters: { name: string; color: string }[];
@@ -122,6 +123,10 @@ function App() {
   // Whose custom animations apply. A name, not an account: see animations/store.ts.
   const [username, setUsername] = usePersistedString(STORAGE_KEYS.username, '');
   const [animationLibrary, setAnimationLibrary] = useAnimationLibrary();
+  // Shares the typed name's animations through the server, so the same name
+  // has them on any phone. Runs from the start, not only in the builder:
+  // what plays after a spin should be the name's latest.
+  const animationSync = useAnimationSync(animationLibrary, setAnimationLibrary, username);
 
   // Filter, Weight & History States
   const [rangeInput, setRangeInput] = usePersistedString(STORAGE_KEYS.ranges, '');
@@ -693,7 +698,8 @@ function App() {
           username={username}
           onUsernameChange={setUsername}
           library={animationLibrary}
-          onLibraryChange={setAnimationLibrary}
+          onLibraryChange={animationSync.change}
+          sync={animationSync}
           characterNames={characterNames}
           onPreview={previewAnimation}
           onClose={() => setShowBuilder(false)}
