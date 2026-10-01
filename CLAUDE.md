@@ -159,9 +159,22 @@ rigid with a hinged tail. The whale now bends as one strip, the wave growing
 from the head to the flukes, up and down, and its flukes are broad blades
 seen from a little below — two equal upright blades made it a fish.
 
-Hands, the wings and the whale are sized against the shorter side on a phone
-but against 0.62 of the height on a wide screen, where the bands beside the
-results are short; a phone-sized hand reached into the box on a laptop.
+Hands, candles, the wings and the whale are sized against the shorter side on
+a phone but against 0.62 of the height on a wide screen, where the bands beside
+the results are short; a phone-sized hand reached into the box on a laptop, and
+a candle stood up into it.
+
+**The curtain is the one effect that looks at the page.** Hung over the
+results, it reads the `.results-modal` box with `getBoundingClientRect` every
+frame and fits itself to it — exact on every screen, and a shaking box takes
+its curtain with it. The canvas covers the whole window, so page pixels are
+canvas pixels. With no box on the page, as in a builder preview, it hangs where
+the box would be. It took three tries to read as a curtain at all: a dark
+full-screen rectangle with faint stripes, then a shorter one, were both turned
+down. What made it read was silk shading — folds lit from the slope of a
+surface, a sheen down each crest in a lighter shade of the cloth's colour, a
+hem that follows the folds — and a brass rod with knobs to hang from. Many
+thin folds read as a pleated blind; a few broad ones read as silk.
 
 Most of them take a `style` or `kind`, and draw **one** of the thing. A wall of
 clocks or a battery of mixed weapons is the same effect called over and over

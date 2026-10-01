@@ -425,14 +425,14 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       textShadow: '0 0 14px #d8bd8499',
     },
     modules: [
-      // The cloth comes down onto the name and stops just past it, short of
-      // the button: measured, the name ends between 51% and 54% of the way
-      // down on every screen tried, and the button starts no higher than 58%.
-      // It covered the whole screen at first, and was asked to be shorter.
-      // Not quite solid, so the name still reads through it.
-      { type: 'curtain', style: 'falling', color: '#0b0b0e', coverage: 0.57, fall: 0.8, folds: 11, intensity: 0.78, fadeInDuration: 0.3, duration: 5, fadeDuration: 1.6 },
+      // Black silk on a brass rod, hung over the results box itself and
+      // falling the whole way down it. A full-screen cloth was tried first,
+      // then a shorter one, and neither read as a curtain; this one is sized
+      // to the box on every screen and shines silver down each fold. Sheer,
+      // so the name still shows through it.
+      { type: 'curtain', style: 'falling', over: 'results', color: '#0b0b0e', coverage: 1, fall: 1.1, folds: 7, sheen: 0.85, intensity: 0.84, fadeInDuration: 0.3, duration: 5, fadeDuration: 1.6 },
       // One candle, caught a moment after the cloth lands.
-      { type: 'candles', count: 1, center: [0.5, 0.13], size: 0.3, spread: 0, color: '#ffb03a', intensity: 1, fadeInDuration: 0.5, duration: 5, fadeDuration: 1.6 },
+      { type: 'candles', count: 1, center: [0.5, 0.09], size: 0.28, spread: 0, color: '#ffb03a', intensity: 1, fadeInDuration: 0.5, duration: 5, fadeDuration: 1.6 },
     ],
   },
   {
