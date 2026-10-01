@@ -2,11 +2,27 @@ import { useCallback, useState } from 'react';
 import { matchCharacterEffect } from '../characters/registry';
 import type { CharacterEffect } from '../characters/types';
 import { STORAGE_KEYS, readString, writeString } from '../storage';
-import { sanitizeModule } from '../vfx/schema';
-import type { VFXModuleConfig } from '../vfx/types';
-import { sanitizePresentation, toEffectPresentation } from './presentation';
-import { sanitizeSharedTiming, withTiming } from './timing';
+import { toEffectPresentation } from './presentation';
 import type { AnimationLibrary, CustomAnimation } from './types';
+import {
+  MAX_ANIMATIONS_PER_USER,
+  dedupeByCharacter,
+  newAnimationId,
+  normalizeUsername,
+  sameCharacter,
+  sanitizeAnimation,
+} from './rules';
+
+// The rules live in rules.ts, where the server can use them too. Re-exported
+// so everything that has always imported them from here still can.
+export {
+  MAX_ANIMATIONS_PER_USER,
+  MAX_EFFECTS_PER_ANIMATION,
+  newAnimationId,
+  normalizeUsername,
+  sameCharacter,
+  sanitizeAnimation,
+} from './rules';
 
 /**
  * Where custom animations live, and the rules for matching one to a winner.
@@ -17,88 +33,10 @@ import type { AnimationLibrary, CustomAnimation } from './types';
  * later changes `loadLibrary` and `saveLibrary` and nothing else here.
  */
 
-/** Past this the builder stops offering to add effects. Also enforced on load. */
-export const MAX_EFFECTS_PER_ANIMATION = 8;
-/** Per name. Stops a runaway import filling the browser's storage. */
-export const MAX_ANIMATIONS_PER_USER = 100;
-const MAX_USERNAME_LENGTH = 40;
-const MAX_CHARACTER_LENGTH = 200;
 /** An import larger than this is refused before it is parsed. */
 const MAX_IMPORT_CHARS = 500_000;
 /** The key that marks a pasted code as ours rather than any JSON at all. */
 const EXPORT_MARKER = 'dmuyotAnimations';
-const ID_PATTERN = /^[A-Za-z0-9-]{1,64}$/;
-
-/**
- * Case and spacing do not matter — "Jack", "jack " and "JACK" are one name —
- * and Unicode that looks identical is made identical, so two keyboards that
- * encode the same word differently still agree on it.
- */
-export function normalizeUsername(raw: string): string {
-  const collapsed = raw.normalize('NFC').replace(/\s+/g, ' ').trim().toLowerCase();
-  return Array.from(collapsed).slice(0, MAX_USERNAME_LENGTH).join('');
-}
-
-/**
- * Exact, apart from surrounding whitespace and Unicode normalisation. The
- * character is picked from the loaded list rather than typed, so there is no
- * need for the prefix matching the built-in animations use — and no risk of
- * one name catching another that begins the same way.
- */
-export function sameCharacter(a: string, b: string): boolean {
-  return a.normalize('NFC').trim() === b.normalize('NFC').trim();
-}
-
-export function newAnimationId(): string {
-  // randomUUID only exists in a secure context. A phone opening the dev server
-  // over a LAN address is not one.
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-/**
- * An animation safe to keep and to play, or null if nothing usable is left.
- * One with no character, or no effects that survive sanitising, is dropped
- * rather than kept as an empty shell.
- */
-export function sanitizeAnimation(input: unknown): CustomAnimation | null {
-  if (typeof input !== 'object' || input === null || Array.isArray(input)) return null;
-  const raw = input as Record<string, unknown>;
-
-  const character =
-    typeof raw.character === 'string'
-      ? Array.from(raw.character.normalize('NFC').trim()).slice(0, MAX_CHARACTER_LENGTH).join('')
-      : '';
-  if (!character) return null;
-
-  const modules = Array.isArray(raw.modules)
-    ? raw.modules
-        .map((module) => sanitizeModule(module))
-        .filter((module): module is VFXModuleConfig => module !== null)
-        .slice(0, MAX_EFFECTS_PER_ANIMATION)
-    : [];
-  if (modules.length === 0) return null;
-
-  const updatedAt =
-    typeof raw.updatedAt === 'number' && Number.isFinite(raw.updatedAt) && raw.updatedAt >= 0
-      ? raw.updatedAt
-      : 0;
-
-  // Shared timing is written into every effect here rather than applied when
-  // the animation plays, so nothing downstream needs to know it exists.
-  const timing = sanitizeSharedTiming(raw.timing);
-
-  return {
-    id: typeof raw.id === 'string' && ID_PATTERN.test(raw.id) ? raw.id : newAnimationId(),
-    character,
-    modules: withTiming(modules, timing),
-    presentation: sanitizePresentation(raw.presentation),
-    timing,
-    updatedAt,
-  };
-}
 
 /**
  * A fresh library with no prototype. Usernames are typed by people, and a
@@ -113,16 +51,6 @@ function copyLibrary(library: AnimationLibrary): AnimationLibrary {
   const copy = emptyLibrary();
   for (const [name, animations] of Object.entries(library)) copy[name] = animations;
   return copy;
-}
-
-/** One per character: where two claim the same character, the newer one wins. */
-function dedupeByCharacter(animations: CustomAnimation[]): CustomAnimation[] {
-  const newestFirst = [...animations].sort((a, b) => b.updatedAt - a.updatedAt);
-  const kept: CustomAnimation[] = [];
-  for (const animation of newestFirst) {
-    if (!kept.some((k) => sameCharacter(k.character, animation.character))) kept.push(animation);
-  }
-  return kept;
 }
 
 /**
