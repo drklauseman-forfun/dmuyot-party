@@ -385,6 +385,43 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
     ],
   },
   {
+    id: 'timekeeper-ara',
+    // The bracketed marker is part of the name in the document, and it is
+    // what keeps a three-letter trigger from catching anything else.
+    triggers: [{ pattern: 'ארה [נ]', match: 'prefix' }],
+    presentation: {
+      title: 'ארה',
+      accentColor: '#9fd7ff',
+      backgroundColor: 'rgba(10, 12, 16, 0.95)',
+      glow: '0 0 50px #9fd7ff55, 0 0 100px #2a4a6a55',
+      fontFamily: "'Courier New', monospace",
+      letterSpacing: '2px',
+      textShadow: '0 0 12px #9fd7ff',
+      glitch: true,
+    },
+    modules: [
+      // Someone in a suit, well back and barely there, with the hand held out
+      // in front of them.
+      { type: 'figure', style: 'suit', center: [0.5, 0.46], size: 0.95, color: '#ffffff', intensity: 0.26, fadeInDuration: 0.8, duration: 5, fadeDuration: 1.5 },
+      // Both sides lined with machines for telling the time. One effect draws
+      // one machine, so a wall of them is the effect called over and over.
+      { type: 'timepieces', style: 'analogue', center: [0.12, 0.84], size: 0.17, color: '#ffffff', speed: 2, intensity: 1, fadeInDuration: 0.5, duration: 5, fadeDuration: 1.5 },
+      { type: 'timepieces', style: 'hourglass', center: [0.13, 0.63], size: 0.19, color: '#ffffff', speed: 1, intensity: 1, fadeInDuration: 0.6, duration: 5, fadeDuration: 1.5 },
+      { type: 'timepieces', style: 'digital', center: [0.13, 0.42], size: 0.1, color: '#ffffff', speed: 3, intensity: 1, fadeInDuration: 0.7, duration: 5, fadeDuration: 1.5 },
+      { type: 'timepieces', style: 'metronome', center: [0.12, 0.18], size: 0.19, color: '#ffffff', speed: 2.4, intensity: 1, fadeInDuration: 0.8, duration: 5, fadeDuration: 1.5 },
+      { type: 'timepieces', style: 'metronome', center: [0.88, 0.84], size: 0.18, color: '#ffffff', speed: 1.8, intensity: 1, fadeInDuration: 0.55, duration: 5, fadeDuration: 1.5 },
+      { type: 'timepieces', style: 'analogue', center: [0.88, 0.63], size: 0.15, color: '#ffffff', speed: 4, intensity: 1, fadeInDuration: 0.65, duration: 5, fadeDuration: 1.5 },
+      { type: 'timepieces', style: 'hourglass', center: [0.87, 0.4], size: 0.17, color: '#ffffff', speed: 1.5, intensity: 1, fadeInDuration: 0.75, duration: 5, fadeDuration: 1.5 },
+      { type: 'timepieces', style: 'digital', center: [0.88, 0.18], size: 0.1, color: '#ffffff', speed: 6, intensity: 1, fadeInDuration: 0.85, duration: 5, fadeDuration: 1.5 },
+      // The hand itself, held out to be shaken.
+      { type: 'hands', style: 'open', edge: 'bottom', count: 1, size: 0.5, reach: 0.82, spread: 0, color: '#ffffff', intensity: 1, fadeInDuration: 0.6, duration: 5, fadeDuration: 1.5 },
+      // Two glitches at different rates, so the breaking up never falls into
+      // a rhythm.
+      { type: 'glitch', style: 'tear', color: '#9fd7ff', rate: 2.4, coverage: 0.3, intensity: 0.9, fadeInDuration: 0.3, duration: 5, fadeDuration: 1.5 },
+      { type: 'glitch', style: 'split', color: '#9fd7ff', rate: 1.3, coverage: 0.45, intensity: 0.8, fadeInDuration: 0.3, duration: 5, fadeDuration: 1.5 },
+    ],
+  },
+  {
     id: 'duality-ayit',
     // The bracketed marker is part of the name in the document, and it is what
     // keeps this clear of anything else starting with the same three letters.
