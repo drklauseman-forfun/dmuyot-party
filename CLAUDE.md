@@ -75,8 +75,9 @@ content is data rather than markup so the two stay the same shape. It also has
 a section on the builder's effects — that most draw one thing with a Kind or
 Style and are added several times over, Memes' Giphy links, the curtain over
 the results, Paint over for dark — and notes that the range box is kept between
-visits and that builder previews ignore the animations switch. Those want the
-same care when the effects or settings change.
+visits and that builder previews ignore the animations switch. Its builder
+section explains sharing by name and the PIN as well. All of it wants the same
+care when the effects, the settings or sharing change.
 
 ## The three registries
 
@@ -123,7 +124,7 @@ feather shapes, which cost too much to compute for every pixel. So
 once on a canvas, and each style places instanced copies of them along a
 skeleton from `wings/pose.ts` every frame. `pose.ts` is plain arithmetic with no
 three.js, so a pose can be checked without drawing it. The wings, the eyes,
-the words, the memes, the clocks, the hands, the figure, the weapons, the
+the words, the memes, the timepieces, the hands, the figure, the weapons, the
 curtain and the candles are the modules in `UNLIT_MODULES` — see the bloom trap
 below. The glitch and the creatures are not: they are light, and are meant to
 glow.
@@ -258,7 +259,8 @@ setting under it.
   hides a switched-off setting: on 2026-09-13 a new built-in animation seemed
   broken on the owner's phone because Enable Animations was off, while every
   preview in the builder still played. Ask about that switch before debugging
-  a trigger.
+  a trigger. A note in the builder whenever the switch is off was offered and
+  not taken up.
 - **"Clear saved data" on the error screen deletes this phone's copy** of
   the animations, and its remembered PINs — they share the `dmuyot_party_`
   prefix. Whatever reached the server comes back once the name is typed
@@ -281,17 +283,22 @@ functions among the committed files. A change to `server/`, or to anything
   and sanitises again on the way out. Keep it to plain logic: anything that
   needs a browser — the DOM, storage, the registry — breaks the API bundle.
 - **Storage is Upstash Redis**, attached to the Vercel project from its
-  Storage tab. The function reads `UPSTASH_REDIS_REST_URL` and
-  `UPSTASH_REDIS_REST_TOKEN`, or the `KV_REST_API_URL` and
-  `KV_REST_API_TOKEN` pair, whichever the integration set. Without them it
-  answers 503, and every phone carries on with its own copy as before. Keys,
+  Storage tab. `redisCredentials` looks for `UPSTASH_REDIS_REST_URL`, then
+  `KV_REST_API_URL`, then any name ending in `REST_API_URL`, each with the
+  token named to match: the connect dialog offers a custom prefix, and a
+  prefixed name must not quietly leave sharing off. With none of them the
+  function answers 503, and every phone carries on with its own copy as
+  before. The function runs in `iad1`, Washington, D.C. — the `x-vercel-id`
+  header says so — so the database belongs in `us-east-1` beside it. Keys,
   with the name URI-encoded: `dmuyot:anim:<name>` is a hash from animation id
   to its JSON, `dmuyot:pin:<name>` the PIN's salted scrypt hash, and
   `dmuyot:tries:<name>` counts wrong PINs for an hour from the first; at ten,
   the name accepts none until the hour is up.
-- **A forgotten PIN has no reset in the app.** Delete `dmuyot:pin:<name>` in
-  the Upstash data browser: the name is unclaimed again, keeps its
-  animations, and its next save sets a new PIN.
+- **A forgotten PIN has no reset in the app.** Delete `dmuyot:pin:<name>`
+  from the database: in Vercel, the project's Storage tab, then the
+  database's Browser, or `DEL dmuyot:pin:<name>` in its CLI tab (Owner
+  only); Upstash's own console works too. The name is unclaimed again, keeps
+  its animations, and its next save sets a new PIN.
 - **A name nobody has claimed can be written without a PIN.** That is how
   animations already on phones uploaded themselves the first time the app
   opened after sharing shipped, before anyone had been asked for one. Until

@@ -6,8 +6,10 @@ app does, how to run both services, and the parsing rules the backend follows.
 ```bash
 npm install
 npm run dev      # http://localhost:5173, expects the backend on :8000
-npm run build    # tsc -b && vite build — what Vercel runs
+npm run build    # tsc -b, vite build, then the animations API — what Vercel runs
 npm run lint     # expected to pass with zero problems
+node server/dev-server.mjs       # shared animations on :8787, in memory, after a build
+node server/test-animations.mjs  # the animations API's rules, against that build
 ```
 
 ## Where things live
@@ -18,10 +20,12 @@ npm run lint     # expected to pass with zero problems
 | `src/CustomWheel.tsx`| The hand-rolled SVG wheel. Owns slice geometry *and* how a label is worded, truncated and sized. |
 | `src/components/`    | Presentation only: the results, settings, history and help modals, and the character list. |
 | `src/characters/`    | The built-in animations — triggers, modal styling, which VFX modules to play. |
-| `src/animations/`    | The animation builder: people's own animations, where they are kept, and how one is matched to a winner. |
+| `src/animations/`    | The animation builder: people's own animations, where they are kept, how they are shared by name (`sync.ts`), and how one is matched to a winner. `rules.ts` is shared with the server, so it imports nothing that needs a browser. |
 | `src/vfx/`           | The 3D layer. `modules.tsx` maps a module config onto its component, `schema.ts` describes each one for the builder, and `EffectCanvas` draws them: light effects through the bloom, solid ones (`UNLIT_MODULES`) after it. |
 | `src/storage.ts`     | Guarded `localStorage` access and the canonical key names.           |
 | `src/usePersistedState.ts` | `useState` that reads and writes through those guards.         |
+| `server/`            | The shared-animations API's source, a local server for it, and its checks. |
+| `api/`               | `animations.js`: that API, bundled by `npm run build`. Committed, because Vercel finds functions among the committed files. |
 
 ## Things that will bite you
 
@@ -32,8 +36,9 @@ character 5 to weight 0 in one document would silently keep character 5 of the
 *next* document off the wheel.
 
 The include-range is left alone on purpose: it stays visible in its own input,
-so a stale one is obvious in a way a stale weight is not. Anything else keyed
-by position needs the same consideration.
+so a stale one is more obvious than a stale weight — though not obvious enough:
+a leftover `1` once made a whole list seem to load as one character. Anything
+else keyed by position needs the same consideration.
 
 **The wheel's label thresholds are tuned together.** `CROWDED_SLICE_COUNT`,
 `MIN_SHARE_FOR_FULL_NAME` and `MAX_LABEL_LENGTH` in `CustomWheel.tsx` decide

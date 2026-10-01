@@ -7,12 +7,13 @@ in the app's own animation builder.
 
 ## Layout
 
-Two services, run separately in development.
+Two services, run separately in development, and one serverless function.
 
 | Path        | What it is                                                        |
 | ----------- | ----------------------------------------------------------------- |
 | `backend/`  | FastAPI. `POST /api/extract` fetches a Google Doc through its `export?format=html` URL and scrapes names and text colours out of it; `GET /health` does nothing and exists for the keep-awake ping. |
 | `frontend/` | Vite + React + TypeScript. The wheel, the character list, and the effects engine in `src/vfx/`. Deploys to Vercel from `main`. |
+| `frontend/server/` | The shared-animations API, `/api/animations`: each name's custom animations, kept in Upstash Redis and guarded by a PIN. The build bundles it into `frontend/api/animations.js`, which Vercel runs beside the site. |
 
 ## Running it
 
@@ -34,14 +35,23 @@ The frontend calls `http://localhost:8000` unless `VITE_API_URL` says
 otherwise. **That variable has to be set in the Vercel project**, or a
 production build will call localhost and every load will fail.
 
+Sharing custom animations needs the animations API. Locally, after
+`npm run build`, `node server/dev-server.mjs` in `frontend/` serves it on
+`http://localhost:8787` with an in-memory store, and the dev server passes
+`/api` through to it; without it the builder says sharing is not available and
+keeps animations in that browser alone. In production it needs an Upstash
+Redis database connected to the Vercel project from its Storage tab: until one
+is, the function answers 503 and every phone keeps its animations to itself.
+
 ## Checks
 
 ```bash
-cd frontend && npm run build && npm run lint
+cd frontend && npm run build && npm run lint && node server/test-animations.mjs
 ```
 
-`build` is `tsc -b && vite build` — the same command Vercel runs, so a type
-error here is a broken deploy.
+`build` typechecks, builds the site and then bundles the animations API — the
+same command Vercel runs, so a type error here is a broken deploy. The last
+command checks the API's rules against that bundle.
 
 ```bash
 cd backend && pip install -r requirements-dev.txt && python -m pytest
@@ -75,11 +85,15 @@ Consequences worth knowing:
 - Zero total weight produces a `VOID` winner rather than a crash.
 - More than one spin, or a spin duration under 0.2s, skips the wheel animation
   and resolves instantly. Multi-spin samples **with replacement** — the same
-  character can win twice, by design.
+  character can win twice, by design. Knockout mode is the exception: there
+  every winner leaves the wheel until Restart, and a multi-spin draws
+  different characters.
 - Loading a list resets every weight to 1. Weights are keyed by position, so
   carrying them over would apply the old list's tuning to whoever now occupies
-  those positions. The include-range is deliberately **not** reset — unlike the
-  weights it stays visible in its input box, so it can't go stale unnoticed.
+  those positions. The include-range is deliberately **not** reset, and it is
+  kept between visits: unlike the weights it stays visible in its input box. A
+  leftover range has still hidden characters from someone who forgot it, so
+  look there first when some seem to be missing.
 
 ## Adding a spin sound
 
@@ -109,9 +123,10 @@ fails until the other three exist. [CLAUDE.md](CLAUDE.md) has the details.
 
 ## Saved data
 
-Settings, the pasted list, weights, the last result, the name typed into the
-animation builder and the animations saved under every name live in
-`localStorage` under `dmuyot_party_*`. Real users have data under those keys —
-renaming one without a migration loses it. Animations have no other copy yet:
-the builder's export code is the only backup, and "Clear saved data" on the
-error screen deletes them with everything else.
+Settings, the pasted list, weights, the include-range, the last result, the
+name typed into the animation builder, the PINs that have worked there and this
+browser's copy of the animations live in `localStorage` under
+`dmuyot_party_*`. Real users have data under those keys — renaming one without
+a migration loses it. Animations are also kept on the server under each name,
+once its storage is connected, so "Clear saved data" on the error screen loses
+only what never reached it. Knockout mode is never saved.
