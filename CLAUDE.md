@@ -1,8 +1,8 @@
 # Working notes
 
 Context that is not obvious from reading the code, written over several long
-sessions: hardening, recorded sound, the character effects, and then the
-animation builder and the effects people build with. The
+sessions: hardening, recorded sound, the character effects, the animation
+builder and the effects people build with, and knockout mode. The
 [README](README.md) says what the app is and how to run it; this says what will
 catch you out.
 
@@ -52,6 +52,12 @@ Product decisions, not accidents. Changing one is a regression.
   plain state in `App.tsx`, on purpose and at the owner's request: a round left
   unfinished must not quietly cost someone their turn on another day. Do not
   move them into `storage.ts`.
+- **A spin indexes `spinPool`, never `wheelCharacters`.** `spinPool` is what
+  the wheel draws — everyone with a weight, less anyone knocked out — and the
+  prize number a spin aims at is a position in it. Looking the winner up in any
+  other list names the wrong character the moment anyone is out. Nothing can
+  change the pool mid-spin, because every control is off until the wheel
+  stops, and that is when the winner is knocked out.
 - Loading a list **resets all weights to 1** (a failed load does not). Weights
   are positional, so carrying them over silently applied one document's tuning
   to the next document's characters.
@@ -63,7 +69,12 @@ Every one of these rules is also **explained to the user** in
 `components/HelpModal.tsx`, behind the information button, in English and in
 Hebrew. It is prose, so nothing catches it drifting out of date — change a rule
 above and that file is wrong until someone edits it, in **both** languages. The
-content is data rather than markup so the two stay the same shape.
+content is data rather than markup so the two stay the same shape. It also has
+a section on the builder's effects — that most draw one thing with a Kind or
+Style and are added several times over, Memes' Giphy links, the curtain over
+the results, Paint over for dark — and notes that the range box is kept between
+visits and that builder previews ignore the animations switch. Those want the
+same care when the effects or settings change.
 
 ## The three registries
 
@@ -147,16 +158,24 @@ and pop in once loaded. `MEME_GIFS` is the hand-picked list, each checked by
 eye. Untested: iPhones in Low Power Mode may refuse to play them, as they do
 other videos that start themselves.
 
-Seven of the effects draw **objects** rather than light: `timepieces` (a
-clock, a digital counter, an hourglass or a metronome), `hands` (flesh, machine
-or porcelain), `figure`, `weapons`, `curtain`, `candles` and `creatures`. They
-follow the wings' pattern — each picture drawn once on a canvas in neutral
-colours and lit from the top left, then placed, turned and tinted every frame —
-and they share `components/fadeClock.ts` and, where they scatter, `scatter.ts`.
-Moving parts are their own quads hinged where they belong: a clock's hands turn
-about the hub, a metronome's arm about its pivot, the whale's tail about the
-peduncle. Getting a hinge wrong is obvious and cheap to fix; the whale's tail
-floated a body's width away on the first try.
+Seven of the effects are **drawings** rather than shaders: `timepieces` (a
+clock, a digital counter, an hourglass or a metronome), `hands` (an open palm,
+a handshake, machine or porcelain), `figure`, `weapons`, `curtain`, `candles`
+and `creatures`. They follow the wings' pattern — each picture drawn once on a
+canvas in neutral colours and lit from the top left, then placed, turned and
+tinted every frame — and they share `components/fadeClock.ts` and, where they
+scatter, `scatter.ts`. All but the creatures are solid; the creatures are drawn
+as light, so they glow. Moving parts are their own quads hinged where they
+belong: a clock's hands turn about the hub, a metronome's arm about its pivot.
+Two go further: the curtain is all shader, silk lit from a fold surface, and
+the whale is its picture on a strip a shader bends. No fixed picture could
+fold like cloth or swim.
+
+Most of them take a `style` or `kind`, and draw **one** of the thing. A wall of
+clocks or a battery of mixed weapons is the same effect called over and over
+with different kinds, places and sizes, which is how ארה and ג'ול\ייט are
+built. That was asked for directly, and it is also what keeps a parameter list
+short enough to use.
 
 What the owner has turned down, so it is not tried again: an open palm facing
 the viewer, which reads as "stop" or a wave and not as offering a deal (the
@@ -185,11 +204,8 @@ surface, a sheen down each crest in a lighter shade of the cloth's colour, a
 hem that follows the folds — and a brass rod with knobs to hang from. Many
 thin folds read as a pleated blind; a few broad ones read as silk.
 
-Most of them take a `style` or `kind`, and draw **one** of the thing. A wall of
-clocks or a battery of mixed weapons is the same effect called over and over
-with different kinds, places and sizes, which is how ארה and ג'ול\ייט are
-built. That was asked for directly, and it is also what keeps a parameter list
-short enough to use.
+Titles: newer built-in animations use the plain name. Emoji round the name were
+asked off בארי אזומה's, and the five after it followed suit.
 
 The seven הנרץ' effects share a shape, so `registry.ts` has two builders,
 `wraithModules` and `wraithPresentation`. Seven near-identical copies is the
@@ -319,6 +335,20 @@ a plain module-level function. The newer effects therefore keep their parts in
 a ref and write through small helpers — `setPose`, `setOpacity`, `setTurn`,
 `setUniform`. Copy that shape rather than fighting the rule.
 
+**The range box is saved, and a leftover range hides characters.** On
+2026-10-01 loading seemed broken — "it now loads only one character" — and the
+cause was a `1` left in Include Ranges from an earlier visit. Like the animations
+switch above, ask about that box before debugging a missing character. The help
+now says it is kept and to look there first. Showing "1 of 4 shown" beside a
+range that cuts characters out was offered and not taken up.
+
+**The header's corner buttons are absolutely positioned.** Information sits in
+the top left; history, animations and settings in the top right. Below about
+560px the title no longer fits between them, and on every phone the right-hand
+group covered the end of "Dmuyot Party". `index.css` moves the title down into a
+row of its own under 600px. A fourth button on that side needs the overlap
+measured again — compare the button group's box with the title's.
+
 **`center` runs bottom-up.** The black hole, the clock and the wings all take
 `center` as fractions of the frame, but the second number is measured from the
 **bottom**: three.js gives a plane's top edge `v = 1` (see `PlaneGeometry.js`).
@@ -353,7 +383,9 @@ The four added next, `סאם (מגהברס 1)`, `סאלין (הכל)`, `איש �
 document. `בארי אזומה`, added on 2026-09-22 (first mistyped `ברי אזומה`), was run
 through both real documents (154 and 945 characters): no line begins with it,
 and nothing there is that character yet, so it has matched nothing real so far.
-The nearest, `השרביט של בארי (...)`, does not start with it.
+The nearest, `השרביט של בארי (...)`, does not start with it. The apostrophe in
+`הנרץ'` is **U+0027**, the plain ASCII one, not the visually identical Hebrew
+geresh.
 
 Five more were added on 2026-10-01 and run through both documents the same way:
 `ארה [נ]`, `אמה [נ]`, `אייט [נ]`, `ג'ול\ייט` and `הגבירה השחורה`. Three of them
@@ -363,8 +395,7 @@ is already in the long document, and `ארה` is three letters. The backslash in
 `ג'ול\ייט` is part of the name, so it is part of the pattern — written twice in
 the source to mean one — and the apostrophe may be a geresh or the plain one,
 since `comparable()` reads them alike. None of the five matches anything in
-either document yet. The apostrophe in `הנרץ'` is **U+0027**, the plain ASCII one, not the
-visually identical Hebrew geresh.
+either document yet.
 
 Both sides of a match now go through `comparable()` in `registry.ts` first,
 which drops direction marks, zero-width characters and vowel points, collapses
@@ -437,6 +468,18 @@ broken:
   wait on `setTimeout` there; yield with a `MessageChannel` instead. To test
   what the bloom does, render `EffectScene` from `EffectCanvas.tsx`, not a
   single component.
+- **Editing from scripts on Windows.** Git Bash heredocs have failed outright
+  on a script body holding an apostrophe inside a double-quoted string
+  ("unexpected EOF while looking for matching `'`"). Write the script with the
+  editor's Write tool and run that file instead. That tool trims trailing
+  spaces, so a block copied from a source line that had them no longer matches;
+  match with a pattern that allows `[ \t]*` before each newline. The Edit tool
+  turns a `\uXXXX` escape into the character itself, which once put invisible
+  characters into `registry.ts` — build escapes from `chr(92)` in a script.
+  And `git add -p` is interactive: it hangs until the command times out.
+- **A page reload drops anything kept on `window`**, and Vite's hot reload
+  fires one whenever a file is saved. Keep a long test helper's source in
+  `localStorage` and `eval` it back afterwards, rather than resending it.
 - **The live canvas can be read too.** Its root is in the fiber module's
   `_roots` map, keyed by the canvas element; a callback registered with
   `store.getState().internal.subscribe(ref, 3, store)` runs after the unlit
@@ -480,8 +523,8 @@ site=https://dmuyot-party-6gjy.vercel.app
 curl -s "$site/$(curl -s "$site/" | grep -o 'assets/index-[^"]*\.js')" | grep -o 'https://[^"]*api/extract'
 ```
 
-**But Render is not running `main`.** Checked on 2026-09-10 and again on
-2026-09-11: the live API has no `/health` route (FastAPI answers it with its own
+**But Render is not running `main`.** Checked on 2026-09-10, on 2026-09-11 and
+again on 2026-10-01: the live API has no `/health` route (FastAPI answers it with its own
 404), turns `10 - Frodo` into `- Frodo`, still sends
 `access-control-allow-credentials: true`, and its OpenAPI schema has no
 `Character` model. All of those changed in `main`'s backend commits of
