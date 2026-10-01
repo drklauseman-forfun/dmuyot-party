@@ -247,6 +247,44 @@ export interface SlashesParams extends VFXTiming {
   intensity?: number;
 }
 
+/** A cloth falling across the frame, or rising up it. */
+export interface CurtainParams extends VFXTiming {
+  /** Which way it moves. */
+  style?: 'falling' | 'rising';
+  /**
+   * The cloth. Painted over the frame rather than added to it, so black works
+   * — but a colour a little above black is needed for the folds to show.
+   */
+  color?: string;
+  /** How much of the frame it ends up covering, 0–1. */
+  coverage?: number;
+  /** Seconds it takes to fall. It settles with a sway rather than stopping dead. */
+  fall?: number;
+  /** How many folds run down it. */
+  folds?: number;
+  /** Peak opacity, 0–1. */
+  intensity?: number;
+}
+
+/** Candles that catch, burn, and light what is around them. */
+export interface CandlesParams extends VFXTiming {
+  /** How many. They catch one after another. */
+  count?: number;
+  /**
+   * Where the middle one stands, as fractions of the frame: left (0) to right
+   * (1), then bottom (0) to top (1). The second number runs up.
+   */
+  center?: [number, number];
+  /** Height of a candle, as a fraction of the frame's shorter side. */
+  size?: number;
+  /** How far apart several candles stand, as a fraction of the frame's width. */
+  spread?: number;
+  /** The flame's colour, and the light it throws. */
+  color?: string;
+  /** Peak opacity, 0–1. */
+  intensity?: number;
+}
+
 /** Weapons at the sides of the frame, firing across it. */
 export interface WeaponsParams extends VFXTiming {
   /** Which weapon. Each fires its own kind of shot. */
@@ -388,6 +426,8 @@ export type VFXModuleConfig =
   | ({ type: 'slashes' } & SlashesParams)
   | ({ type: 'glitch' } & GlitchParams)
   | ({ type: 'timepieces' } & TimepiecesParams)
+  | ({ type: 'curtain' } & CurtainParams)
+  | ({ type: 'candles' } & CandlesParams)
   | ({ type: 'weapons' } & WeaponsParams)
   | ({ type: 'hands' } & HandsParams)
   | ({ type: 'figure' } & FigureParams)
