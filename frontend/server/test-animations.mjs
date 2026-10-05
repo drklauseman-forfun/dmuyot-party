@@ -3,7 +3,7 @@
 // non-zero on the first failure. Runs in Node only; Redis is not involved.
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
-import handler, { handle, memoryStore, redisCredentials } from '../api/animations.js';
+import handler, { handle, memoryStore, missingReason, redisCredentials } from '../api/animations.js';
 
 const q = (s = '') => new URLSearchParams(s);
 const anim = (over = {}) => ({
@@ -131,6 +131,15 @@ await check('the database is found under any name Vercel may give it', async () 
   assert.equal(redisCredentials({ REDIS_URL: 'rediss://x', KV_URL: 'rediss://x' }), null);
 });
 
+await check('a missing database is explained without naming anything', async () => {
+  assert.equal(missingReason({}), 'nothing-connected');
+  assert.equal(missingReason({ KV_REST_API_URL: 'https://x' }), 'url-without-token');
+  assert.equal(missingReason({ STORAGE_REST_API_URL: 'https://x' }), 'url-without-token');
+  assert.equal(missingReason({ REDIS_URL: 'rediss://x', KV_URL: 'rediss://x' }), 'connection-string-only');
+  // An empty value is not a value: Vercel leaves these unset, not blank.
+  assert.equal(missingReason({ KV_REST_API_URL: '' }), 'nothing-connected');
+});
+
 await check('the Vercel adapter reads a streamed body and answers JSON', async () => {
   const req = Readable.from([JSON.stringify({ user: 'jack', op: 'check', pin: '1234' })]);
   Object.assign(req, { method: 'POST', url: '/api/animations' });
@@ -144,6 +153,7 @@ await check('the Vercel adapter reads a streamed body and answers JSON', async (
   await handler(req, res);
   assert.equal(res.statusCode, 503);
   assert.equal(JSON.parse(out.body).error, 'no-storage');
+  assert.match(JSON.parse(out.body).message, /nothing-connected|connection-string-only|url-without-token/);
   assert.equal(out.headers['Cache-Control'], 'no-store');
 });
 

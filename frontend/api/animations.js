@@ -7524,6 +7524,20 @@ function redisCredentials(env) {
 	}
 	return null;
 }
+/**
+* Why `redisCredentials` found nothing, in one word, for the 503 to carry.
+* Names and values never leave the function — only which shape was seen, and
+* that is what tells a database connected to the wrong project (nothing)
+* apart from one that speaks the wrong protocol (connection-string) or a
+* half-set pair (url-without-token).
+*/
+function missingReason(env) {
+	const set = Object.keys(env).filter((name) => env[name]);
+	const has = (ending) => set.some((name) => name.endsWith(ending));
+	if (has("REST_API_URL")) return "url-without-token";
+	if (has("REDIS_URL") || has("KV_URL")) return "connection-string-only";
+	return "nothing-connected";
+}
 /** Upstash Redis, wherever those variables say it is. */
 function upstashStore(env = process.env) {
 	const credentials = redisCredentials(env);
@@ -7644,7 +7658,7 @@ async function authorise(store, name, pin) {
 }
 /** The request, already parsed — independent of how Vercel delivers it. */
 async function handle(method, query, body, store) {
-	if (!store) return fail(503, "no-storage", "Shared storage is not connected yet.");
+	if (!store) return fail(503, "no-storage", `Shared storage is not connected yet (${missingReason(process.env)}).`);
 	if (method === "GET") {
 		const name = normalizeUsername(query.get("user") ?? "");
 		if (!name) return fail(400, "no-name", "Which name?");
@@ -7741,4 +7755,4 @@ async function vercelHandler(req, res) {
 	res.end(JSON.stringify(result.body));
 }
 //#endregion
-export { vercelHandler as default, handle, memoryStore, redisCredentials, upstashStore };
+export { vercelHandler as default, handle, memoryStore, missingReason, redisCredentials, upstashStore };
