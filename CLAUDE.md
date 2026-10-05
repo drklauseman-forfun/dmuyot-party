@@ -325,6 +325,23 @@ functions among the committed files. A change to `server/`, or to anything
   server in `launch.json`, which serves the built bundle with an in-memory
   store and forgets everything when stopped. `server/test-animations.mjs`
   checks the server's rules against the same bundle, with no network.
+- **Connecting the database does nothing until something deploys.** An
+  Upstash database was attached on 2026-10-05 and the site went on answering
+  503 for four days: Vercel gives its variables to *new* deployments only, and
+  nothing had been pushed or redeployed since. The whole of a sharing problem
+  can be that. The 503 now carries one word saying which shape of credentials
+  the function could see — `nothing-connected`, `connection-string-only` (a
+  Redis that speaks no REST, so the wrong marketplace product) or
+  `url-without-token` — and `missingReason` computes it from variable names
+  without ever printing a name or a value.
+
+Verified end to end against the live site on 2026-10-05, through the API and
+through the app: a phone's animations upload by themselves, a phone with
+nothing but the name gets them back, a PIN claims the name and is remembered,
+a wrong one is refused and forgotten, and a locked phone is told why its
+delete or import will not go through. Test names `zz-claude-test` and
+`zz-claude-phone` hold no animations but are still claimed — their
+`dmuyot:pin:` keys can be deleted from the database whenever.
 
 ## Traps
 
@@ -586,16 +603,6 @@ recorded sound worked, before the PWA work. The other branches —
 `refactor/character-effect-registry` — are merged and hold nothing `main` lacks.
 
 ## Open questions
-
-**Shared animations need their storage connected.** The function shipped on
-2026-10-01 and answers 503 until an Upstash Redis database is attached to
-the `dmuyot-party-6gjy` project in Vercel — not the leftover `dmuyot-party`
-one — and the site is redeployed. Until then every phone keeps its
-animations to itself, as before. Check rather than ask:
-
-```bash
-curl -s "https://dmuyot-party-6gjy.vercel.app/api/animations?user=x"   # "no-storage": not attached yet
-```
 
 **The backend is deployed, and `VITE_API_URL` is set.** It runs at
 `https://dmuyot-party.onrender.com`, and the Vercel build has that URL compiled
