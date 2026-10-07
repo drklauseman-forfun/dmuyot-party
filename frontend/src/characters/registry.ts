@@ -580,6 +580,65 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       },
     ],
   },
+  {
+    id: 'sun-san',
+    // The bracketed marker is part of the name in the document, and here it
+    // also earns its place: סאם and סאלין share the first two letters, so
+    // without it a shorter pattern would reach towards both.
+    triggers: [{ pattern: 'סאן [נ]', match: 'prefix' }],
+    presentation: {
+      title: 'סאן',
+      accentColor: '#ffd166',
+      backgroundColor: 'rgba(16, 11, 6, 0.95)',
+      glow: '0 0 50px #ffb34d66, 0 0 110px #ff9d4d33',
+      fontFamily: "'Georgia', serif",
+      letterSpacing: '1px',
+      textShadow: '0 0 14px #ffd16699',
+    },
+    modules: [
+      // The sun sits at the top. The second number is measured from the
+      // BOTTOM, so 0.86 is near the top of the frame, not near the bottom.
+      // Measured against both shapes: the disc is sized by the frame's
+      // shorter side, so on a wide screen it reaches down to about 0.71 of
+      // the height and on a portrait phone far less than that — clear of the
+      // results box either way, with only the rays' falloff reaching it.
+      {
+        type: 'sun',
+        center: [0.5, 0.86],
+        radius: 0.15,
+        rays: 16,
+        rayLength: 2.2,
+        spin: 0.6,
+        surface: 1.1,
+        color: '#ffd166',
+        rayColor: '#ff9d4d',
+        intensity: 1,
+        fadeInDuration: 0.9,
+        duration: 4.5,
+        fadeDuration: 1.6,
+      },
+      // Small white motes drifting down through it. Slow and barely stirred:
+      // this is dust in sunlight, not snow. Capped well below the default
+      // ceiling, since a particle drifting near the camera is otherwise
+      // unbounded and one large disc would undo the whole look.
+      {
+        type: 'sparkles',
+        direction: 'down',
+        color: '#ffffff',
+        count: 260,
+        size: 0.9,
+        speed: 0.9,
+        scale: [12, 9, 5],
+        noise: 0.18,
+        gravity: 0,
+        blend: 'add',
+        maxPixelSize: 40,
+        fadeInDuration: 0.9,
+        duration: 4.5,
+        fadeDuration: 1.6,
+      },
+    ],
+  },
 ];
 
 /**

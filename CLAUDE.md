@@ -524,6 +524,14 @@ the source to mean one — and the apostrophe may be a geresh or the plain one,
 since `comparable()` reads them alike. None of the five matches anything in
 either document yet.
 
+`סאן [נ]` followed on 2026-10-07, and is the first that could **not** be run
+through the real documents — neither was to hand. It was checked against every
+other trigger instead, and against the names that could plausibly collide:
+`סאם` and `סאלין` share its first two letters and keep their own effects, and
+`סאנדרה` does not match, which is the bracketed marker earning its place
+again. Note that `סאן` on its own does not match either — the document has to
+spell the name with the marker, as it does for the other three.
+
 Both sides of a match now go through `comparable()` in `registry.ts` first,
 which drops direction marks, zero-width characters and vowel points, collapses
 runs of spaces, reads a geresh or curly apostrophe as the plain one, and strips
