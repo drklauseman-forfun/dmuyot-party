@@ -296,6 +296,12 @@ functions among the committed files. A change to `server/`, or to anything
   limits live there so the function refuses exactly what the builder would,
   and sanitises again on the way out. Keep it to plain logic: anything that
   needs a browser — the DOM, storage, the registry — breaks the API bundle.
+- **A new effect changes the API bundle.** The sanitiser reaches
+  `vfx/schema.ts`, so the whole schema travels inside `api/animations.js` —
+  adding an effect or a parameter shows up there after a build. Without that
+  rebuild the server does not know the effect exists and quietly drops it from
+  every animation saved with one, while the phone that made it keeps working.
+  `npm run build` does it; commit the result.
 - **Storage is Upstash Redis**, attached to the Vercel project from its
   Storage tab. `redisCredentials` looks for `UPSTASH_REDIS_REST_URL`, then
   `KV_REST_API_URL`, then any name ending in `REST_API_URL`, each with the
