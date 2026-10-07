@@ -105,8 +105,9 @@ stores every parameter explicitly, so drift cannot change what it renders, but
 it would make the builder's starting values wrong.
 
 Modules today: `glow`, `edgeGlow`, `sparkles`, `fire`, `beams`, `blackHole`,
-`clock`, `fireworks`, `wings`, `eyes`, `slashes`, `words`, `memes`, `glitch`,
-`timepieces`, `hands`, `figure`, `weapons`, `curtain`, `candles`, `creatures`.
+`sun`, `clock`, `fireworks`, `wings`, `eyes`, `slashes`, `words`, `memes`,
+`glitch`, `timepieces`, `hands`, `figure`, `weapons`, `curtain`, `candles`,
+`creatures`.
 `beams` has no built-in animation using it but is a building block the builder
 offers. `fire` is **retired**: it did not look like flames, so
 `RETIRED_EFFECTS` in `vfx/schema.ts` keeps it out of the builder's list. Its
@@ -126,8 +127,21 @@ skeleton from `wings/pose.ts` every frame. `pose.ts` is plain arithmetic with no
 three.js, so a pose can be checked without drawing it. The wings, the eyes,
 the words, the memes, the timepieces, the hands, the figure, the weapons, the
 curtain and the candles are the modules in `UNLIT_MODULES` — see the bloom trap
-below. The glitch and the creatures are not: they are light, and are meant to
-glow.
+below. The glitch, the creatures and the sun are not: they are light, and are
+meant to glow.
+
+`sun` and `blackHole` are opposites built the same way: one full-screen shader
+on a clip-space quad, distances measured in the frame's shorter side so a
+radius means the same on a phone as on a desktop. The sun is additive and goes
+through the bloom; the black hole blends normally, because its core has to be
+able to be black and additive blending cannot draw black. That is also why the
+black hole is the one that can have a **coloured** core — `coreColor`, black by
+default — while an additive module could not. What makes the sun read as a sun
+rather than a yellow circle is limb darkening (the rim is dimmer and redder
+than the middle), granulation foreshortened towards that rim, and rays of
+uneven spacing and length. Its ray count is rounded to a whole number in the
+shader: at a fractional count the wave does not close on itself where the angle
+wraps, and a seam runs out of the sun.
 
 Where the wings sit was measured against the results box, not guessed. At the
 old centre of 0.62 the spread wings covered its top on a phone, title included.
@@ -411,6 +425,23 @@ which converts for itself: their textures are marked `SRGBColorSpace`, and the
 materials `toneMapped: false`, since the canvas turns tone mapping on and it
 dulls every colour — white words measured exactly white with both set.
 
+**A backtick inside a shader ends the shader.** The GLSL lives in a template
+literal, so a comment written round a name in backticks closes the string and
+the file fails to parse somewhere else entirely — the error points at prose,
+not at the quote. This cost two builds in one sitting. Write shader comments
+without them.
+
+**A new light effect wants measuring against the ones already there.** The
+bloom spreads anything past 0.5 luminance, so "bright" is not a free choice:
+the sun first drawn at 1.7 came back pure white with its colour gone and a warm
+wash over the whole frame — the wings' mistake in another form. The way to
+settle it is an off-screen render of `EffectScene` and a reading of the corner
+pixels, against the effects already in the app. Measured at 512x512, two
+seconds in: `glow` 70 (it is a full-screen wash on purpose), `fireworks` 30,
+`clock` 7, `blackHole` 1. The sun was 70 and is now 37 — beside the fireworks,
+where a thing that lights the room belongs. Keep a module's own output near 1
+and let the bloom do the glowing.
+
 **Video textures only refresh when the browser announces a frame.** three.js
 waits for `requestVideoFrameCallback`, which does not fire in a page that is
 not on screen: the meme videos loaded and played, and nothing was drawn.
@@ -560,6 +591,27 @@ broken:
   wait on `setTimeout` there; yield with a `MessageChannel` instead. To test
   what the bloom does, render `EffectScene` from `EffectCanvas.tsx`, not a
   single component.
+
+  Three things each produce an entirely blank render, and none of them says so:
+
+  - **`extend(THREE)` is not called for you.** `<Canvas>` does it; a root made
+    by hand does not, and every intrinsic element is then unknown. The error
+    only appears in the console — the render comes back empty.
+  - **React 19 commits asynchronously**, so nothing is in the scene when
+    `render()` returns, and the effect that builds a module's timeline runs
+    *after* that commit. Yield until the scene has children, then keep
+    yielding: a frame drawn before the effect has run finds no timeline to
+    start, and the module stays at nothing however far the clock is moved.
+  - **gsap's root clock is already running.** A module's timeline plays on its
+    first drawn frame and starts from wherever that clock has reached, so
+    `gsap.updateRoot(2)` puts it *before* its own start and it renders at
+    zero. Sleep the ticker, draw one frame, read `gsap.globalTimeline.time()`
+    and drive from there.
+
+  A probe written as a throwaway file under `src/vfx/` is easier than fighting
+  the console, because bare specifiers like `@react-three/fiber` do not resolve
+  in a dynamic import typed at the console while Vite rewrites them in a real
+  module. Delete it afterwards.
 - **Editing from scripts on Windows.** Git Bash heredocs have failed outright
   on a script body holding an apostrophe inside a double-quoted string
   ("unexpected EOF while looking for matching `'`"). Write the script with the

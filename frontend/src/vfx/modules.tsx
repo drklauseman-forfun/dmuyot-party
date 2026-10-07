@@ -5,6 +5,7 @@ import VFXFire from './components/VFXFire';
 import SubtleTopBeams from './components/SubtleTopBeams';
 import VFXEdgeGlow from './components/VFXEdgeGlow';
 import VFXBlackHole from './components/VFXBlackHole';
+import VFXSun from './components/VFXSun';
 import VFXClock from './components/VFXClock';
 import VFXFireworks from './components/VFXFireworks';
 import VFXWings from './components/VFXWings';
@@ -87,6 +88,7 @@ const RENDERERS: ModuleRenderers = {
   beams: (params, { active }) => <SubtleTopBeams {...params} active={active} />,
   edgeGlow: (params, { active }) => <VFXEdgeGlow {...params} active={active} />,
   blackHole: (params, { active }) => <VFXBlackHole {...params} active={active} />,
+  sun: (params, { active }) => <VFXSun {...params} active={active} />,
   clock: (params, { active }) => <VFXClock {...params} active={active} />,
   fireworks: (params, { active, seed }) => <VFXFireworks {...params} active={active} seed={seed} />,
   wings: (params, { active }) => <VFXWings {...params} active={active} />,

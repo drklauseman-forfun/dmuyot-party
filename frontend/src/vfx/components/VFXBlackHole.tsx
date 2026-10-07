@@ -5,7 +5,8 @@ import gsap from 'gsap';
 import type { BlackHoleParams } from '../types';
 
 /**
- * A black hole: dark core, accretion ring, and a starfield bent around it.
+ * A black hole: a core, an accretion ring, and a starfield bent around it.
+ * The core is black unless `coreColor` says otherwise.
  *
  * The stars are generated in the shader rather than sampled from the scene.
  * The effect canvas sits above the interface and cannot read the page behind
@@ -36,6 +37,7 @@ const fragmentShader = `
   uniform vec2 center;
   uniform float density;
   uniform vec3 diskColor;
+  uniform vec3 coreColor;
 
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -96,7 +98,9 @@ const fragmentShader = `
     vec3 colour = diskColor * ring * 2.2 + vec3(1.0) * field * 0.9;
     float alpha = max(max(ring, field * 0.85), shadow);
 
-    colour = mix(colour, vec3(0.0), horizon);
+    // Black by default, so nothing escapes. Any other colour paints over the
+    // middle instead, which only works because this blends normally.
+    colour = mix(colour, coreColor, horizon);
     alpha = max(alpha, horizon);
 
     gl_FragColor = vec4(colour, clamp(alpha, 0.0, 1.0) * intensity);
@@ -109,6 +113,7 @@ interface VFXBlackHoleProps extends BlackHoleParams {
 
 const VFXBlackHole: React.FC<VFXBlackHoleProps> = ({
   color = '#454b55',
+  coreColor = '#000000',
   radius = 0.16,
   spin = 1,
   intensity = 1,
@@ -136,10 +141,11 @@ const VFXBlackHole: React.FC<VFXBlackHoleProps> = ({
       radius: { value: radius },
       spin: { value: spin },
       diskColor: { value: new THREE.Color(color) },
+      coreColor: { value: new THREE.Color(coreColor) },
       center: { value: new THREE.Vector2(centerX, centerY) },
       density: { value: strands },
     }),
-    [color, radius, spin, centerX, centerY, strands],
+    [color, coreColor, radius, spin, centerX, centerY, strands],
   );
 
   // Built paused and started on the first drawn frame. Mounting stalls while

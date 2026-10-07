@@ -96,8 +96,17 @@ export interface BeamsParams extends VFXTiming {
  * pulled in.
  */
 export interface BlackHoleParams extends VFXTiming {
-  /** The accretion ring. The core is always black. */
+  /** The accretion ring. */
   color?: string;
+  /**
+   * The core. Black by default, which is what a black hole is; anything else
+   * paints that colour over the middle instead.
+   *
+   * It can be any colour at all because this module blends normally rather
+   * than additively — an additive one could not draw the black core, let
+   * alone a dark one. See the blending trap in CLAUDE.md.
+   */
+  coreColor?: string;
   /** Event horizon, as a fraction of the frame's height. */
   radius?: number;
   /** How fast the field winds around it. Negative reverses the rotation. */
@@ -124,6 +133,33 @@ export interface BlackHoleParams extends VFXTiming {
    * top (1), because three.js gives a plane's top edge v = 1 — so a smaller
    * second number moves it down, not up. Centred by default, which puts the
    * core over the middle of the results modal.
+   */
+  center?: [number, number];
+}
+
+/** A sun: a mottled disc with rays reaching out of it. */
+export interface SunParams extends VFXTiming {
+  /** The disc. The middle is drawn hotter than this, the rim cooler. */
+  color?: string;
+  /** The rays, the halo and the rim. */
+  rayColor?: string;
+  /** The disc's radius, as a fraction of the frame's shorter side. */
+  radius?: number;
+  /** How many rays. Rounded to a whole number, or the ring of them seams. */
+  rays?: number;
+  /** How far they reach, in disc radii. Each ray varies around this. */
+  rayLength?: number;
+  /** How fast the rays turn. Negative turns them the other way. */
+  spin?: number;
+  /** How mottled the surface is. 0 is a flat disc. */
+  surface?: number;
+  /** Peak brightness. */
+  intensity?: number;
+  /**
+   * Where it sits, as fractions of the frame. The first number runs from the
+   * left edge (0) to the right (1); the second from the **bottom** (0) to the
+   * top (1), because three.js gives a plane's top edge v = 1 — so a smaller
+   * second number moves it down, not up.
    */
   center?: [number, number];
 }
@@ -449,6 +485,7 @@ export type VFXModuleConfig =
   | ({ type: 'beams' } & BeamsParams)
   | ({ type: 'edgeGlow' } & EdgeGlowParams)
   | ({ type: 'blackHole' } & BlackHoleParams)
+  | ({ type: 'sun' } & SunParams)
   | ({ type: 'clock' } & ClockParams)
   | ({ type: 'fireworks' } & FireworksParams)
   | ({ type: 'wings' } & WingsParams)
