@@ -596,15 +596,17 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
       textShadow: '0 0 14px #ffd16699',
     },
     modules: [
-      // The sun sits at the top. The second number is measured from the
-      // BOTTOM, so 0.86 is near the top of the frame, not near the bottom.
-      // Measured against both shapes: the disc is sized by the frame's
-      // shorter side, so on a wide screen it reaches down to about 0.71 of
-      // the height and on a portrait phone far less than that — clear of the
-      // results box either way, with only the rays' falloff reaching it.
+      // The sun hangs at the very top. The second number is measured from the
+      // BOTTOM, so 0.92 is near the top of the frame, not near the bottom.
+      // Measured at both shapes rather than guessed: on a phone the disc
+      // spans the top 1% to 15% of the height — a whole sun tucked under the
+      // edge — and on a wide screen, where it is sized by the shorter side
+      // and so larger in proportion, it covers the top 23% and runs off the
+      // edge. Clear of the results box either way; only the rays' falloff
+      // reaches that far.
       {
         type: 'sun',
-        center: [0.5, 0.86],
+        center: [0.5, 0.92],
         radius: 0.15,
         rays: 16,
         rayLength: 2.2,
@@ -618,14 +620,16 @@ export const CHARACTER_EFFECTS: CharacterEffect[] = [
         fadeDuration: 1.6,
       },
       // Small white motes drifting down through it. Slow and barely stirred:
-      // this is dust in sunlight, not snow. Capped well below the default
+      // this is dust in sunlight, not snow. The count was measured against
+      // the white particles already shipped in אייט, which come out at about
+      // the same brightness over the frame. Capped well below the default
       // ceiling, since a particle drifting near the camera is otherwise
       // unbounded and one large disc would undo the whole look.
       {
         type: 'sparkles',
         direction: 'down',
         color: '#ffffff',
-        count: 260,
+        count: 650,
         size: 0.9,
         speed: 0.9,
         scale: [12, 9, 5],
