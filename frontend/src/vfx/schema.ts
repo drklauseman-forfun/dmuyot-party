@@ -549,6 +549,85 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
     },
   },
 
+  flames: {
+    label: 'Fire',
+    description: 'Flames licking up from the bottom of the screen, up the sides, or one fire, with embers rising off it.',
+    params: {
+      style: {
+        kind: 'select',
+        label: 'Kind',
+        guide: 'A wall of fire along the bottom of the screen, flames up both sides, or a single fire standing where you put it.',
+        default: 'wall',
+        options: [
+          { value: 'wall', label: 'Wall along the bottom' },
+          { value: 'sides', label: 'Up both sides' },
+          { value: 'single', label: 'A single fire' },
+        ],
+      },
+      height: {
+        kind: 'number',
+        label: 'Height',
+        guide:
+          "How far the flames reach. Around 0.3 keeps a wall of fire below the winner's name; much more and it burns across it. Up the sides, this is how far in they come.",
+        default: 0.32,
+        min: 0.05,
+        max: 1,
+        step: 0.01,
+      },
+      width: {
+        kind: 'number',
+        label: 'Width',
+        guide: 'How wide a single fire is at its base, compared to the screen. The wall and the sides ignore it.',
+        default: 0.3,
+        min: 0.05,
+        max: 1,
+        step: 0.01,
+      },
+      position: {
+        kind: 'point',
+        label: 'Position',
+        guide:
+          'Where a single fire stands. The first number goes from the left edge (0) to the right (1); the second is how high its base is, from the bottom (0) up. The wall and the sides ignore it.',
+        default: [0.5, 0],
+      },
+      speed: {
+        kind: 'number',
+        label: 'Speed',
+        guide: 'How fast it burns: how quickly the flames rise and the embers drift up.',
+        default: 1,
+        min: 0.1,
+        max: 4,
+        step: 0.1,
+      },
+      embers: {
+        kind: 'number',
+        label: 'Embers',
+        guide: 'How many sparks rise off it. 0 is none.',
+        default: 0.5,
+        min: 0,
+        max: 1,
+        step: 0.05,
+      },
+      color: {
+        kind: 'color',
+        label: 'Colour',
+        guide:
+          'The colour of the flames. The hottest parts burn brighter and whiter than this, and the edges a deep shade of it, the way real fire does — so blue or green make a believable magic fire too.',
+        default: '#ff6a14',
+      },
+      intensity: {
+        kind: 'number',
+        label: 'Brightness',
+        guide: 'How brightly it burns.',
+        default: 1,
+        min: 0,
+        max: 2,
+        step: 0.05,
+      },
+      ...TIMING_SCHEMA,
+    },
+  },
+
   dragons: {
     label: 'Dragon',
     description: 'A dragon crossing the screen, or a dragon looking straight out of it.',

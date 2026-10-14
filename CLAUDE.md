@@ -105,15 +105,16 @@ stores every parameter explicitly, so drift cannot change what it renders, but
 it would make the builder's starting values wrong.
 
 Modules today: `glow`, `edgeGlow`, `sparkles`, `fire`, `beams`, `blackHole`,
-`sun`, `clock`, `fireworks`, `wings`, `eyes`, `slashes`, `words`, `memes`,
-`glitch`, `timepieces`, `hands`, `figure`, `weapons`, `curtain`, `candles`,
-`creatures`, `dragons`.
+`sun`, `flames`, `clock`, `fireworks`, `wings`, `eyes`, `slashes`, `words`,
+`memes`, `glitch`, `timepieces`, `hands`, `figure`, `weapons`, `curtain`,
+`candles`, `creatures`, `dragons`.
 `beams` has no built-in animation using it but is a building block the builder
 offers. `fire` is **retired**: it did not look like flames, so
 `RETIRED_EFFECTS` in `vfx/schema.ts` keeps it out of the builder's list. Its
 component and schema stay, so any animation already saved with one still loads,
 plays and can be edited — deleting the type would make the sanitiser drop those
-animations. Retiring any other module works the same way. Both are also used by
+animations. `flames`, shown in the builder as **Fire**, is what replaced it, as
+a new type rather than a rewrite of the old one for exactly that reason. Retiring any other module works the same way. Both are also used by
 the developer sandbox in `testEffects.ts`, which exists only under
 `npm run dev`: `registry.ts` leaves it out of production builds, because its
 one-word triggers ignore case and a hand-typed list could contain one.
@@ -142,6 +143,17 @@ than the middle), granulation foreshortened towards that rim, and rays of
 uneven spacing and length. Its ray count is rounded to a whole number in the
 shader: at a fractional count the wave does not close on itself where the angle
 wraps, and a seam runs out of the sun.
+
+`flames` is the same kind of shader, light through the bloom, as a wall along
+the bottom, up both sides, or one fire. It took three tries. Soft noise
+subtracted from a heat already well past full clipped the whole base to a
+white slab with an orange fringe; what reads as fire is noise **stretched
+upward** and pushed to **high contrast**, so at every height a point is in a
+tongue or in the gap between two, multiplying a heat that falls with height.
+Its colour comes from temperature — a deep shade at the cool edges, the colour
+picked, a brighter shade pushed towards yellow, and white only in the hottest
+spots — which is also why a blue or green fire still looks like fire. Up the
+sides the tongues are leaned upward as they reach in, or they jet sideways.
 
 Where the wings sit was measured against the results box, not guessed. At the
 old centre of 0.62 the spread wings covered its top on a phone, title included.
@@ -488,6 +500,20 @@ draws darker than the one picked. The words and memes use `MeshBasicMaterial`,
 which converts for itself: their textures are marked `SRGBColorSpace`, and the
 materials `toneMapped: false`, since the canvas turns tone mapping on and it
 dulls every colour — white words measured exactly white with both set.
+
+**An additive full-screen shader must set its alpha from what it draws.**
+The first fire wrote its fade into alpha alone, as the advice about fades
+says — but then alpha was 1 over the whole region the shader ran in, and the
+canvas, which is composited over the page, laid an **opaque black block** over
+everything there. Off-screen it showed as a hard line with a dark wash
+beneath, which is how it was caught. Alpha has to carry the drawn brightness;
+`VFXFlames` divides the colour back by it, so what is added is still the
+light times the fade, unsquared. The sun gets this right by drawing alpha from
+its own field. Any new module of this kind must too.
+
+**`half` is a reserved word in GLSL ES**, along with a few others that look
+like ordinary names. A shader using one fails to compile and the effect draws
+nothing, with the reason only in the console.
 
 **A backtick inside a shader ends the shader.** The GLSL lives in a template
 literal, so a comment written round a name in backticks closes the string and

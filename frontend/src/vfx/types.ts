@@ -137,6 +137,34 @@ export interface BlackHoleParams extends VFXTiming {
   center?: [number, number];
 }
 
+/** Fire: a wall along the bottom, flames up both sides, or one fire. */
+export interface FlamesParams extends VFXTiming {
+  /** A wall along the bottom of the screen, flames up both sides, or a single fire. */
+  style?: 'wall' | 'sides' | 'single';
+  /**
+   * How far the flames reach, as a fraction of the screen's height — up from
+   * the bottom, or for a single fire up from its base. Up the sides, half of
+   * this as a fraction of the width, in from each edge.
+   */
+  height?: number;
+  /** A single fire's width at its base, as a fraction of the screen's width. */
+  width?: number;
+  /**
+   * Where a single fire stands: across from the left (0) to the right (1),
+   * and its base's height from the **bottom** (0) up, like every other
+   * position here. The wall and the sides ignore it.
+   */
+  position?: [number, number];
+  /** How fast it burns: the rise of the flames and the embers. */
+  speed?: number;
+  /** How many embers rise off it, 0–1. */
+  embers?: number;
+  /** The flame's colour. Its hottest parts are drawn brighter and whiter than this, the coolest a deep shade of it. */
+  color?: string;
+  /** Brightness. */
+  intensity?: number;
+}
+
 /** Dragons: one crossing the screen, or a head looking straight out of it. */
 export interface DragonsParams extends VFXTiming {
   /** A Chinese serpent, a western dragon on the wing, or a head face on. */
@@ -509,6 +537,7 @@ export type VFXModuleConfig =
   | ({ type: 'edgeGlow' } & EdgeGlowParams)
   | ({ type: 'blackHole' } & BlackHoleParams)
   | ({ type: 'sun' } & SunParams)
+  | ({ type: 'flames' } & FlamesParams)
   | ({ type: 'dragons' } & DragonsParams)
   | ({ type: 'clock' } & ClockParams)
   | ({ type: 'fireworks' } & FireworksParams)
