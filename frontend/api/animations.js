@@ -6289,8 +6289,15 @@ var EFFECT_SCHEMAS = {
 			color: {
 				kind: "color",
 				label: "Colour",
-				guide: "The colour of the flames. The hottest parts burn brighter and whiter than this, and the edges a deep shade of it, the way real fire does — so blue or green make a believable magic fire too.",
+				guide: "The colour of the flames. The hottest parts burn brighter and whiter than this, and the edges a deep shade of it, the way real fire does — so blue or green make a believable magic fire too. For black or dark fire, set Blend to Paint over.",
 				default: "#ff6a14"
+			},
+			blend: {
+				kind: "select",
+				label: "Blend",
+				guide: "Add light makes fire out of light: it glows and burns white at its hottest, but cannot draw anything darker than the screen, so a black fire shows only its white core. Paint over draws the flames in the colour itself — the way to make black fire.",
+				default: "add",
+				options: BLEND_OPTIONS
 			},
 			intensity: {
 				kind: "number",

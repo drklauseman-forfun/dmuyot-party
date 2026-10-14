@@ -161,7 +161,14 @@ export interface FlamesParams extends VFXTiming {
   embers?: number;
   /** The flame's colour. Its hottest parts are drawn brighter and whiter than this, the coolest a deep shade of it. */
   color?: string;
-  /** Brightness. */
+  /**
+   * 'add' is fire as light, brightening the frame and burning white at its
+   * hottest. It cannot draw anything darker than what is behind it, so a
+   * black fire added to the frame draws only that white core. 'normal'
+   * paints the flames over the frame in the colour itself — black fire.
+   */
+  blend?: 'add' | 'normal';
+  /** Brightness, or with 'normal', how solid the flames are. */
   intensity?: number;
 }
 

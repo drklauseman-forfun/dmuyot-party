@@ -154,6 +154,11 @@ Its colour comes from temperature — a deep shade at the cool edges, the colour
 picked, a brighter shade pushed towards yellow, and white only in the hottest
 spots — which is also why a blue or green fire still looks like fire. Up the
 sides the tongues are leaned upward as they reach in, or they jet sideways.
+Like the edge light and the particles it has **Paint over** for dark fire:
+added to the frame, a black fire drew only its white-hot core, and burned
+white. Painted, the flames are the exact colour picked — an edge lightened
+even a little, at partial strength, measured *lighter* than the screen behind
+it, a pale halo round black flames.
 
 Where the wings sit was measured against the results box, not guessed. At the
 old centre of 0.62 the spread wings covered its top on a phone, title included.

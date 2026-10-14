@@ -45,6 +45,7 @@ const fragmentShader = `
   uniform vec2 spot;
   uniform float embers;
   uniform vec3 colour;
+  uniform float paint;
 
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -159,6 +160,24 @@ const fragmentShader = `
 
     // Kept below full for most of the fire, so only its hottest spots go white.
     float t = pow(clamp(heat * 0.85, 0.0, 1.0), 1.1);
+    float lift = 1.0 - smoothstep(0.3, 2.0, reach);
+
+    if (paint > 0.5) {
+      // Painted over the frame, for fire darker than what is behind it —
+      // black fire most of all, which added to the frame would draw nothing
+      // but the white-hot core below. The colour itself, solid in the body
+      // of the fire and thinning out at its edges; a little darkness cast
+      // round the base; and embers as dark specks. The edges are not
+      // lightened: a lighter shade painted at partial strength measured
+      // lighter than the screen behind it, a pale halo round black flames.
+      float body = smoothstep(0.0, 0.3, t);
+      vec3 shade = colour;
+      float cover = body * 0.95 + glow * 1.8;
+      if (embers > 0.0) cover = max(cover, clamp(sparks(frame, embers * 0.4) * lift, 0.0, 1.0));
+      gl_FragColor = vec4(shade, clamp(cover, 0.0, 1.0) * intensity);
+      return;
+    }
+
     // From the coolest to the hottest: an ember red, the colour itself, a
     // brighter shade of it pushed towards yellow, and near white at the core.
     vec3 deep = colour * 0.32;
@@ -174,10 +193,7 @@ const fragmentShader = `
     fire += colour * glow;
 
     // Embers, thinning out as they rise.
-    if (embers > 0.0) {
-      float lift = 1.0 - smoothstep(0.3, 2.0, reach);
-      fire += hot * sparks(frame, embers * 0.4) * lift * 0.9;
-    }
+    if (embers > 0.0) fire += hot * sparks(frame, embers * 0.4) * lift * 0.9;
 
     // Alpha has to follow what is drawn: set to the fade alone, it was 1
     // over the whole region the shader runs in, and the canvas then laid an
@@ -203,6 +219,7 @@ const VFXFlames: React.FC<VFXFlamesProps> = ({
   speed = 1,
   embers = 0.5,
   color = '#ff6a14',
+  blend = 'add',
   intensity = 1,
   fadeInDuration = 1,
   duration = 3,
@@ -226,8 +243,9 @@ const VFXFlames: React.FC<VFXFlamesProps> = ({
       spot: { value: new THREE.Vector2(spotX, spotY) },
       embers: { value: embers },
       colour: { value: new THREE.Color(color) },
+      paint: { value: blend === 'normal' ? 1 : 0 },
     }),
-    [style, height, width, spotX, spotY, embers, color],
+    [style, height, width, spotX, spotY, embers, color, blend],
   );
 
   // Built paused and started on the first drawn frame. Mounting stalls while
@@ -279,7 +297,7 @@ const VFXFlames: React.FC<VFXFlamesProps> = ({
         fragmentShader={fragmentShader}
         uniforms={uniforms}
         transparent
-        blending={THREE.AdditiveBlending}
+        blending={blend === 'normal' ? THREE.NormalBlending : THREE.AdditiveBlending}
         depthTest={false}
         depthWrite={false}
       />
