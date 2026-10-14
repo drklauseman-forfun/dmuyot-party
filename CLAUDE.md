@@ -107,7 +107,7 @@ it would make the builder's starting values wrong.
 Modules today: `glow`, `edgeGlow`, `sparkles`, `fire`, `beams`, `blackHole`,
 `sun`, `clock`, `fireworks`, `wings`, `eyes`, `slashes`, `words`, `memes`,
 `glitch`, `timepieces`, `hands`, `figure`, `weapons`, `curtain`, `candles`,
-`creatures`.
+`creatures`, `dragons`.
 `beams` has no built-in animation using it but is a building block the builder
 offers. `fire` is **retired**: it did not look like flames, so
 `RETIRED_EFFECTS` in `vfx/schema.ts` keeps it out of the builder's list. Its
@@ -126,8 +126,8 @@ once on a canvas, and each style places instanced copies of them along a
 skeleton from `wings/pose.ts` every frame. `pose.ts` is plain arithmetic with no
 three.js, so a pose can be checked without drawing it. The wings, the eyes,
 the words, the memes, the timepieces, the hands, the figure, the weapons, the
-curtain and the candles are the modules in `UNLIT_MODULES` — see the bloom trap
-below. The glitch, the creatures and the sun are not: they are light, and are
+curtain, the candles and the dragons are the modules in `UNLIT_MODULES` — see
+the bloom trap below. The glitch, the creatures and the sun are not: they are light, and are
 meant to glow.
 
 `sun` and `blackHole` are opposites built the same way: one full-screen shader
@@ -175,10 +175,11 @@ and pop in once loaded. `MEME_GIFS` is the hand-picked list, each checked by
 eye. Untested: iPhones in Low Power Mode may refuse to play them, as they do
 other videos that start themselves.
 
-Seven of the effects are **drawings** rather than shaders: `timepieces` (a
+Eight of the effects are **drawings** rather than shaders: `timepieces` (a
 clock, a digital counter, an hourglass or a metronome), `hands` (an open palm,
-a handshake, machine or porcelain), `figure`, `weapons`, `curtain`, `candles`
-and `creatures`. They follow the wings' pattern — each picture drawn once on a
+a handshake, machine or porcelain), `figure`, `weapons`, `curtain`, `candles`,
+`creatures` and `dragons` (a Chinese serpent, a western dragon on the wing, or
+a head looking straight out). They follow the wings' pattern — each picture drawn once on a
 canvas in neutral colours and lit from the top left, then placed, turned and
 tinted every frame — and they share `components/fadeClock.ts` and, where they
 scatter, `scatter.ts`. All but the creatures are solid; the creatures are drawn
@@ -188,11 +189,36 @@ Two go further: the curtain is all shader, silk lit from a fold surface, and
 the whale is its picture on a strip a shader bends. No fixed picture could
 fold like cloth or swim.
 
+The Chinese dragon bends the same way as the whale, but through
+`onBeforeCompile` on an ordinary `MeshBasicMaterial` rather than a shader of
+its own. In this layer that is the difference between right and wrong
+colours: a hand-written shader samples an sRGB texture as linear values and
+nothing converts them back, which is what turned the eyes near black. Letting
+three.js keep its own fragment shader avoids the whole question. The western
+dragon's wings are separate pictures hinged at the shoulder, like a clock's
+hands at the hub, and the far one is set a little further down the body and
+beats on its own angle — hung at the same shoulder, the two sat exactly on top
+of each other and read as one wing.
+
 Most of them take a `style` or `kind`, and draw **one** of the thing. A wall of
 clocks or a battery of mixed weapons is the same effect called over and over
 with different kinds, places and sizes, which is how ארה and ג'ול\ייט are
 built. That was asked for directly, and it is also what keeps a parameter list
 short enough to use.
+
+Three dragons were drawn wrong before they were drawn right, and each failure
+is the same lesson — the silhouette is the whole thing at the size these are
+seen at. A serpent that tapered from a fat neck to a stub, on a strip four
+times as long as it was tall, read as a **newt**; it wants to be six times as
+long and nearly even in thickness, thinning only at the tail. A mane of flames
+thrown outward from the head read as a **sea urchin**; laid back along the
+neck it reads as a mane. A wing whose finger bones were drawn on the same side
+as its arm enclosed almost no membrane and came out a **sliver**; the fingers
+must fan out to the other side. And a wing whose finger tips were of nearly
+equal length, with the membrane bellying between them, rounded into a
+**shell** on the dragon's back — unequal lengths and almost no belly give the
+spiked fan that reads as a wing. Check a new creature by rendering its texture
+on its own and looking at it, before judging it in a scene.
 
 What the owner has turned down, so it is not tried again: an open palm facing
 the viewer, which reads as "stop" or a wave and not as offering a deal (the

@@ -6220,6 +6220,88 @@ var EFFECT_SCHEMAS = {
 			...TIMING_SCHEMA
 		}
 	},
+	dragons: {
+		label: "Dragon",
+		description: "A dragon crossing the screen, or a dragon looking straight out of it.",
+		params: {
+			kind: {
+				kind: "select",
+				label: "Kind",
+				guide: "Which dragon. The Chinese one ripples across the screen, the western one flies across beating its wings, and the face stays where it is put and watches. One kind per effect, so a sky with two dragons in it is this effect twice over.",
+				default: "chinese",
+				options: [
+					{
+						value: "chinese",
+						label: "Chinese"
+					},
+					{
+						value: "western",
+						label: "Western"
+					},
+					{
+						value: "face",
+						label: "Face"
+					}
+				]
+			},
+			direction: {
+				kind: "select",
+				label: "Direction",
+				guide: "Which way it travels and faces. The face stays put and only leans this way.",
+				default: "left",
+				options: [{
+					value: "left",
+					label: "Left"
+				}, {
+					value: "right",
+					label: "Right"
+				}]
+			},
+			lane: {
+				kind: "number",
+				label: "Height",
+				guide: "How high it sits: 0 is the bottom of the screen and 1 the top. Around 0.7 keeps it above the winner's name.",
+				default: .72,
+				min: 0,
+				max: 1,
+				step: .01
+			},
+			size: {
+				kind: "number",
+				label: "Size",
+				guide: "How long the dragon is, or how tall the face is, compared to the screen. The Chinese one is much longer than it is tall, so it can take a larger number than the others.",
+				default: .7,
+				min: .1,
+				max: 2,
+				step: .05
+			},
+			speed: {
+				kind: "number",
+				label: "Speed",
+				guide: "How fast it crosses, how fast the wings beat, and how fast the face breathes. At 1 a dragon crosses the screen once over the whole effect.",
+				default: 1,
+				min: .1,
+				max: 4,
+				step: .1
+			},
+			color: {
+				kind: "color",
+				label: "Tint",
+				guide: "White leaves the dragon the colours it was drawn in. Any other colour is mixed into it, and always darkens it.",
+				default: "#ffffff"
+			},
+			intensity: {
+				kind: "number",
+				label: "Strength",
+				guide: "How solid it is. Below 1 the screen shows through it.",
+				default: 1,
+				min: 0,
+				max: 1,
+				step: .05
+			},
+			...TIMING_SCHEMA
+		}
+	},
 	clock: {
 		label: "Clock face in light",
 		description: "A clock face drawn in light, with hands that tick from mark to mark.",

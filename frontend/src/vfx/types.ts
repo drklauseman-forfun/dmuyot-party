@@ -137,6 +137,28 @@ export interface BlackHoleParams extends VFXTiming {
   center?: [number, number];
 }
 
+/** Dragons: one crossing the screen, or a head looking straight out of it. */
+export interface DragonsParams extends VFXTiming {
+  /** A Chinese serpent, a western dragon on the wing, or a head face on. */
+  kind?: 'chinese' | 'face' | 'western';
+  /** Which way it travels and faces. The face only leans. */
+  direction?: 'left' | 'right';
+  /** How high it sits, from the bottom (0) to the top (1). */
+  lane?: number;
+  /**
+   * Length of the dragon, or height of the face, as a fraction of the
+   * frame's shorter side — and of 0.62 of the height on a wide screen, where
+   * the band above the results is short.
+   */
+  size?: number;
+  /** How fast it crosses, beats its wings, or breathes. */
+  speed?: number;
+  /** Tints it. White keeps the colours it was drawn in. */
+  color?: string;
+  /** Peak opacity, 0–1. */
+  intensity?: number;
+}
+
 /** A sun: a mottled disc with rays reaching out of it. */
 export interface SunParams extends VFXTiming {
   /** The disc. The middle is drawn hotter than this, the rim cooler. */
@@ -486,6 +508,7 @@ export type VFXModuleConfig =
   | ({ type: 'edgeGlow' } & EdgeGlowParams)
   | ({ type: 'blackHole' } & BlackHoleParams)
   | ({ type: 'sun' } & SunParams)
+  | ({ type: 'dragons' } & DragonsParams)
   | ({ type: 'clock' } & ClockParams)
   | ({ type: 'fireworks' } & FireworksParams)
   | ({ type: 'wings' } & WingsParams)
