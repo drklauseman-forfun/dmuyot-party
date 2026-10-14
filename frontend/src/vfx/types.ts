@@ -146,9 +146,10 @@ export interface DragonsParams extends VFXTiming {
   /** How high it sits, from the bottom (0) to the top (1). */
   lane?: number;
   /**
-   * Length of the dragon, or height of the face, as a fraction of the
-   * frame's shorter side — and of 0.62 of the height on a wide screen, where
-   * the band above the results is short.
+   * How big it is. At 1 a Chinese dragon is about the width of the frame
+   * long (capped at 1.6 times the height on a very wide one), a western one
+   * 0.62 of that, and the face 0.6 of the shorter side — or of 0.62 of the
+   * height on a wide screen, where the band above the results is short.
    */
   size?: number;
   /** How fast it crosses, beats its wings, or breathes. */

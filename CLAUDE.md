@@ -189,16 +189,32 @@ Two go further: the curtain is all shader, silk lit from a fold surface, and
 the whale is its picture on a strip a shader bends. No fixed picture could
 fold like cloth or swim.
 
-The Chinese dragon bends the same way as the whale, but through
-`onBeforeCompile` on an ordinary `MeshBasicMaterial` rather than a shader of
-its own. In this layer that is the difference between right and wrong
-colours: a hand-written shader samples an sRGB texture as linear values and
-nothing converts them back, which is what turned the eyes near black. Letting
-three.js keep its own fragment shader avoids the whole question. The western
-dragon's wings are separate pictures hinged at the shoulder, like a clock's
-hands at the hub, and the far one is set a little further down the body and
-beats on its own angle — hung at the same shoulder, the two sat exactly on top
-of each other and read as one wing.
+The two travelling dragons are built on a **spine**, recomputed every frame
+in `dragons/spine.ts` — plain arithmetic, like `wings/pose.ts`. The body is a
+ribbon mesh laid along it, every column square to the spine, so it keeps its
+thickness through every curve and the Chinese one can coil into real S-bends;
+the western one's spine is a Catmull-Rom through keys for an arched neck, a
+deep chest and a swishing tail. The head, the legs, the tail's end and the
+wings are separate pictures *pinned* to points on the spine, each with a
+`Layout` saying which pixel is pinned and how many pixels match the body's
+thickness there, so everything stays attached and in proportion at any size.
+The first version pushed a wave up and down through one flat picture, as the
+whale does: that shears a body rather than bending it, and cannot coil. The
+wings hinge at the shoulder like a clock's hands at the hub, beat faster down
+than up, and foreshorten below the top of the stroke; the far wing is further
+back and higher, or the two sit exactly on top of each other and read as one.
+
+The pictures are painted with a small kit in `dragons/paint.ts`, and the kit
+is where the realism lives. The first set were flat shapes in flat colours,
+and the owner called them really bad. What made them read as solid was all
+light: every scale domed and lit on its own, with a dark line along its free
+edge; rows of scales spaced by latitude round the body, so they flatten
+towards the back and the belly the way scales on a cylinder do; a shading
+pass over every form, darkness where one form tucks under another, a rim of
+light on an edge, and grain. Manes, beards and whiskers are hundreds of
+strands, layered dark to light. Shading is painted `source-atop`, so it never
+changes an outline. A whole dragon paints in about 100ms on a desktop, once,
+then is cached.
 
 Most of them take a `style` or `kind`, and draw **one** of the thing. A wall of
 clocks or a battery of mixed weapons is the same effect called over and over
@@ -206,19 +222,22 @@ with different kinds, places and sizes, which is how ארה and ג'ול\ייט a
 built. That was asked for directly, and it is also what keeps a parameter list
 short enough to use.
 
-Three dragons were drawn wrong before they were drawn right, and each failure
-is the same lesson — the silhouette is the whole thing at the size these are
-seen at. A serpent that tapered from a fat neck to a stub, on a strip four
+Before that, three dragons were drawn wrong before they were drawn right, and
+each failure is a silhouette lesson that still holds. A serpent that tapered from a fat neck to a stub, on a strip four
 times as long as it was tall, read as a **newt**; it wants to be six times as
 long and nearly even in thickness, thinning only at the tail. A mane of flames
 thrown outward from the head read as a **sea urchin**; laid back along the
 neck it reads as a mane. A wing whose finger bones were drawn on the same side
 as its arm enclosed almost no membrane and came out a **sliver**; the fingers
-must fan out to the other side. And a wing whose finger tips were of nearly
-equal length, with the membrane bellying between them, rounded into a
-**shell** on the dragon's back — unequal lengths and almost no belly give the
-spiked fan that reads as a wing. Check a new creature by rendering its texture
-on its own and looking at it, before judging it in a scene.
+must fan out to the other side. And a wing whose membrane bellied *out*
+between its finger tips rounded into a **shell** on the dragon's back. A bat's
+trailing edge curves *in*, towards the wrist, between every pair of tips; that
+scallop is the wing. The repaint turned up three more: a nose painted as a
+separate ball read as a **clown's**; a fin frill laid over the cheek read as a
+**glove** (drawn behind the skull, only its ends show); and a round head with
+wide eyes read as **cute** — narrower eyes under brows that come down over
+them made it menacing. Check a new creature by painting each picture on its
+own and looking at it, then again in a scene, then again at phone size.
 
 What the owner has turned down, so it is not tried again: an open palm facing
 the viewer, which reads as "stop" or a wave and not as offering a deal (the

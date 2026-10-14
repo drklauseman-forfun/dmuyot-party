@@ -589,10 +589,10 @@ export const EFFECT_SCHEMAS: EffectSchemas = {
         kind: 'number',
         label: 'Size',
         guide:
-          'How long the dragon is, or how tall the face is, compared to the screen. The Chinese one is much longer than it is tall, so it can take a larger number than the others.',
-        default: 0.7,
-        min: 0.1,
-        max: 2,
+          'How big it is. At 1 a Chinese dragon is about as long as the screen is wide, a western one a little over half that, and the face a good part of the screen. Below about 0.5 they are hard to make out.',
+        default: 1,
+        min: 0.2,
+        max: 2.5,
         step: 0.05,
       },
       speed: {
