@@ -1051,6 +1051,8 @@ function tailEndCanvas(kind: Serpent): HTMLCanvasElement {
 /* -------------------------------------------------------------------- wing */
 
 export const WING: Layout = { width: 1024, height: 1100, anchor: { x: 640, y: 1066 }, ref: 300 };
+/** Where the wing's wrist is in its picture: the hand folds about it. */
+export const WING_WRIST: Point = { x: 820, y: 232 };
 
 /**
  * One wing, rising from a shoulder near the bottom of its picture so the
@@ -1069,7 +1071,7 @@ function wingCanvas(): HTMLCanvasElement {
   const p = PALETTES.western;
   const shoulder = { x: 640, y: 1066 };
   const elbow = { x: 794, y: 722 };
-  const wrist = { x: 820, y: 232 };
+  const wrist = WING_WRIST;
   const fingers = [
     { knuckle: { x: 620, y: 128 }, tip: { x: 360, y: 36 } },
     { knuckle: { x: 520, y: 236 }, tip: { x: 104, y: 252 } },

@@ -4,11 +4,13 @@ import * as THREE from 'three';
 import type { DragonsParams } from '../types';
 import { useFadeClock } from './fadeClock';
 import { catmullRom, offsetFrom, pointAt, ribbon, walk } from './dragons/spine';
+import { foldGrid, restGrid } from './dragons/wingFold';
 import type { Point, SpinePoint } from './dragons/spine';
 import {
   BAND,
   FACE,
   WING,
+  WING_WRIST,
   bandTexture,
   faceTexture,
   glowTexture,
@@ -103,6 +105,26 @@ function setOpacity(mesh: THREE.Mesh | null, value: number): void {
   if (mesh) (mesh.material as THREE.MeshBasicMaterial).opacity = Math.max(0, Math.min(1, value));
 }
 
+/** Cells across and down the wing's grid: enough for the fold to bend smoothly. */
+const WING_GRID = 18;
+const WING_RIG = { width: WING.width, height: WING.height, wrist: WING_WRIST };
+
+/** A wing that can fold at the wrist: a grid, not a single card. */
+function foldingWing(color: THREE.Color, order: number): THREE.Mesh {
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, WING_GRID, WING_GRID), material(wingTexture(), color));
+  mesh.renderOrder = order;
+  mesh.frustumCulled = false;
+  mesh.userData.rig = restGrid(WING_RIG, WING_GRID, WING_GRID);
+  return mesh;
+}
+
+function fold(mesh: THREE.Mesh, angle: number, shrink: number): void {
+  const { rest, share } = mesh.userData.rig as ReturnType<typeof restGrid>;
+  const attribute = mesh.geometry.getAttribute('position') as THREE.BufferAttribute;
+  foldGrid(WING_RIG, rest, share, angle, shrink, attribute.array as Float32Array);
+  attribute.needsUpdate = true;
+}
+
 function writeRibbon(mesh: THREE.Mesh, spine: SpinePoint[], halfWidth: (s: number) => number, facing: number): void {
   const attribute = mesh.geometry.getAttribute('position') as THREE.BufferAttribute;
   ribbon(spine, halfWidth, facing, attribute.array as Float32Array);
@@ -170,7 +192,7 @@ function build(kind: DragonsParams['kind'], color: string): Parts {
   }));
   let wings: Parts['wings'] = null;
   if (serpent === 'western') {
-    wings = { near: sprite(wingTexture(), tint, 7), far: sprite(wingTexture(), far, 1) };
+    wings = { near: foldingWing(tint, 7), far: foldingWing(far, 1) };
     group.add(wings.far, wings.near);
   }
   group.add(tail, body, head, ...legs.map((leg) => leg.mesh));
@@ -272,6 +294,7 @@ const VFXDragons: React.FC<VFXDragonsProps> = ({
     let spine: SpinePoint[];
     let beat = 0;
     let warped = 0;
+    let bodyPitch = 0;
     if (serpent === 'chinese') {
       // A travelling wave, quiet at the head and full along the body, its
       // crests running back towards the tail as a swimming snake's do.
@@ -293,23 +316,45 @@ const VFXDragons: React.FC<VFXDragonsProps> = ({
       );
     } else {
       // Faster on the downstroke than the up, which is how wings push.
-      const phase = t * 3.2 * speed;
+      const phase = t * 3 * speed;
       warped = phase + 0.35 * Math.sin(phase);
       beat = Math.cos(warped);
-      // The body rises a little on each downstroke.
-      const headY = laneY - Math.sin(warped) * long * 0.02;
-      const swish = t * 2.2 * speed;
-      const keys: Point[] = [
-        { x: 0, y: 0.17 + Math.sin(t * 1.1 * speed) * 0.01 },
-        { x: -0.07, y: 0.12 },
-        { x: -0.15, y: 0.04 },
-        { x: -0.24, y: 0 },
-        { x: -0.4, y: -0.01 },
-        { x: -0.56, y: -0.02 + Math.sin(swish) * 0.012 },
-        { x: -0.72, y: Math.sin(swish - 0.9) * 0.03 },
-        { x: -0.87, y: 0.03 + Math.sin(swish - 1.8) * 0.045 },
-        { x: -1, y: 0.05 + Math.sin(swish - 2.7) * 0.06 },
-      ].map((p) => ({ x: headX + facing * p.x * long, y: headY + p.y * long }));
+      // The wings carry the body, so it moves with every beat: it rises after
+      // each downstroke and sinks between, and noses up as the wings push
+      // down. Each part takes the movement a little after the one ahead of
+      // it, so the neck and the tail follow through like a whip. Held rigid
+      // and only bobbed, the first one moved as one plank.
+      const heaveAt = (lag: number) => -Math.cos(warped - 0.3 - lag) * 0.042;
+      bodyPitch = 0.075 * Math.sin(warped) + 0.04 * Math.sin(t * 0.45 * speed);
+      const glide = Math.sin(t * 0.45 * speed + 1) * 0.03;
+      const swish = t * 2.1 * speed;
+      // The body's shape in body lengths, towards the head from the chest,
+      // and how late each part moves.
+      const shape: [number, number, number][] = [
+        [0.24, 0.17, -0.5],
+        [0.17, 0.12, -0.3],
+        [0.09, 0.04, -0.15],
+        [0, 0, 0],
+        [-0.16, -0.01, 0.25],
+        [-0.32, -0.02, 0.6],
+        [-0.48, 0, 1],
+        [-0.63, 0.03, 1.4],
+        [-0.76, 0.05, 1.8],
+      ];
+      const chestX = headX - facing * 0.24 * long;
+      const c = Math.cos(bodyPitch);
+      const s = Math.sin(bodyPitch);
+      const keys: Point[] = shape.map(([x, y, lag], i) => {
+        const px = x * c - y * s;
+        let py = x * s + y * c;
+        // The head takes less of the heave than the body: the neck flexes
+        // to hold it steady, as a bird's does.
+        const steady = i === 0 ? 0.45 : i === 1 ? 0.7 : 1;
+        py += heaveAt(lag) * steady + glide;
+        // The tail's own sway, growing towards the tip.
+        if (i >= 5) py += Math.sin(swish - (i - 4) * 0.95) * 0.016 * Math.pow(i - 4, 1.3);
+        return { x: chestX + facing * px * long, y: laneY + py * long };
+      });
       spine = walk(catmullRom(keys), COLUMNS);
     }
 
@@ -324,7 +369,9 @@ const VFXDragons: React.FC<VFXDragonsProps> = ({
       const neck = spine[0];
       const at = offsetFrom(neck, halfWidth(0) * fromSpine(BODY_MIDDLE), facing);
       // The western head is held lower than its neck, as a heron's is.
-      const pitch = serpent === 'western' ? -0.3 : 0;
+      // It also turns against the body's pitch, so it keeps looking where it
+      // is going, and looks about a little.
+      const pitch = serpent === 'western' ? -0.3 - bodyPitch * 0.6 + Math.sin(t * 0.8 * speed) * 0.07 : 0;
       // A western head drawn only as deep as its neck came out small for the
       // body behind it; a dragon's skull is broader than its throat.
       const grow = serpent === 'western' ? 1.3 : 1;
@@ -351,7 +398,10 @@ const VFXDragons: React.FC<VFXDragonsProps> = ({
       const swing =
         serpent === 'chinese'
           ? Math.sin(t * 2.4 * speed + leg.phase) * 0.28 + 0.1
-          : Math.sin(t * 1.4 * speed + leg.phase) * 0.05 + (leg.kind === 'westernHind' ? 0.35 : -0.15);
+          : // Hanging loose, they swing a moment after each heave of the body.
+            (leg.kind === 'westernHind' ? 0.35 : -0.15) +
+            Math.sin(warped - 1.5 + leg.phase * 0.25) * 0.17 +
+            Math.sin(t * 1.2 * speed + leg.phase) * 0.04;
       const pixel = (thickness(leg.at) * (serpent === 'chinese' ? 0.62 : 0.64)) / layout.ref;
       pin(leg.mesh, layout, at, root.angle + facing * swing, facing, pixel);
       setOpacity(leg.mesh, fade);
@@ -364,15 +414,19 @@ const VFXDragons: React.FC<VFXDragonsProps> = ({
       // Up and back: near vertical at the top of the stroke, swept back and
       // down past the body at the bottom, and seen at its fullest span at
       // the top, foreshortened below.
-      const sweep = 0.72 - 0.62 * beat;
-      const stretch = 0.86 + 0.14 * beat;
+      const sweep = 0.72 - 0.7 * beat;
+      const stretch = 0.84 + 0.16 * beat;
+      // The hand folds back on the upstroke and spreads on the way down.
+      const folding = (w: number) => Math.pow(Math.max(0, -Math.sin(w)), 1.4) * 0.75;
+      fold(current.wings.near, folding(warped), folding(warped) * 0.25);
       pin(current.wings.near, WING, at, shoulder.angle + facing * sweep, facing, pixel, stretch);
       // The far wing further back and higher, raised a little less and a
       // moment later. Hung beside the near one, it sat exactly behind it and
       // the pair read as one wing.
       const lag = Math.cos(warped - 0.45);
+      fold(current.wings.far, folding(warped - 0.45), folding(warped - 0.45) * 0.25);
       const farAt = offsetFrom(pointAt(spine, 0.27), halfWidth(0.27) * fromSpine(0.05), facing);
-      pin(current.wings.far, WING, farAt, shoulder.angle + facing * (0.98 - 0.5 * lag), facing, pixel * 0.88, 0.84 + 0.12 * lag);
+      pin(current.wings.far, WING, farAt, shoulder.angle + facing * (0.98 - 0.58 * lag), facing, pixel * 0.88, 0.84 + 0.14 * lag);
       setOpacity(current.wings.near, fade);
       setOpacity(current.wings.far, fade);
     }

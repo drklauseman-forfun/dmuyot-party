@@ -204,6 +204,19 @@ wings hinge at the shoulder like a clock's hands at the hub, beat faster down
 than up, and foreshorten below the top of the stroke; the far wing is further
 back and higher, or the two sit exactly on top of each other and read as one.
 
+The owner then called the western one **too stiff**, and it was: a rigid body
+only bobbed, and wings that swung as flat cards. Now each wing is a grid
+rather than a card, and `dragons/wingFold.ts` folds it at the wrist — every
+point turned about the wrist by the fold times its share in the hand, so the
+fingers fold back on the upstroke and spread on the down, and the membrane
+between the last finger and the body stretches instead of tearing at a seam.
+The body heaves after each downstroke and noses up as the wings push, every
+key of the spine taking the movement a little after the one ahead of it, so
+the neck and tail follow through like a whip; the head takes less of the
+heave and turns against the body's pitch, as a bird holds its head steady;
+the legs swing a moment behind each heave. Nothing in a flying creature
+should move at the same moment as everything else.
+
 The pictures are painted with a small kit in `dragons/paint.ts`, and the kit
 is where the realism lives. The first set were flat shapes in flat colours,
 and the owner called them really bad. What made them read as solid was all
