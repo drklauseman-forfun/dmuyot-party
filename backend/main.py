@@ -36,6 +36,19 @@ def extract_doc_id(url: str) -> Optional[str]:
     match = re.search(r"/document/d/([a-zA-Z0-9-_]+)", url)
     return match.group(1) if match else None
 
+# Direction and zero-width marks. A Hebrew document is full of them, and one
+# sitting in front of a bracket hides it from the rules below.
+INVISIBLE = '\u200b\u200c\u200d\u200e\u200f\u061c\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069'
+
+
+def _first_visible(text: str) -> str:
+    """The first character that is actually drawn, if there is one."""
+    for ch in text:
+        if ch not in INVISIBLE and not ch.isspace():
+            return ch
+    return ''
+
+
 def clean_character_name(line: str) -> str:
     name = line.strip()
     
@@ -54,7 +67,20 @@ def clean_character_name(line: str) -> str:
         is_part_of_the_number = (
             separator in ('.', ')', '-') and remainder[:1].isdigit()
         )
-        if remainder and not is_part_of_the_number:
+
+        # A source in brackets always comes after a name, never instead of one,
+        # so a number with nothing but the source behind it IS the name:
+        # "277181 (מגהברס 1)" is a character called 277181. Only when the
+        # separator is bare whitespace, because a list number writes itself
+        # with punctuation — "1. (Source)" is numbered, whatever follows it.
+        #
+        # Without this, every name that was a number came back as its source
+        # alone. A Docs ordered list is where it bites: the numbering is the
+        # list's own, so the text of the line is the bare name, with nothing
+        # in front of it to strip.
+        is_the_whole_name = separator.strip() == '' and _first_visible(remainder) == '('
+
+        if remainder and not is_part_of_the_number and not is_the_whole_name:
             name = remainder
     
     # 2. For the format "Name (Source): Description...", 

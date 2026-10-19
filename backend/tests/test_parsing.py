@@ -73,6 +73,49 @@ def test_only_the_first_colon_splits():
     assert names('<p>2. Name: desc: more</p>') == ['Name']
 
 
+# --- RULE: a name that is a number keeps it ---------------------------------
+
+
+def test_name_that_is_a_number_keeps_it_when_a_source_follows():
+    """The bug: 277181 (מגהברס 1) came back as "(מגהברס 1)", with no number."""
+    assert clean_character_name('277181 (מגהברס 1)') == '277181 (מגהברס 1)'
+
+
+def test_name_that_is_a_number_keeps_it_with_a_source_and_a_description():
+    assert clean_character_name('277181 (מגהברס 1): נכנס לרשימה') == '277181 (מגהברס 1)'
+
+
+def test_name_that_is_a_number_survives_a_direction_mark_before_the_source():
+    """A Hebrew document puts one of these between the two more often than not."""
+    assert clean_character_name('277181 \u200f(מגהברס 1)') == '277181 \u200f(מגהברס 1)'
+
+
+def test_a_numbered_entry_whose_name_is_a_number_still_loses_the_list_number():
+    assert clean_character_name('12. 277181 (LOTR)') == '277181 (LOTR)'
+    assert clean_character_name('12) 277181 (LOTR)') == '277181 (LOTR)'
+    assert clean_character_name('12 - 277181 (LOTR)') == '277181 (LOTR)'
+
+
+def test_a_list_number_is_stripped_even_when_the_source_follows_it_alone():
+    """Punctuation is only ever a list number's, so this one is still numbered."""
+    assert clean_character_name('1. (LOTR)') == '(LOTR)'
+
+
+def test_an_ordered_list_item_named_only_by_a_number_keeps_it():
+    """Docs numbers the list itself, so the text of the line is the bare name."""
+    assert names('<ol><li>277181 (מגהברס 1)</li></ol>') == ['277181 (מגהברס 1)']
+    assert names('<ol><li>277181</li></ol>') == ['277181']
+
+
+def test_a_number_still_names_a_character_with_no_source():
+    assert clean_character_name('277181') == '277181'
+    assert clean_character_name('1. 277181') == '277181'
+
+
+def test_an_ordinary_name_after_a_bare_list_number_is_unaffected():
+    assert clean_character_name('5 Frodo (LOTR)') == 'Frodo (LOTR)'
+
+
 # --- RULE: stripping the leading number must not mangle decimals ------------
 
 

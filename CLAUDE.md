@@ -33,9 +33,17 @@ Product decisions, not accidents. Changing one is a regression.
   `<ol><li>`. Anything inside a `<ul>` never is.
 - `Name (Source): description` keeps only the part before the colon. The
   `(Source)` stays, so **every stored name has it** — this matters for triggers.
-- Stripping the leading number must not mangle decimals. `1.5` and `10-20 Squad`
-  survive whole; `12. 1.5` becomes `1.5`. Whitespace is the discriminator, and
-  the tests pin every case.
+- Stripping the leading number must not mangle decimals, **or a name that is
+  itself a number**. `1.5` and `10-20 Squad` survive whole; `12. 1.5` becomes
+  `1.5`. Whitespace is the discriminator between a list number and a decimal —
+  and a bracket is the discriminator between a list number and a name, because
+  a source only ever follows a name: `277181 (מגהברס 1)` is a character called
+  277181, while `1. (LOTR)` is numbered. Before 2026-10-19 that one stripped
+  the number and left the source alone, so every number-named character came
+  through as `(מגהברס 1)` — and two of them came through identical. A Docs
+  ordered list is where it bit: the numbering is the list's own, so the text of
+  the line is the bare name with nothing in front of it to strip. The tests pin
+  every case.
 - Black document text becomes white for the dark theme.
 - `originalIndex` — a character's position in the document — is identity.
   Weights, ranges and history all key off it. The UI shows it 1-based; the range
