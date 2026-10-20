@@ -778,23 +778,35 @@ site=https://dmuyot-party-6gjy.vercel.app
 curl -s "$site/$(curl -s "$site/" | grep -o 'assets/index-[^"]*\.js')" | grep -o 'https://[^"]*api/extract'
 ```
 
-**But Render is not running `main`.** Checked on 2026-09-10, on 2026-09-11 and
-again on 2026-10-01: the live API has no `/health` route (FastAPI answers it with its own
-404), turns `10 - Frodo` into `- Frodo`, still sends
-`access-control-allow-credentials: true`, and its OpenAPI schema has no
-`Character` model. All of those changed in `main`'s backend commits of
-2026-09-04 and 2026-09-09, so the service is serving the June code and nothing
-pushed since has reached it. On 2026-09-11 the owner looked over the Render
-dashboard and found nothing wrong, while the API that same day still served the
-June code — so a healthy-looking dashboard does not settle it. The thing to read
-there is the newest entry under **Events**: its date, and the commit it built.
-Whether auto-deploy is off, the service points at another repository or branch,
-or its builds fail, that entry will say. Until it is redeployed, a backend fix
-on `main` is not live — check rather than assume:
+**Render runs `main` again, as of 2026-10-20.** For months it did not: it
+served the June code, and every backend fix on `main` sat unreached. The owner
+redeployed it, and it was verified that day — `/health` answers 200, the
+`Character` model is in the OpenAPI schema, `10 - Gimli` comes back as
+`Gimli`, and the number-name fix of 2026-10-19 is live. The deployed site
+calls it, and a warm request takes 0.19s.
+
+So a backend change now reaches production by being pushed — but it is a
+separate service with its own deploy, not part of the Vercel build, so check
+rather than assume after any change to `main.py`:
 
 ```bash
-curl -s https://dmuyot-party.onrender.com/openapi.json | grep -o '"/[^"]*":'   # no /health listed: still the June build
+curl -s https://dmuyot-party.onrender.com/openapi.json | grep -o '"/health"'   # nothing: an old build
 ```
+
+The sharper check is behaviour, since a build can be newer and still not the
+one expected. Post a line to `/api/extract` whose answer only the current code
+gives:
+
+```bash
+curl -s -X POST -H 'Content-Type: application/json' \
+  -d '{"text":"10 - Gimli"}' https://dmuyot-party.onrender.com/api/extract
+# {"characters":[{"name":"Gimli",...}]}  — the June build said "- Gimli"
+```
+
+What settled it, for the next time something looks stale: the thing to read in
+the Render dashboard is the newest entry under **Events** — its date and the
+commit it built. A healthy-looking dashboard does not settle it; that entry
+does.
 
 **Waking that backend takes about half a minute.** Render's free tier spins an
 idle instance down. A measured cold request took 32.4s; the next was instant. So
