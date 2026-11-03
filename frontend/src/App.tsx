@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import axios from 'axios';
 import CustomWheel from './CustomWheel';
 import type { WheelSlice } from './CustomWheel';
@@ -31,6 +31,7 @@ import ResultsModal from './components/ResultsModal';
 import SettingsModal from './components/SettingsModal';
 import AnimationBuilder from './animations/AnimationBuilder';
 import { resolveWinnerAnimation, useAnimationLibrary } from './animations/store';
+import { isSecretName } from './secret';
 import { useAnimationSync } from './animations/sync';
 
 interface ExtractionResponse {
@@ -142,6 +143,13 @@ function App() {
   const [knockedOut, setKnockedOut] = useState<ReadonlySet<number>>(() => new Set());
   // A line under the winners, for what knockout has to say about the round.
   const [resultNote, setResultNote] = useState<string | null>(null);
+  /**
+   * False while a secret winner is still held back. Every result sets it, so
+   * the next one starts hidden again rather than inheriting the last reveal.
+   */
+  const [revealed, setRevealed] = useState(false);
+  /** A secret winner's own effect, waiting for Reveal. */
+  const heldEffect = useRef<CharacterEffect | null>(null);
   
   // Special Visuals State. Effect definitions live in characters/registry.ts.
   const [activeEffect, setActiveEffect] = useState<CharacterEffect | null>(null);
@@ -191,27 +199,13 @@ function App() {
     setHistory(historyEntries);
   };
 
-  /** Fires the registry effect for the first winner, if one matches. */
-  const checkEffect = (winnersList: { name: string }[]) => {
-    const firstWinner = winnersList[0];
-    devLog("🎯 [EFFECT] Checking effects for:", firstWinner?.name);
-
-    const effect =
-      effectsEnabled && firstWinner && firstWinner.name !== VOID_NAME
-        ? resolveWinnerAnimation(animationLibrary, username, firstWinner.name)
-        : null;
-
+  /** Plays an effect, or clears whatever the last winner left behind. */
+  const playEffect = (effect: CharacterEffect | null) => {
     if (!effect) {
-      devLog(
-        effectsEnabled
-          ? "⚪ [EFFECT] No special trigger matched."
-          : "🚫 [EFFECT] Effects are switched off in Settings.",
-      );
       setActiveEffect(null);
       setVfxConfig(null);
       return;
     }
-
     devLog("🔥 [EFFECT] Matched effect:", effect.id);
     setActiveEffect(effect);
     setVfxEverPlayed(true);
@@ -220,6 +214,47 @@ function App() {
       modules: effect.modules,
       timestamp: Date.now()
     });
+  };
+
+  /**
+   * Announces a result: arms the reveal, and fires the first winner's effect
+   * unless that winner is a secret one.
+   *
+   * A secret winner's effect has to wait, because it would name them twice
+   * over — a built-in animation puts the character's own name in the modal's
+   * title, and several are recognisable on sight. It is held here and played
+   * on Reveal. An effect belonging to a winner who is *not* secret gives
+   * nothing away about the others, so it plays at once.
+   */
+  const announceWinners = (winnersList: { name: string }[]) => {
+    const firstWinner = winnersList[0];
+    devLog("🎯 [EFFECT] Checking effects for:", firstWinner?.name);
+
+    const effect =
+      effectsEnabled && firstWinner && firstWinner.name !== VOID_NAME
+        ? resolveWinnerAnimation(animationLibrary, username, firstWinner.name)
+        : null;
+    if (!effect) {
+      devLog(
+        effectsEnabled
+          ? "⚪ [EFFECT] No special trigger matched."
+          : "🚫 [EFFECT] Effects are switched off in Settings.",
+      );
+    }
+
+    const firstIsSecret = !!firstWinner && isSecretName(firstWinner.name);
+    setRevealed(!winnersList.some((w) => isSecretName(w.name)));
+    heldEffect.current = firstIsSecret ? effect : null;
+    playEffect(firstIsSecret ? null : effect);
+  };
+
+  /** Shows the secret winners, and plays the effect that was waiting on them. */
+  const revealWinners = () => {
+    setRevealed(true);
+    if (heldEffect.current) {
+      playEffect(heldEffect.current);
+      heldEffect.current = null;
+    }
   };
 
   /**
@@ -459,7 +494,7 @@ function App() {
         setResultNote(null);
       }
       setWinners(newWinners);
-      checkEffect(newWinners);
+      announceWinners(newWinners);
       setShowModal(true);
       addToHistory(newWinners);
       // No wheel to tick along with on this path, so just the landing.
@@ -473,7 +508,7 @@ function App() {
         setResultNote(null);
         // Clears any effect left over from the previous winner — without
         // this, VOID inherits that winner's modal styling.
-        checkEffect([voidWinner]);
+        announceWinners([voidWinner]);
         setShowModal(true);
         addToHistory([voidWinner]);
         playResultSound();
@@ -621,7 +656,7 @@ function App() {
                     setResultNote(null);
                   }
                   setWinners([winnerObj]);
-                  checkEffect([winnerObj]);
+                  announceWinners([winnerObj]);
                   setShowModal(true);
                   addToHistory([winnerObj]);
                 }}
@@ -733,6 +768,8 @@ function App() {
           winners={winners}
           note={resultNote}
           presentation={presentation}
+          revealed={revealed}
+          onReveal={revealWinners}
           onClose={() => setShowModal(false)}
         />
       )}

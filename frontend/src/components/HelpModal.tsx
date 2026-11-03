@@ -167,6 +167,28 @@ const HELP: Record<Language, HelpContent> = {
         ],
       },
       {
+        heading: 'Hidden winners',
+        paragraphs: [
+          [
+            'A character with ',
+            { code: 'murim' },
+            ' anywhere in their name is a surprise. When one wins, the result comes up as ',
+            { code: '? ? ?' },
+            ' with a ',
+            { code: 'Reveal' },
+            ' button, so everyone finds out together instead of reading it off whoever is holding the phone.',
+          ],
+          [
+            'Capitals do not matter, and it can sit anywhere in the name — at the start, in the middle, or inside the brackets. Their number is held back too, since it would give them away just as fast, and so is their animation, which is why nothing plays until you press Reveal.',
+          ],
+          [
+            'In a spin of several, only the hidden ones come up as ',
+            { code: '? ? ?' },
+            ' — everyone else is shown as usual, and one press reveals them all. The last result keeps the names in full, so it is the one place a winner can still be looked up before anybody presses anything.',
+          ],
+        ],
+      },
+      {
         heading: 'The last result',
         paragraphs: [
           [
@@ -399,6 +421,28 @@ const HELP: Record<Language, HelpContent> = {
           ],
           [
             'לא מצב הנוקאאוט ולא מי שיצא נשמרים. רענון הדף או סגירת האפליקציה פותחים אותה במצב הרגיל עם כולם בפנים — כך שסבב שלא הסתיים אף פעם לא יגרום למישהו לפספס את התור שלו בהמשך.',
+          ],
+        ],
+      },
+      {
+        heading: 'זוכים מוסתרים',
+        paragraphs: [
+          [
+            'דמות שיש בשם שלה ',
+            { code: 'murim' },
+            ' בכל מקום היא הפתעה. כשהיא זוכה, התוצאה מופיעה בתור ',
+            { code: '? ? ?' },
+            ' עם כפתור ',
+            { code: 'Reveal' },
+            ', כדי שכולם יגלו יחד במקום שמי שמחזיק את הטלפון יקרא את זה ראשון.',
+          ],
+          [
+            'אותיות גדולות וקטנות לא משנות, וזה יכול להופיע בכל מקום בשם — בהתחלה, באמצע או בתוך הסוגריים. גם המספר שלה מוסתר, כי הוא היה מסגיר אותה באותה מהירות, וגם האנימציה שלה — ולכן שום דבר לא מתנגן עד שלוחצים Reveal.',
+          ],
+          [
+            'בסיבוב של כמה, רק המוסתרים מופיעים בתור ',
+            { code: '? ? ?' },
+            ' — כל השאר מוצגים כרגיל, ולחיצה אחת חושפת את כולם. התוצאה האחרונה שומרת את השמות במלואם, אז זה המקום היחיד שאפשר לראות בו זוכה לפני שמישהו לחץ.',
           ],
         ],
       },

@@ -444,6 +444,12 @@ h1 {
   border-bottom: 1px solid #333;
 }
 
+/* A winner held back until Reveal: see secret.ts. */
+.result-hidden {
+  letter-spacing: 0.35rem;
+  opacity: 0.75;
+}
+
 .settings-row {
   margin-bottom: 1.5rem;
   display: flex;

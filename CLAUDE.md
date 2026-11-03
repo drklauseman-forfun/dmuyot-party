@@ -44,6 +44,18 @@ Product decisions, not accidents. Changing one is a regression.
   ordered list is where it bit: the numbering is the list's own, so the text of
   the line is the bare name with nothing in front of it to strip. The tests pin
   every case.
+- **A character whose name contains `murim`, in any mix of capitals and
+  anywhere in the name, is held back.** Its result shows as `? ? ?` until
+  Reveal is pressed — and so does its position number, which would name it as
+  surely, and its animation, whose title and shape would too. The word lives
+  once in `secret.ts`, spelled out so it is greppable. Unlike the animation
+  triggers, this matches anywhere in the name rather than from the start, so
+  it can sit inside the `(Source)` as easily as in front of it. In a spin of
+  several, only the held-back winners are hidden and one press reveals them
+  all; an effect belonging to a winner who is *not* held back plays at once,
+  since it gives nothing away about the others. The last result keeps the
+  names in full, deliberately: it is a record, and reaching it takes a press
+  of its own.
 - Black document text becomes white for the dark theme.
 - `originalIndex` — a character's position in the document — is identity.
   Weights, ranges and history all key off it. The UI shows it 1-based; the range
