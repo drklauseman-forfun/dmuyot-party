@@ -720,15 +720,17 @@ h1 {
   color: #a8a8b4;
 }
 
-.help-modal code {
+/* Literals the user types or reads off a button. The settings hints show the
+   same kind of thing, so they share the look. */
+.help-modal code,
+.settings-hint code {
   background: #2c2c2c;
   border-radius: 3px;
   padding: 1px 5px;
   font-size: 0.78rem;
   color: #d6d6e2;
   white-space: nowrap;
-  /* These are literals a user types or reads off a button, so they run
-     left-to-right even when the sentence around them does not. */
+  /* They run left-to-right even when the sentence around them does not. */
   direction: ltr;
   unicode-bidi: isolate;
 }

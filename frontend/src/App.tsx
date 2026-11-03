@@ -121,6 +121,13 @@ function App() {
   // layer, and the modal keeps its plain styling. The key predates the word
   // "animation" and stays as it is — people have a saved setting under it.
   const [effectsEnabled, setEffectsEnabled] = usePersistedBoolean(STORAGE_KEYS.effects, true);
+  // Whether a secret winner waits for Reveal. On by default: it is what the
+  // word in a name is for. Off makes such a character win like anyone else,
+  // which is what someone spinning alone wants — there is no room to surprise.
+  const [hiddenWinners, setHiddenWinners] = usePersistedBoolean(
+    STORAGE_KEYS.hiddenWinners,
+    true,
+  );
   // Whose custom animations apply. A name, not an account: see animations/store.ts.
   const [username, setUsername] = usePersistedString(STORAGE_KEYS.username, '');
   const [animationLibrary, setAnimationLibrary] = useAnimationLibrary();
@@ -242,8 +249,13 @@ function App() {
       );
     }
 
-    const firstIsSecret = !!firstWinner && isSecretName(firstWinner.name);
-    setRevealed(!winnersList.some((w) => isSecretName(w.name)));
+    // The setting is read here rather than inside `isSecretName`, which knows
+    // only about names: switched off, nobody is held back and every result
+    // behaves as it did before any of this existed.
+    const isHeldBack = (name: string) => hiddenWinners && isSecretName(name);
+
+    const firstIsSecret = !!firstWinner && isHeldBack(firstWinner.name);
+    setRevealed(!winnersList.some((w) => isHeldBack(w.name)));
     heldEffect.current = firstIsSecret ? effect : null;
     playEffect(firstIsSecret ? null : effect);
   };
@@ -759,6 +771,8 @@ function App() {
           onSoundEnabledChange={setSoundEnabled}
           effectsEnabled={effectsEnabled}
           onEffectsEnabledChange={setEffectsEnabled}
+          hiddenWinners={hiddenWinners}
+          onHiddenWinnersChange={setHiddenWinners}
           onClose={() => setShowSettings(false)}
         />
       )}
@@ -768,6 +782,7 @@ function App() {
           winners={winners}
           note={resultNote}
           presentation={presentation}
+          hiddenWinners={hiddenWinners}
           revealed={revealed}
           onReveal={revealWinners}
           onClose={() => setShowModal(false)}

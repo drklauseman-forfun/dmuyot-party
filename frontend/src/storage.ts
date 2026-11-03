@@ -15,6 +15,8 @@ export const STORAGE_KEYS = {
   sound: 'dmuyot_party_sound',
   soundPack: 'dmuyot_party_sound_pack',
   effects: 'dmuyot_party_effects',
+  /** Whether a `murim` winner waits for Reveal. See secret.ts. */
+  hiddenWinners: 'dmuyot_party_hidden_winners',
   helpLanguage: 'dmuyot_party_help_language',
   username: 'dmuyot_party_username',
   /** Custom animations, every username's, as one object. See animations/store.ts. */

@@ -186,6 +186,11 @@ const HELP: Record<Language, HelpContent> = {
             { code: '? ? ?' },
             ' — everyone else is shown as usual, and one press reveals them all. The last result keeps the names in full, so it is the one place a winner can still be looked up before anybody presses anything.',
           ],
+          [
+            'All of it is a setting: ',
+            { code: 'Hide Surprise Winners' },
+            ' in Settings, on to begin with. Switched off, such a character wins like any other — named at once, with their number and their animation, and no button to press. Nothing about the list or the spin changes either way.',
+          ],
         ],
       },
       {
@@ -443,6 +448,11 @@ const HELP: Record<Language, HelpContent> = {
             'בסיבוב של כמה, רק המוסתרים מופיעים בתור ',
             { code: '? ? ?' },
             ' — כל השאר מוצגים כרגיל, ולחיצה אחת חושפת את כולם. התוצאה האחרונה שומרת את השמות במלואם, אז זה המקום היחיד שאפשר לראות בו זוכה לפני שמישהו לחץ.',
+          ],
+          [
+            'כל זה הוא הגדרה: ',
+            { code: 'Hide Surprise Winners' },
+            ' בהגדרות, דלוקה כברירת מחדל. כשהיא כבויה, דמות כזאת זוכה כמו כל אחת אחרת — השם מופיע מיד, עם המספר והאנימציה שלה, ואין על מה ללחוץ. שום דבר ברשימה או בסיבוב לא משתנה כך או כך.',
           ],
         ],
       },

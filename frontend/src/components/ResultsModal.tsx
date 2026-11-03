@@ -8,16 +8,21 @@ interface ResultsModalProps {
   note?: string | null;
   /** Already flattened by resolvePresentation — every fallback applied. */
   presentation: ResolvedPresentation;
+  /** The setting: off means nobody is held back at all. See secret.ts. */
+  hiddenWinners: boolean;
   /** False while a secret winner is still held back. See secret.ts. */
   revealed: boolean;
   onReveal: () => void;
   onClose: () => void;
 }
 
-function ResultsModal({ winners, note, presentation, revealed, onReveal, onClose }: ResultsModalProps) {
+function ResultsModal({ winners, note, presentation, hiddenWinners, revealed, onReveal, onClose }: ResultsModalProps) {
+  // The setting is checked here as well as in App, so switching it off while a
+  // result is up shows the names rather than leaving them masked.
+  const isHidden = (name: string) => !revealed && hiddenWinners && isSecretName(name);
   // Anything still to show? While there is, the button reveals rather than
   // closes, so the obvious press is the one that gives the answer.
-  const stillHidden = !revealed && winners.some((w) => isSecretName(w.name));
+  const stillHidden = winners.some((w) => isHidden(w.name));
   return (
     <div className="results-overlay" onClick={onClose}>
       {presentation.glitch && <div className="glitch-overlay" />}
@@ -44,7 +49,7 @@ function ResultsModal({ winners, note, presentation, revealed, onReveal, onClose
         </h2>
         <div className="results-list" style={{ position: 'relative', zIndex: 2 }}>
           {winners.map((winner, i) => {
-            const hidden = !revealed && isSecretName(winner.name);
+            const hidden = isHidden(winner.name);
             return (
               <div
                 key={i}

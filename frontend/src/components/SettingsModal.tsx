@@ -13,6 +13,8 @@ interface SettingsModalProps {
   onSoundPackChange: (id: string) => void;
   effectsEnabled: boolean;
   onEffectsEnabledChange: (enabled: boolean) => void;
+  hiddenWinners: boolean;
+  onHiddenWinnersChange: (enabled: boolean) => void;
   onClose: () => void;
 }
 
@@ -27,6 +29,8 @@ function SettingsModal({
   onSoundPackChange,
   effectsEnabled,
   onEffectsEnabledChange,
+  hiddenWinners,
+  onHiddenWinnersChange,
   onClose,
 }: SettingsModalProps) {
   // A recorded pack whose files are missing. Tracked so the button can say so
@@ -129,6 +133,22 @@ function SettingsModal({
             Some characters have an animation — their own look and effects when
             they win, including any you have made. Off shows every winner the
             same plain way.
+          </p>
+        </div>
+        <div className="settings-row">
+          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: '#888' }}>
+            <input
+              type="checkbox"
+              checked={hiddenWinners}
+              onChange={(e) => onHiddenWinnersChange(e.target.checked)}
+            />
+            Hide Surprise Winners
+          </label>
+          <p className="settings-hint">
+            A character with <code>murim</code> in their name is a surprise:
+            the result shows as <code>? ? ?</code> until someone presses
+            Reveal, so the room finds out together. Off names them straight
+            away, like any other winner.
           </p>
         </div>
 
