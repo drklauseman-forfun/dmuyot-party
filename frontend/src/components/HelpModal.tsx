@@ -170,8 +170,10 @@ const HELP: Record<Language, HelpContent> = {
         heading: 'Hidden winners',
         paragraphs: [
           [
-            'A character with ',
+            'A character with either ',
             { code: 'murim' },
+            ' or ',
+            { code: 'אולברה' },
             ' anywhere in their name is a surprise. When one wins, the result comes up as ',
             { code: '? ? ?' },
             ' with a ',
@@ -435,6 +437,8 @@ const HELP: Record<Language, HelpContent> = {
           [
             'דמות שיש בשם שלה ',
             { code: 'murim' },
+            ' או ',
+            { code: 'אולברה' },
             ' בכל מקום היא הפתעה. כשהיא זוכה, התוצאה מופיעה בתור ',
             { code: '? ? ?' },
             ' עם כפתור ',

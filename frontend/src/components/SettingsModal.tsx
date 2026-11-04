@@ -145,10 +145,10 @@ function SettingsModal({
             Hide Surprise Winners
           </label>
           <p className="settings-hint">
-            A character with <code>murim</code> in their name is a surprise:
-            the result shows as <code>? ? ?</code> until someone presses
-            Reveal, so the room finds out together. Off names them straight
-            away, like any other winner.
+            A character with <code>murim</code> or <code>אולברה</code> in their
+            name is a surprise: the result shows as <code>? ? ?</code> until
+            someone presses Reveal, so the room finds out together. Off names
+            them straight away, like any other winner.
           </p>
         </div>
 

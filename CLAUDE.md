@@ -44,17 +44,29 @@ Product decisions, not accidents. Changing one is a regression.
   ordered list is where it bit: the numbering is the list's own, so the text of
   the line is the bare name with nothing in front of it to strip. The tests pin
   every case.
-- **A character whose name contains `murim`, in any mix of capitals and
-  anywhere in the name, is held back** — while **Hide Surprise Winners** is
-  on, which it is by default (`dmuyot_party_hidden_winners`). Switched off,
+- **A character whose name contains one of the secret words, in any mix of
+  capitals and anywhere in the name, is held back** — while **Hide Surprise
+  Winners** is on, which it is by default (`dmuyot_party_hidden_winners`).
+  The words are `murim` and `אולברה`. Switched off,
   nobody is held back and a result behaves as it did before the feature
   existed. The setting is read in `App.tsx` and again in `ResultsModal`, not
   inside `isSecretName`, which knows only about names; the second read is what
   makes switching it off while a result is up show the names rather than
   leave them masked. Its result shows as `? ? ?` until
   Reveal is pressed — and so does its position number, which would name it as
-  surely, and its animation, whose title and shape would too. The word lives
-  once in `secret.ts`, spelled out so it is greppable. Unlike the animation
+  surely, and its animation, whose title and shape would too. The words live
+  once in `SECRET_WORDS` in `secret.ts`, spelled out so they are greppable;
+  adding another is that array and the four pieces of prose that list them
+  (this bullet, the Settings hint, and the help in both languages). Both
+  sides of the test go through `comparable()`, which moved out of
+  `registry.ts` into `comparable.ts` so the triggers and the secret words
+  normalise names by one set of rules rather than two that drift — it matters
+  more here, because a Hebrew word can be broken by the direction marks a
+  Docs export puts around it, while `murim` in Latin letters never was.
+  Unlike a trigger, a secret word is matched anywhere in the name, so check a
+  new one cannot sit inside an unrelated name: `אולברה` is in none of the eleven
+  trigger patterns, and could not be run past the real documents, neither
+  being to hand. Unlike the animation
   triggers, this matches anywhere in the name rather than from the start, so
   it can sit inside the `(Source)` as easily as in front of it. In a spin of
   several, only the held-back winners are hidden and one press reveals them
