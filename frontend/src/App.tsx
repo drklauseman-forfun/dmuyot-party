@@ -32,6 +32,8 @@ import SettingsModal from './components/SettingsModal';
 import AnimationBuilder from './animations/AnimationBuilder';
 import { resolveWinnerAnimation, useAnimationLibrary } from './animations/store';
 import { isSecretName } from './secret';
+// TEMPORARY (2026-11-13): the yellow flash every winner gets. See todayBonus.ts.
+import { TODAY_BONUS_MODULES } from './characters/todayBonus';
 import { useAnimationSync } from './animations/sync';
 
 interface ExtractionResponse {
@@ -206,19 +208,30 @@ function App() {
     setHistory(historyEntries);
   };
 
-  /** Plays an effect, or clears whatever the last winner left behind. */
-  const playEffect = (effect: CharacterEffect | null) => {
-    if (!effect) {
-      setActiveEffect(null);
+  /**
+   * Plays an effect, or clears whatever the last winner left behind.
+   *
+   * `extraModules` render alongside the effect's own and belong to no
+   * character — TEMPORARY, see `characters/todayBonus.ts`. They are kept apart
+   * from `effect` on purpose: `activeEffect` is what dresses the modal, so
+   * passing a null effect with extra modules renders them over a result that
+   * still looks exactly as plain as it did before.
+   */
+  const playEffect = (
+    effect: CharacterEffect | null,
+    extraModules: VFXModuleConfig[] = [],
+  ) => {
+    const modules = [...(effect?.modules ?? []), ...extraModules];
+    setActiveEffect(effect);
+    if (modules.length === 0) {
       setVfxConfig(null);
       return;
     }
-    devLog("🔥 [EFFECT] Matched effect:", effect.id);
-    setActiveEffect(effect);
+    devLog("🔥 [EFFECT] Playing:", effect?.id ?? 'no effect', `+${extraModules.length} extra`);
     setVfxEverPlayed(true);
     setVfxConfig({
-      effectId: effect.id,
-      modules: effect.modules,
+      effectId: effect?.id ?? 'today-bonus',
+      modules,
       timestamp: Date.now()
     });
   };
@@ -237,10 +250,13 @@ function App() {
     const firstWinner = winnersList[0];
     devLog("🎯 [EFFECT] Checking effects for:", firstWinner?.name);
 
-    const effect =
-      effectsEnabled && firstWinner && firstWinner.name !== VOID_NAME
-        ? resolveWinnerAnimation(animationLibrary, username, firstWinner.name)
-        : null;
+    // A character was chosen and animations are on: VOID is not a character,
+    // and the setting off means every winner looks plain.
+    const chosen = effectsEnabled && !!firstWinner && firstWinner.name !== VOID_NAME;
+
+    const effect = chosen
+      ? resolveWinnerAnimation(animationLibrary, username, firstWinner.name)
+      : null;
     if (!effect) {
       devLog(
         effectsEnabled
@@ -254,10 +270,16 @@ function App() {
     // behaves as it did before any of this existed.
     const isHeldBack = (name: string) => hiddenWinners && isSecretName(name);
 
+    // TEMPORARY (2026-11-13): every chosen character flashes yellow, whether
+    // or not an animation is theirs. It plays even for a held-back winner,
+    // since it is the same for everyone and so gives nothing away — only
+    // their own animation waits for Reveal.
+    const bonus = chosen ? TODAY_BONUS_MODULES : [];
+
     const firstIsSecret = !!firstWinner && isHeldBack(firstWinner.name);
     setRevealed(!winnersList.some((w) => isHeldBack(w.name)));
     heldEffect.current = firstIsSecret ? effect : null;
-    playEffect(firstIsSecret ? null : effect);
+    playEffect(firstIsSecret ? null : effect, bonus);
   };
 
   /** Shows the secret winners, and plays the effect that was waiting on them. */
