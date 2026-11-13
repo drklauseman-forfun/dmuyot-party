@@ -28,8 +28,9 @@ wrong.
 ## Temporary: the yellow flash (2026-11-13)
 
 **Asked for as a one-day thing, to be reverted.** Every chosen character gets
-a yellow flash, a few yellow particles and sparkles *on top of* whatever
-animation is theirs — and a character with no animation gets just those, which
+a yellow flash, a few yellow particles and yellow sparkles — all three the same
+yellow, after a first attempt whose pale sparkle layer read as white — *on top
+of* whatever animation is theirs — and a character with no animation gets just those, which
 is the only reason the effect canvas now appears for an ordinary winner at all.
 
 It lives in `frontend/src/characters/todayBonus.ts`, which is three ordinary
@@ -38,6 +39,9 @@ and not in anyone's saved animations, so removing it leaves no trace and
 cannot strand an animation built while it was on. No new module type and no
 schema change, so `api/animations.js` is untouched and the sanitiser is
 unaffected.
+
+The `twinkle` module it uses is **not** temporary: it is an ordinary effect in
+the builder from now on, and only its use here goes away.
 
 To revert: delete that file, and in `App.tsx` drop the import, the
 `extraModules` parameter of `playEffect` (restoring its early return for a
@@ -170,10 +174,30 @@ ten million sparks. The defaults copy each component's own; a saved animation
 stores every parameter explicitly, so drift cannot change what it renders, but
 it would make the builder's starting values wrong.
 
-Modules today: `glow`, `edgeGlow`, `sparkles`, `fire`, `beams`, `blackHole`,
-`sun`, `flames`, `clock`, `fireworks`, `wings`, `eyes`, `slashes`, `words`,
-`memes`, `glitch`, `timepieces`, `hands`, `figure`, `weapons`, `curtain`,
-`candles`, `creatures`, `dragons`.
+Modules today: `glow`, `edgeGlow`, `sparkles`, `twinkle`, `fire`, `beams`,
+`blackHole`, `sun`, `flames`, `clock`, `fireworks`, `wings`, `eyes`, `slashes`,
+`words`, `memes`, `glitch`, `timepieces`, `hands`, `figure`, `weapons`,
+`curtain`, `candles`, `creatures`, `dragons`.
+**`sparkles` and `twinkle` are two different things, and the names are
+backwards from what you would guess.** `sparkles` is shown in the builder as
+**Particles**: soft round points that drift, a cloud. `twinkle` is shown as
+**Sparkles**: star-shaped glints that flare and die back. It was added on
+2026-11-13 because asking for "sparkles" and getting the particles module is
+exactly what happened — a paler, smaller cloud still reads as a cloud. What
+makes a sparkle read as one is that it spends most of its life dim: each point
+flares on its own clock, and *grows* as it flares, which does as much of the
+work as the brightness. The star is drawn in the fragment shader from the
+point's own coordinates, so there is no texture to load and none of the colour
+space traps the canvas-drawn modules have. It is light, so it is **not** in
+`UNLIT_MODULES` and goes through the bloom.
+
+Its `points` parameter has the **sun's seam problem**: the shape comes from a
+wave around the angle, so half the point count has to be a whole number or a
+seam runs through every star. The schema asks for even numbers only, but
+`sanitizeModule` clamps and rounds to an integer without snapping to the step —
+a saved animation really can arrive with `points: 7`, which was checked against
+the server. So the shader rounds it too, and that guard is load-bearing.
+
 `beams` has no built-in animation using it but is a building block the builder
 offers. `fire` is **retired**: it did not look like flames, so
 `RETIRED_EFFECTS` in `vfx/schema.ts` keeps it out of the builder's list. Its

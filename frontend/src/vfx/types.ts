@@ -26,6 +26,27 @@ export interface GlowParams extends VFXTiming {
   intensity?: number;
 }
 
+/**
+ * Star-shaped glints that flare and die back.
+ *
+ * Not the same thing as the particles above, which are soft round points that
+ * drift. These spend most of their life dim and briefly flare, which is what
+ * reads as twinkling rather than as a cloud.
+ */
+export interface TwinkleParams extends VFXTiming {
+  color?: string;
+  count?: number;
+  /** Half-extent of the spawn volume; one number, or per axis. */
+  scale?: number | [number, number, number];
+  size?: number;
+  /** How often each star flares. */
+  speed?: number;
+  /** Points on each star. Even numbers only — an odd count seams. */
+  points?: number;
+  /** Ceiling on a star's on-screen size, in pixels. See SparklesParams. */
+  maxPixelSize?: number;
+}
+
 /** A cloud of points, optionally travelling in one direction. */
 export interface SparklesParams extends VFXTiming {
   color?: string;
@@ -539,6 +560,7 @@ export interface MemesParams extends VFXTiming {
 export type VFXModuleConfig =
   | ({ type: 'glow' } & GlowParams)
   | ({ type: 'sparkles' } & SparklesParams)
+  | ({ type: 'twinkle' } & TwinkleParams)
   | ({ type: 'fire' } & FireParams)
   | ({ type: 'beams' } & BeamsParams)
   | ({ type: 'edgeGlow' } & EdgeGlowParams)

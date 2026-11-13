@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import VFXGlow from './components/VFXGlow';
 import VFXSparkles from './components/VFXSparkles';
+import VFXTwinkle from './components/VFXTwinkle';
 import VFXFire from './components/VFXFire';
 import SubtleTopBeams from './components/SubtleTopBeams';
 import VFXEdgeGlow from './components/VFXEdgeGlow';
@@ -87,6 +88,7 @@ type ModuleRenderers = {
 const RENDERERS: ModuleRenderers = {
   glow: (params, { active }) => <VFXGlow {...params} active={active} />,
   sparkles: (params, { active, seed }) => <VFXSparkles {...params} active={active} seed={seed} />,
+  twinkle: (params, { active, seed }) => <VFXTwinkle {...params} active={active} seed={seed} />,
   fire: (params, { active }) => <VFXFire {...params} active={active} />,
   beams: (params, { active }) => <SubtleTopBeams {...params} active={active} />,
   edgeGlow: (params, { active }) => <VFXEdgeGlow {...params} active={active} />,

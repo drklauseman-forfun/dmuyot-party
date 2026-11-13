@@ -52,19 +52,18 @@ export const TODAY_BONUS_MODULES: VFXModuleConfig[] = [
     duration: 2.2,
     fadeDuration: 1.6,
   },
-  // The sparkles: many, small and quick, scattered wider and wandering rather
-  // than travelling, which is what reads as twinkling instead of drifting.
+  // The sparkles proper: star-shaped glints that flare and die back, which is
+  // a different module from the particles above and not a paler version of
+  // them. Yellow like everything else here.
   {
-    type: 'sparkles',
-    color: '#fff6c9',
-    count: 220,
-    scale: 15,
-    size: 1,
-    speed: 2.6,
-    direction: 'random',
-    noise: 1.4,
-    blend: 'add',
-    maxPixelSize: 26,
+    type: 'twinkle',
+    color: YELLOW,
+    count: 150,
+    scale: 14,
+    size: 3.4,
+    speed: 3.4,
+    points: 4,
+    maxPixelSize: 44,
     fadeInDuration: 0.2,
     duration: 2.4,
     fadeDuration: 1.4,

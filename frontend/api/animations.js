@@ -5861,6 +5861,76 @@ var EFFECT_SCHEMAS = {
 			...TIMING_SCHEMA
 		}
 	},
+	twinkle: {
+		label: "Sparkles",
+		description: "Star-shaped glints that flare and die back. Not the soft drifting points of Particles — these spend most of their life dim, and the wink is the effect.",
+		params: {
+			color: {
+				kind: "color",
+				label: "Colour",
+				guide: "The colour of the stars. They add light, so a dark colour barely shows.",
+				default: "#ffffff"
+			},
+			count: {
+				kind: "number",
+				label: "Amount",
+				guide: "How many stars. A hundred or so fills the screen, because each one is only lit part of the time.",
+				default: 120,
+				min: 1,
+				max: 1200,
+				step: 5,
+				integer: true
+			},
+			scale: {
+				kind: "scale",
+				label: "Spread area",
+				guide: "How far out they are scattered. One number spreads them evenly; three set width, height and depth separately.",
+				default: 12,
+				min: .1,
+				max: 30
+			},
+			size: {
+				kind: "number",
+				label: "Size",
+				guide: "How big each star is at its brightest. They also grow as they flare, so a large size wants a Size limit.",
+				default: 3,
+				min: .1,
+				max: 12,
+				step: .1
+			},
+			speed: {
+				kind: "number",
+				label: "Flare rate",
+				guide: "How often each star flares. Every star keeps its own rate around this one, so they never fall into step.",
+				default: 3,
+				min: 0,
+				max: 20,
+				step: .1
+			},
+			points: {
+				kind: "number",
+				label: "Points",
+				guide: "Points on each star. Even numbers only — an odd count leaves a seam down every star.",
+				default: 4,
+				min: 4,
+				max: 12,
+				step: 2,
+				integer: true
+			},
+			maxPixelSize: {
+				kind: "number",
+				label: "Size limit",
+				guide: "The largest a star can look, in pixels. They grow as they flare and as they come closer, so without a limit one can cover the screen.",
+				default: 48,
+				min: 4,
+				max: 4096,
+				step: 4,
+				integer: true,
+				unit: "px"
+			},
+			...TIMING_SCHEMA
+		}
+	},
 	sparkles: {
 		label: "Particles",
 		description: "Glowing points that drift in place, or stream in one direction.",
