@@ -25,38 +25,6 @@ the running app in a browser. That is slower but it is what caught most of the
 real bugs in this repo — several things typechecked, linted, and were still
 wrong.
 
-## Temporary: the yellow flash (2026-11-13)
-
-**Asked for as a one-day thing, to be reverted.** Every chosen character gets
-a yellow flash, a few yellow particles and yellow sparkles — all three the same
-yellow, after a first attempt whose pale sparkle layer read as white — *on top
-of* whatever animation is theirs — and a character with no animation gets just those, which
-is the only reason the effect canvas now appears for an ordinary winner at all.
-
-It lives in `frontend/src/characters/todayBonus.ts`, which is three ordinary
-`VFXModuleConfig` entries and nothing else. Deliberately not in the registry
-and not in anyone's saved animations, so removing it leaves no trace and
-cannot strand an animation built while it was on. No new module type and no
-schema change, so `api/animations.js` is untouched and the sanitiser is
-unaffected.
-
-The `twinkle` module it uses is **not** temporary: it is an ordinary effect in
-the builder from now on, and only its use here goes away.
-
-To revert: delete that file, and in `App.tsx` drop the import, the
-`extraModules` parameter of `playEffect` (restoring its early return for a
-null effect), and the `bonus` lines in `announceWinners`. The `chosen` const
-there can stay or go — it only names the condition `effect` already used.
-
-Two things it respects, verified: **Enable Animations off means nothing plays**
-at all, and a **VOID** result gets no flash, since VOID is not a character. It
-*does* play for a held-back `murim` winner, at once rather than on Reveal:
-the flash is identical for everyone, so unlike their own animation it gives
-nothing away.
-
-The help modal is **deliberately not** updated for this one — it describes
-behaviour that is meant to last, and this is going away.
-
 ## Rules that must not break
 
 Product decisions, not accidents. Changing one is a regression.
@@ -183,7 +151,9 @@ backwards from what you would guess.** `sparkles` is shown in the builder as
 **Particles**: soft round points that drift, a cloud. `twinkle` is shown as
 **Sparkles**: star-shaped glints that flare and die back. It was added on
 2026-11-13 because asking for "sparkles" and getting the particles module is
-exactly what happened — a paler, smaller cloud still reads as a cloud. What
+exactly what happened — a paler, smaller cloud still reads as a cloud. It was
+built for a one-day yellow flash that every winner got on top of their own
+animation; that was reverted on 2026-11-17, and the module stayed. What
 makes a sparkle read as one is that it spends most of its life dim: each point
 flares on its own clock, and *grows* as it flares, which does as much of the
 work as the brightness. The star is drawn in the fragment shader from the
